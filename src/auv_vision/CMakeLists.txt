@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  genmsg
 )
 
 ## System dependencies are found with CMake's conventions
@@ -47,11 +48,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  num.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -68,10 +68,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -103,6 +103,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
+  CATKIN_DEPENDS message_runtime
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_vision
 #  CATKIN_DEPENDS roscpp rospy std_msgs
@@ -119,6 +120,14 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
+
+add_executable(gate_locator src/gate_locator.cpp)
+target_link_libraries(gate_locator ${catkin_LIBRARIES})
+add_dependencies(gate_locator auv_vision_generate_messages_cpp)
+
+add_executable(locators_handler src/locators_handler.cpp)
+target_link_libraries(locators_handler ${catkin_LIBRARIES})
+add_dependencies(locators_handler auv_vision_generate_messages_cpp)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

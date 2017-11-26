@@ -66,7 +66,7 @@ endif()
 set(auv_vision_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
-if("TRUE" STREQUAL "TRUE")
+if("FALSE" STREQUAL "TRUE")
   set(auv_vision_SOURCE_PREFIX /home/morev/AUV/src/auv_vision)
   set(auv_vision_DEVEL_PREFIX /home/morev/AUV/devel)
   set(auv_vision_INSTALL_PREFIX "")
@@ -91,9 +91,9 @@ endif()
 # flag project as catkin-based to distinguish if a find_package()-ed project is a catkin project
 set(auv_vision_FOUND_CATKIN_PROJECT TRUE)
 
-if(NOT "/home/morev/AUV/devel/include " STREQUAL " ")
+if(NOT "include " STREQUAL " ")
   set(auv_vision_INCLUDE_DIRS "")
-  set(_include_dirs "/home/morev/AUV/devel/include")
+  set(_include_dirs "include")
   foreach(idir ${_include_dirs})
     if(IS_ABSOLUTE ${idir} AND IS_DIRECTORY ${idir})
       set(include ${idir})
@@ -103,7 +103,7 @@ if(NOT "/home/morev/AUV/devel/include " STREQUAL " ")
         message(FATAL_ERROR "Project 'auv_vision' specifies '${idir}' as an include dir, which is not found.  It does not exist in '${include}'.  Ask the maintainer 'morev <hev.freeman@gmail.com>' to fix it.")
       endif()
     else()
-      message(FATAL_ERROR "Project 'auv_vision' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/morev/AUV/src/auv_vision/${idir}'.  Ask the maintainer 'morev <hev.freeman@gmail.com>' to fix it.")
+      message(FATAL_ERROR "Project 'auv_vision' specifies '${idir}' as an include dir, which is not found.  It does neither exist as an absolute directory nor in '/home/morev/AUV/install/${idir}'.  Ask the maintainer 'morev <hev.freeman@gmail.com>' to fix it.")
     endif()
     _list_append_unique(auv_vision_INCLUDE_DIRS ${include})
   endforeach()
@@ -122,7 +122,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/morev/AUV/devel/lib;/home/morev/AUV/devel/lib;/opt/ros/kinetic/lib)
+    foreach(path /home/morev/AUV/install/lib;/opt/ros/kinetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
