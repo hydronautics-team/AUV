@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 2.8.3)
 project(auv_vision)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
+
+## Helps with finding OpenCV's cmake configs
+set(OpenCV_DIR /usr/local/share/OpenCV)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -15,10 +18,10 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   image_transport
-  OpenCV
 )
 
-
+## Find built OpenCV
+find_package(OpenCV REQUIRED HINTS ${OpenCV_DIR} NO_DEFAULT_PATH)
 
 
 ################################################
@@ -65,8 +68,10 @@ include_directories(
 
 add_executable(gate_locator src/gate_locator.cpp)
 target_link_libraries(gate_locator ${catkin_LIBRARIES})
+target_link_libraries(gate_locator ${OpenCV_LIBS})
 add_dependencies(gate_locator auv_vision_generate_messages_cpp)
 
 add_executable(locators_handler src/locators_handler.cpp)
 target_link_libraries(locators_handler ${catkin_LIBRARIES})
+target_link_libraries(locators_handler ${OpenCV_LIBS})
 add_dependencies(locators_handler auv_vision_generate_messages_cpp)
