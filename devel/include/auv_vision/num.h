@@ -39,6 +39,7 @@ struct num_
 
 
 
+
   typedef boost::shared_ptr< ::auv_vision::num_<ContainerAllocator> > Ptr;
   typedef boost::shared_ptr< ::auv_vision::num_<ContainerAllocator> const> ConstPtr;
 

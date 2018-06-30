@@ -3,11 +3,8 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-// Temp check of version
-#include "opencv2/core/version.hpp"
-//#include <iostream.h>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include <sstream>
 
@@ -29,7 +26,7 @@ public:
       &ImageConverter::imageCb, this);
     image_pub_ = it_.advertise("/image_converter/output_video", 1);
 
-    cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
+    cv::namedWindow(OPENCV_WINDOW);
   }
 
   ~ImageConverter()
@@ -50,9 +47,6 @@ public:
       return;
     }
 
-
-    // CODE HERE
-
     // Draw an example circle on the video stream
     if (cv_ptr->image.rows > 60 && cv_ptr->image.cols > 60)
       cv::circle(cv_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
@@ -71,19 +65,7 @@ int main(int argc, char **argv)
 
   ros::init(argc, argv, "gate_locator");
   ImageConverter ic;
-  //ros::spin();
-
-  #if CV_MAJOR_VERSION == 2
-		ROS_INFO("%s", "OpenCV version = 2");
-	#elif CV_MAJOR_VERSION == 3
-		ROS_INFO("%s", "OpenCV version = 3");
-	#endif
-
-  while (ros::ok())
-  {
-    ROS_INFO("%s", "Hydronautics sux");
-    ros::spinOnce();
-  }
+  ros::spin();
 
   /*ros::NodeHandle n;
 

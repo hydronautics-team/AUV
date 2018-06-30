@@ -4,8 +4,8 @@
 
   <node pkg="auv_vision" name="gate_locator" type="gate_locator">
 		<remap from="in" to="image_raw"/>
-	</node>
+  </node>
 
-	<node pkg="auv_vision" name="locators_handler" type="locators_handler"/>
+  <node pkg="auv_vision" name="locators_handler" type="locators_handler"/>
 
 </launch>

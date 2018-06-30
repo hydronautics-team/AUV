@@ -15,10 +15,9 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   image_transport
-  OpenCV
 )
 
-
+find_package(OpenCV REQUIRED)
 
 
 ################################################
@@ -47,7 +46,7 @@ generate_messages(
 ###################################
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime
+   CATKIN_DEPENDS message_runtime
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_vision
 #  CATKIN_DEPENDS roscpp rospy std_msgs
@@ -59,8 +58,8 @@ catkin_package(
 ###########
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(gate_locator src/gate_locator.cpp)
