@@ -4,8 +4,8 @@ project(auv_vision)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
-## Helps with finding OpenCV's cmake configs
-set(OpenCV_DIR /usr/local/share/OpenCV)
+## Helps with finding OpenCV's cmake configs. Uncomment to use locally built OpenCV.
+## set(OpenCV_DIR /usr/local/share/OpenCV)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -20,8 +20,10 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
 )
 
-## Find built OpenCV
-find_package(OpenCV REQUIRED HINTS ${OpenCV_DIR} NO_DEFAULT_PATH)
+## Find OpenCV
+find_package(OpenCV)
+## For locally built OpenCV, comment previous line and uncomment following:
+## find_package(OpenCV REQUIRED HINTS ${OpenCV_DIR} NO_DEFAULT_PATH)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -61,7 +63,8 @@ catkin_package(
 ###########
 
 include_directories(
-  ${OpenCV_INCLUDE_DIRS}
+  ## Uncomment to use locally built OpenCV:
+  ## ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
