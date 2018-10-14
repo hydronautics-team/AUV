@@ -69,7 +69,16 @@ include_directories(
   "include"
 )
 
-add_executable(gate_locator src/gate_locator.cpp include/AbstractImageConverter.h src/AbstractImageConverter.cpp)
+add_executable(gate_locator
+        src/gate_locator.cpp
+        include/AbstractImageConverter.h
+        src/AbstractImageConverter.cpp
+        include/gate/GateDescriptor.h
+        src/gate/GateDescriptor.cpp
+        include/gate/GateDetector.h
+        include/util/ImgprocPipeline.h
+        src/util/ImgprocPipeline.cpp
+        src/gate/GateDetector.cpp)
 target_link_libraries(gate_locator ${catkin_LIBRARIES})
 target_link_libraries(gate_locator ${OpenCV_LIBS})
 add_dependencies(gate_locator auv_vision_generate_messages_cpp)
