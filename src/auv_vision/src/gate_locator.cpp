@@ -1,7 +1,6 @@
 #include "ros/ros.h"
-#include "std_msgs/String.h"
+#include "geometry_msgs/Pose2D.h"
 #include <sstream>
-#include <msg/gate_msg.h>
 #include <gate/GateDescriptor.h>
 #include <gate/GateDetector.h>
 #include "../include/AbstractImageConverter.h"
@@ -23,17 +22,22 @@ protected:
     {
       cv::Mat image = cv_ptr->image;
 
-
       GateDescriptor gate = detector.detect(image, true);
 
-      gatePublisher.publish(gate.toMsg());
-
       if (gate.hasGate()) {
+          cv::Point2f center = gate.getCenter();
+          geometry_msgs::Pose2D msg;
+          msg.x = center.x;
+          msg.y = center.y;
+          msg.theta = 0;
+          gatePublisher.publish(msg);
+
           std::vector<cv::Point2f> corners = gate.getCorners();
           cv::circle(image, corners[0], 10, CV_RGB(0,255,0));
           cv::circle(image, corners[1], 10, CV_RGB(0,255,0));
           cv::circle(image, corners[2], 10, CV_RGB(0,255,0));
           cv::circle(image, corners[3], 10, CV_RGB(0,255,0));
+          cv::circle(image, center, 10, CV_RGB(0,0,255));
       }
 
       cv::imshow(OPENCV_WINDOW, image);
@@ -45,7 +49,7 @@ public:
 
     SampleImageConverter()
     {
-      gatePublisher = nodeHandle.advertise<auv_vision::gate_msg>("/gate", 100);
+      gatePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>("/gate", 100);
 
       cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
     }

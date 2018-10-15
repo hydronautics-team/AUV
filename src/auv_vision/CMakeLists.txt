@@ -18,7 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   image_transport
-  message_generation
 )
 
 ## Find OpenCV
@@ -31,17 +30,15 @@ find_package(OpenCV)
 ################################################
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  num.msg
-  gate_msg.msg
-)
+#add_message_files(
+#  FILES
+#)
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+#generate_messages(
+#  DEPENDENCIES
+#  std_msgs
+#)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -52,13 +49,13 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 
-catkin_package(
-   CATKIN_DEPENDS message_runtime
+#catkin_package(
+#   CATKIN_DEPENDS message_runtime
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_vision
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
-)
+#)
 
 ###########
 ## Build ##
@@ -83,7 +80,6 @@ add_executable(gate_locator
         src/gate/GateDetector.cpp)
 target_link_libraries(gate_locator ${catkin_LIBRARIES})
 target_link_libraries(gate_locator ${OpenCV_LIBS})
-add_dependencies(gate_locator auv_vision_generate_messages_cpp)
 
 add_executable(locators_handler
         src/locators_handler.cpp
@@ -97,4 +93,3 @@ add_executable(locators_handler
         src/gate/GateDetector.cpp)
 target_link_libraries(locators_handler ${catkin_LIBRARIES})
 target_link_libraries(locators_handler ${OpenCV_LIBS})
-add_dependencies(locators_handler auv_vision_generate_messages_cpp)

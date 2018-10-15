@@ -1,13 +1,10 @@
 #include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "../include/gate/GateDescriptor.h"
-#include "../include/msg/gate_msg.h"
+#include "geometry_msgs/Pose2D.h"
 
-void chatterCallback(const auv_vision::gate_msgConstPtr& msg)
+
+void gateCallback(const geometry_msgs::Pose2DConstPtr& msg)
 {
-  GateDescriptor gate = GateDescriptor::fromMsg(*msg);
-  if (gate.hasGate())
-    ROS_INFO("%s", "Gates detected");
+    ROS_INFO("%f %f", (*msg).x, (*msg).y);
 }
 
 int main(int argc, char **argv)
@@ -16,7 +13,7 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
 
-  ros::Subscriber sub = n.subscribe<auv_vision::gate_msg>("/gate", 100, chatterCallback);
+  ros::Subscriber sub = n.subscribe<geometry_msgs::Pose2D>("/gate", 100, gateCallback);
 
   ros::spin();
 
