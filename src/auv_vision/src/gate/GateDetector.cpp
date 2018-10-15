@@ -111,6 +111,8 @@ GateDescriptor GateDetector::detect(const cv::Mat &src, bool withPreprocess) {
     // Step 1: find all vertical lines on image
     std::vector<cv::Vec4f> verticalLines;
     detectVerticalLines(image, verticalLines);
+    if (verticalLines.empty())
+        return GateDescriptor::noGates();
 
     // Step 2: gather all ending points from detected lines
     std::vector<cv::Point2f> allPoints;
