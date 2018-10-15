@@ -5,7 +5,7 @@ GateDescriptor GateDescriptor::noGates() { return GateDescriptor(false, std::vec
 GateDescriptor GateDescriptor::create(const std::vector<cv::Point2f>& corners) { return GateDescriptor(true, corners); }
 
 GateDescriptor GateDescriptor::fromMsg(const auv_vision::gate_msg &msg) {
-    if (msg.x1 == msg.x2 == msg.x3 == msg.x4 == msg.y1 == msg.y2 == msg.y3 == msg.x4 == 0)
+    if (msg.x1 + msg.x2 + msg.x3 + msg.x4 + msg.y1 + msg.y2 + msg.y3 + msg.x4 == 0)
         return GateDescriptor::noGates();
     return GateDescriptor(true, {
         cv::Point2f(msg.x1, msg.y1),
