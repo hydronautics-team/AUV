@@ -1,6 +1,9 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <sstream>
+#include <msg/gate_msg.h>
+#include <gate/GateDescriptor.h>
+#include <gate/GateDetector.h>
 #include "../include/AbstractImageConverter.h"
 
 static const std::string OPENCV_WINDOW = "Image window";
@@ -10,7 +13,9 @@ class SampleImageConverter : public AbstractImageConverter
 
 private:
 
-    image_transport::Publisher imagePublisher;
+    ros::Publisher gatePublisher;
+
+    GateDetector detector;
 
 protected:
 
@@ -18,23 +23,30 @@ protected:
     {
       cv::Mat image = cv_ptr->image;
 
-      // Draw an example circle on the video stream
-      if (image.rows > 60 && image.cols > 60)
-        cv::circle(image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
 
-      // Update GUI Window
+      GateDescriptor gate = detector.detect(image, true);
+
+      gatePublisher.publish(gate.toMsg());
+
+      if (gate.hasGate()) {
+          std::vector<cv::Point2f> corners = gate.getCorners();
+          cv::circle(image, corners[0], 10, CV_RGB(0,255,0));
+          cv::circle(image, corners[1], 10, CV_RGB(0,255,0));
+          cv::circle(image, corners[2], 10, CV_RGB(0,255,0));
+          cv::circle(image, corners[3], 10, CV_RGB(0,255,0));
+      }
+
       cv::imshow(OPENCV_WINDOW, image);
       cv::waitKey(3);
 
-      // Output modified video stream
-      imagePublisher.publish(cv_ptr->toImageMsg());
     }
 
 public:
 
     SampleImageConverter()
     {
-      imagePublisher = imageTransport.advertise("/image_converter/output_video", 1);
+      gatePublisher = nodeHandle.advertise<auv_vision::gate_msg>("/gate", 100);
+
       cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
     }
 

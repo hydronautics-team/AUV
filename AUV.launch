@@ -2,10 +2,10 @@
 
   <node pkg="uvc_camera" name="front_camera" type="uvc_camera_node"/>
 
-  <node pkg="auv_vision" name="gate_locator" type="gate_locator">
+  <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
 		<remap from="in" to="image_raw"/>
   </node>
 
-  <node pkg="auv_vision" name="locators_handler" type="locators_handler"/>
+  <node pkg="auv_vision" name="locators_handler" type="locators_handler" output="screen" />
 
 </launch>

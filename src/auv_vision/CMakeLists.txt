@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   image_transport
+  message_generation
 )
 
 ## Find OpenCV
@@ -33,6 +34,7 @@ find_package(OpenCV)
 add_message_files(
   FILES
   num.msg
+  gate_msg.msg
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -83,7 +85,16 @@ target_link_libraries(gate_locator ${catkin_LIBRARIES})
 target_link_libraries(gate_locator ${OpenCV_LIBS})
 add_dependencies(gate_locator auv_vision_generate_messages_cpp)
 
-#add_executable(locators_handler src/locators_handler.cpp)
-#target_link_libraries(locators_handler ${catkin_LIBRARIES})
-#target_link_libraries(locators_handler ${OpenCV_LIBS})
-#add_dependencies(locators_handler auv_vision_generate_messages_cpp)
+add_executable(locators_handler
+        src/locators_handler.cpp
+        include/AbstractImageConverter.h
+        src/AbstractImageConverter.cpp
+        include/gate/GateDescriptor.h
+        src/gate/GateDescriptor.cpp
+        include/gate/GateDetector.h
+        include/util/ImgprocPipeline.h
+        src/util/ImgprocPipeline.cpp
+        src/gate/GateDetector.cpp)
+target_link_libraries(locators_handler ${catkin_LIBRARIES})
+target_link_libraries(locators_handler ${OpenCV_LIBS})
+add_dependencies(locators_handler auv_vision_generate_messages_cpp)
