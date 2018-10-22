@@ -7,7 +7,7 @@
 #if CUDA_ENABLED == 0
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudaimgproc.hpp>
-#if CUDA_ENABLED == 0
+#endif
 
 #include "../../include/gate/GateDetector.h"
 #include "../../include/gate/GateDescriptor.h"
