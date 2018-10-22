@@ -1,6 +1,10 @@
 # Autonomus Underwater Vehicle AI Source Code
 
 ## Building and launching
+Install dependencies:
+```bash
+sudo apt-get install ros-kinetic-uvc-camera
+```
 Use following commands to build and launch:
 ```bash
 source /opt/ros/kinetic/setup.bash
