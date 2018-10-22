@@ -3,8 +3,12 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
+
+#if CUDA_ENABLED == 0
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudaimgproc.hpp>
+#endif
+
 #include "../../include/gate/GateDetector.h"
 #include "../../include/gate/GateDescriptor.h"
 #include "../../include/util/ImgprocPipeline.h"

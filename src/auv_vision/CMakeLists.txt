@@ -49,13 +49,13 @@ find_package(OpenCV)
 ## catkin specific configuration ##
 ###################################
 
-#catkin_package(
-#   CATKIN_DEPENDS message_runtime
+catkin_package(
+#  CATKIN_DEPENDS message_runtime
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_vision
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
-#)
+)
 
 ###########
 ## Build ##
