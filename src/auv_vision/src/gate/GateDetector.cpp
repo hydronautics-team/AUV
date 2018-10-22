@@ -4,10 +4,12 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
 
+/**
 #if CUDA_ENABLED == 0
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudaimgproc.hpp>
 #endif
+*/
 
 #include "../../include/gate/GateDetector.h"
 #include "../../include/gate/GateDescriptor.h"
@@ -25,7 +27,9 @@ void GateDetector::defaultPreprocess(const cv::Mat &src, cv::Mat &dst) {
 
 void GateDetector::meanShift(const cv::Mat &src, cv::Mat &dst) {
 
-// TODO Fix undefined reference errors
+    // TODO Fix problems with CUDA dependencies
+    cv::pyrMeanShiftFiltering(src, dst, 30, 5);
+/**
 #if CUDA_ENABLED == 0
     cv::pyrMeanShiftFiltering(src, dst, 30, 5);
 #else
@@ -35,6 +39,7 @@ void GateDetector::meanShift(const cv::Mat &src, cv::Mat &dst) {
     cv::cuda::meanShiftFiltering(gpuSrc, gpuDest, 30, 5);
     gpuDest.download(dst);
 #endif
+*/
 
 }
 
