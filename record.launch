@@ -59,21 +59,21 @@
 
     <!-- First front camera recorder -->
     <!-- FPS in recorders are mostly empiric values! -->
-    <node name="front_recorder_1" pkg="image_view" type="video_recorder" output="screen">
+    <node name="front_recorder_1" pkg="auv_vision" type="video_recorder" output="screen">
         <remap from="image" to="/cam_front_1/image_raw"/>
         <param name="fps" value="30" />
         <param name="filename" value="/home/nvidia/record/front-1.avi" />
     </node>
 
     <!-- Second front camera recorder -->
-    <node name="front_recorder_2" pkg="image_view" type="video_recorder" output="screen">
+    <node name="front_recorder_2" pkg="auv_vision" type="video_recorder" output="screen">
         <remap from="image" to="/cam_front_2/image_raw"/>
         <param name="fps" value="30" />
         <param name="filename" value="/home/nvidia/record/front-2.avi" />
     </node>
 
     <!-- Bottom camera recorder --> 
-    <node name="bottom_recorder" pkg="image_view" type="video_recorder" output="screen">
+    <node name="bottom_recorder" pkg="auv_vision" type="video_recorder" output="screen">
         <remap from="image" to="/cam_bottom/image_raw"/>
         <param name="fps" value="15" />
         <param name="filename" value="/home/nvidia/record/bottom.avi" />
