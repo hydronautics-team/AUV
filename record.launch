@@ -62,14 +62,14 @@
     <node name="front_recorder_1" pkg="image_view" type="video_recorder" output="screen">
         <remap from="image" to="/cam_front_1/image_raw"/>
         <param name="fps" value="30" />
-        <param name="filename" value="/home/nvidia/record/front_1.avi" />
+        <param name="filename" value="/home/nvidia/record/front-1.avi" />
     </node>
 
     <!-- Second front camera recorder -->
     <node name="front_recorder_2" pkg="image_view" type="video_recorder" output="screen">
         <remap from="image" to="/cam_front_2/image_raw"/>
         <param name="fps" value="30" />
-        <param name="filename" value="/home/nvidia/record/front_2.avi" />
+        <param name="filename" value="/home/nvidia/record/front-2.avi" />
     </node>
 
     <!-- Bottom camera recorder --> 

@@ -93,3 +93,9 @@ add_executable(locators_handler
         src/gate/GateDetector.cpp)
 target_link_libraries(locators_handler ${catkin_LIBRARIES})
 target_link_libraries(locators_handler ${OpenCV_LIBS})
+
+add_executable(video_recorder src/video_recorder.cpp)
+target_link_libraries(video_recorder
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBRARIES})
+
