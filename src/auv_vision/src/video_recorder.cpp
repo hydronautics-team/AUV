@@ -118,7 +118,7 @@ void callback(const sensor_msgs::ImageConstPtr& image_msg)
         const cv::Mat image = cv_bridge::cvtColorForDisplay(cv_bridge::toCvShare(image_msg), encoding, options)->image;
         if (!image.empty()) {
             outputVideo << image;
-            ROS_INFO_STREAM("Recording frame " << g_count << "\x1b[1F");
+            //ROS_INFO_STREAM("Recording frame " << g_count << "\x1b[1F");
             g_count++;
             g_last_wrote_time = image_msg->header.stamp;
         } else {
