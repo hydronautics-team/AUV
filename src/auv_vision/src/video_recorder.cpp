@@ -194,4 +194,6 @@ int main(int argc, char** argv)
     ROS_INFO_STREAM("Waiting for topic " << topic << "...");
     ros::spin();
     std::cout << "\nVideos saved" << std::endl;
+
+    consumer.join();
 }
