@@ -100,6 +100,7 @@ void consume(ConcurrentQueue<sensor_msgs::ImageConstPtr>& queue)
             if ((image_msg->header.stamp - first_frame_time) > slice_duration)
             {
                 outputVideo.release();
+                queue.clear();
                 continue;
             }
         }

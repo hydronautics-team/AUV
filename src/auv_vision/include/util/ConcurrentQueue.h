@@ -46,6 +46,15 @@ public:
         mlock.unlock();
         cond_.notify_one();
     }
+
+    void clear()
+    {
+        std::unique_lock<std::mutex> mlock(mutex_);
+        std::queue<T> emptyQueue;
+        std::swap(queue_, emptyQueue);
+        mlock.unlock();
+    }
+
     ConcurrentQueue()=default;
     ConcurrentQueue(const ConcurrentQueue&) = delete;            // disable copying
     ConcurrentQueue& operator=(const ConcurrentQueue&) = delete; // disable assignment
