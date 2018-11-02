@@ -30,6 +30,8 @@
 #include <camera_calibration_parsers/parse.h>
 #if CV_MAJOR_VERSION == 3
 #include <opencv2/videoio.hpp>
+#include <util/ConcurrentQueue.h>
+
 #endif
 
 cv::VideoWriter outputVideo;
@@ -50,85 +52,98 @@ ros::Duration slice_duration = ros::Duration(60.0); // One minute duration of on
 ros::Time first_frame_time = ros::Time(0);
 bool first_frame = true;
 
+ConcurrentQueue<sensor_msgs::ImageConstPtr> imageQueue;
 
-void callback(const sensor_msgs::ImageConstPtr& image_msg)
+void consume(ConcurrentQueue<sensor_msgs::ImageConstPtr>& queue)
 {
-    if (!outputVideo.isOpened()) {
+    while (true)
+    {
+        sensor_msgs::ImageConstPtr image_msg = queue.pop();
 
-        std::string current_filename = filename + "_" + std::to_string(slice_count) + ".avi";
-        slice_count++;
+        if (!outputVideo.isOpened()) {
 
-        cv::Size size(image_msg->width, image_msg->height);
+            std::string current_filename = filename + "_" + std::to_string(slice_count) + ".avi";
+            slice_count++;
 
-        outputVideo.open(current_filename,
-#if CV_MAJOR_VERSION == 3
-                         cv::VideoWriter::fourcc(codec.c_str()[0],
-#else
-                                 CV_FOURCC(codec.c_str()[0],
-#endif
-                                                 codec.c_str()[1],
-                                                 codec.c_str()[2],
-                                                 codec.c_str()[3]),
-                         fps,
-                         size,
-                         true);
+            cv::Size size(image_msg->width, image_msg->height);
 
-        if (!outputVideo.isOpened())
-        {
-            ROS_ERROR("Could not create the output video! Check filename and/or support for codec.");
-            exit(-1);
+            outputVideo.open(current_filename,
+    #if CV_MAJOR_VERSION == 3
+                             cv::VideoWriter::fourcc(codec.c_str()[0],
+    #else
+                                     CV_FOURCC(codec.c_str()[0],
+    #endif
+                                                     codec.c_str()[1],
+                                                     codec.c_str()[2],
+                                                     codec.c_str()[3]),
+                             fps,
+                             size,
+                             true);
+
+            if (!outputVideo.isOpened())
+            {
+                ROS_ERROR("Could not create the output video! Check filename and/or support for codec.");
+                exit(-1);
+            }
+
+            g_last_wrote_time = ros::Time(0);
+            g_count = 0;
+            first_frame = true;
+
+            ROS_INFO_STREAM("Starting to record " << codec << " video at " << size << "@" << fps << "fps. Press Ctrl+C to stop recording." );
+
         }
 
-        g_last_wrote_time = ros::Time(0);
-        g_count = 0;
-        first_frame = true;
-
-        ROS_INFO_STREAM("Starting to record " << codec << " video at " << size << "@" << fps << "fps. Press Ctrl+C to stop recording." );
-
-    }
-
-    if (!first_frame)
-    {
-        // Check for slice time achievement
-        if ((image_msg->header.stamp - first_frame_time) > slice_duration)
+        if (!first_frame)
         {
-            outputVideo.release();
+            // Check for slice time achievement
+            if ((image_msg->header.stamp - first_frame_time) > slice_duration)
+            {
+                outputVideo.release();
+                continue;
+            }
+        }
+        else
+        {
+            first_frame_time = image_msg->header.stamp;
+            first_frame = false;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds((int)((1.0 / fps) * 1000)));
+        /**
+        if ((image_msg->header.stamp - g_last_wrote_time) < ros::Duration(1 / fps))
+        {
+            continue;
+        }
+         */
+
+        try
+        {
+            cv_bridge::CvtColorForDisplayOptions options;
+            options.do_dynamic_scaling = use_dynamic_range;
+            options.min_image_value = min_depth_range;
+            options.max_image_value = max_depth_range;
+            options.colormap = colormap;
+            const cv::Mat image = cv_bridge::cvtColorForDisplay(cv_bridge::toCvShare(image_msg), encoding, options)->image;
+            if (!image.empty()) {
+                outputVideo << image;
+                //ROS_INFO_STREAM("Recording frame " << g_count << "\x1b[1F");
+                g_count++;
+                g_last_wrote_time = image_msg->header.stamp;
+            } else {
+                ROS_WARN("Frame skipped, no data!");
+            }
+        } catch(cv_bridge::Exception)
+        {
+            ROS_ERROR("Unable to convert %s image to %s", image_msg->encoding.c_str(), encoding.c_str());
             return;
         }
     }
-    else
-    {
-        first_frame_time = image_msg->header.stamp;
-        first_frame = false;
-    }
+}
 
-    if ((image_msg->header.stamp - g_last_wrote_time) < ros::Duration(1 / fps))
-    {
-        // Skip to get video with correct fps
-        return;
-    }
-
-    try
-    {
-        cv_bridge::CvtColorForDisplayOptions options;
-        options.do_dynamic_scaling = use_dynamic_range;
-        options.min_image_value = min_depth_range;
-        options.max_image_value = max_depth_range;
-        options.colormap = colormap;
-        const cv::Mat image = cv_bridge::cvtColorForDisplay(cv_bridge::toCvShare(image_msg), encoding, options)->image;
-        if (!image.empty()) {
-            outputVideo << image;
-            //ROS_INFO_STREAM("Recording frame " << g_count << "\x1b[1F");
-            g_count++;
-            g_last_wrote_time = image_msg->header.stamp;
-        } else {
-            ROS_WARN("Frame skipped, no data!");
-        }
-    } catch(cv_bridge::Exception)
-    {
-        ROS_ERROR("Unable to convert %s image to %s", image_msg->encoding.c_str(), encoding.c_str());
-        return;
-    }
+void callback(const sensor_msgs::ImageConstPtr& image_msg)
+{
+    imageQueue.push(image_msg);
 }
 
 int main(int argc, char** argv)
@@ -172,6 +187,8 @@ int main(int argc, char** argv)
     image_transport::ImageTransport it(nh);
     std::string topic = nh.resolveName("image");
     image_transport::Subscriber sub_image = it.subscribe(topic, 1, callback);
+
+    std::thread consumer(std::bind(consume, std::ref(imageQueue)));
 
     ROS_INFO_STREAM("Waiting for topic " << topic << "...");
     ros::spin();
