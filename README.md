@@ -3,7 +3,12 @@
 ## Building and launching
 Install dependencies:
 ```bash
-sudo apt-get install ros-kinetic-uvc-camera
+sudo apt-get install ros-kinetic-rosbridge-server ros-kinetic-web-video-server ros-kinetic-image-view
+```
+Initialize and update git submodules used in project:
+```bash
+git submodule init
+git submodule update
 ```
 Use following commands to build and launch:
 ```bash
