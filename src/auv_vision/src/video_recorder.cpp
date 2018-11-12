@@ -1,25 +1,6 @@
-/****************************************************************************
-* Software License Agreement (Apache License)
-*
-*     Copyright (C) 2012-2013 Open Source Robotics Foundation
-*
-*     Licensed under the Apache License, Version 2.0 (the "License");
-*     you may not use this file except in compliance with the License.
-*     You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-*     Unless required by applicable law or agreed to in writing, software
-*     distributed under the License is distributed on an "AS IS" BASIS,
-*     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*     See the License for the specific language governing permissions and
-*     limitations under the License.
-*
-*****************************************************************************/
-
 /*****************************************************************************
  * A fork of https://github.com/ros-perception/image_pipeline/blob/indigo/image_view/src/nodes/video_recorder.cpp
- * with support of slicing output video on 1 minute videos
+ * with support of slicing output video on 1 minute videos and multithreading.
  ****************************************************************************/
 
 #include <opencv2/highgui/highgui.hpp>
@@ -28,11 +9,10 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 #include <camera_calibration_parsers/parse.h>
-#if CV_MAJOR_VERSION == 3
 #include <opencv2/videoio.hpp>
-#include <util/ConcurrentQueue.h>
 
-#endif
+#include "../include/util/ConcurrentQueue.h"
+
 
 cv::VideoWriter outputVideo;
 
@@ -68,17 +48,11 @@ void consume(ConcurrentQueue<sensor_msgs::ImageConstPtr>& queue)
             cv::Size size(image_msg->width, image_msg->height);
 
             outputVideo.open(current_filename,
-    #if CV_MAJOR_VERSION == 3
-                             cv::VideoWriter::fourcc(codec.c_str()[0],
-    #else
-                                     CV_FOURCC(codec.c_str()[0],
-    #endif
-                                                     codec.c_str()[1],
-                                                     codec.c_str()[2],
-                                                     codec.c_str()[3]),
-                             fps,
-                             size,
-                             true);
+                             cv::VideoWriter::fourcc(
+                                     codec.c_str()[0], codec.c_str()[1], codec.c_str()[2], codec.c_str()[3]),
+                                     fps,
+                                     size,
+                                     true);
 
             if (!outputVideo.isOpened())
             {
@@ -118,8 +92,7 @@ void consume(ConcurrentQueue<sensor_msgs::ImageConstPtr>& queue)
         }
          */
 
-        try
-        {
+        try {
             cv_bridge::CvtColorForDisplayOptions options;
             options.do_dynamic_scaling = use_dynamic_range;
             options.min_image_value = min_depth_range;
@@ -128,14 +101,12 @@ void consume(ConcurrentQueue<sensor_msgs::ImageConstPtr>& queue)
             const cv::Mat image = cv_bridge::cvtColorForDisplay(cv_bridge::toCvShare(image_msg), encoding, options)->image;
             if (!image.empty()) {
                 outputVideo << image;
-                //ROS_INFO_STREAM("Recording frame " << g_count << "\x1b[1F");
                 g_count++;
                 g_last_wrote_time = image_msg->header.stamp;
             } else {
                 ROS_WARN("Frame skipped, no data!");
             }
-        } catch(cv_bridge::Exception)
-        {
+        } catch(cv_bridge::Exception) {
             ROS_ERROR("Unable to convert %s image to %s", image_msg->encoding.c_str(), encoding.c_str());
             return;
         }
