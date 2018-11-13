@@ -24,9 +24,6 @@ class AbstractImageConverter
 
 protected:
 
-    /* Defines which topic used to retrieve image */
-    const std::string inputImageTopic = "image_raw";
-
     ros::NodeHandle nodeHandle;
     image_transport::ImageTransport imageTransport;
     image_transport::Subscriber imageSubscriber;
@@ -38,7 +35,7 @@ protected:
 
 public:
 
-    AbstractImageConverter();
+    AbstractImageConverter(const std::string& inputImageTopic);
     ~AbstractImageConverter() = default;
 
 };

@@ -7,6 +7,8 @@
 
 static const std::string OPENCV_WINDOW = "Image window";
 
+static const std::string CAMERA_TOPIC = "/cam_front_1/image_raw";
+
 class SampleImageConverter : public AbstractImageConverter
 {
 
@@ -47,7 +49,7 @@ protected:
 
 public:
 
-    SampleImageConverter()
+    SampleImageConverter(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
     {
       gatePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>("/gate", 100);
 
@@ -72,7 +74,7 @@ int main(int argc, char **argv)
 #endif
 
   ros::init(argc, argv, "gate_locator");
-  SampleImageConverter ic;
+  SampleImageConverter ic(CAMERA_TOPIC);
 
   ros::spin();
 

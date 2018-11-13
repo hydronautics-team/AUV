@@ -1,6 +1,6 @@
 #include "AbstractImageConverter.h"
 
-AbstractImageConverter::AbstractImageConverter()
+AbstractImageConverter::AbstractImageConverter(const std::string& inputImageTopic)
     : imageTransport(nodeHandle)
 {
     imageSubscriber = imageTransport.subscribe(inputImageTopic, 1, &AbstractImageConverter::imageCb, this);
