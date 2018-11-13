@@ -3,6 +3,7 @@
 #include <sstream>
 #include <gate/GateDescriptor.h>
 #include <gate/GateDetector.h>
+#include <util/ImgprocUtil.h>
 #include "../include/AbstractImageConverter.h"
 
 static const std::string OPENCV_WINDOW = "Image window";
@@ -27,7 +28,7 @@ protected:
       GateDescriptor gate = detector.detect(image, true);
 
       if (gate.hasGate()) {
-          cv::Point2f center = gate.getCenter();
+          cv::Point2f center = convertToCentralCoordinates(gate.getCenter(), image.cols, image.rows);
           geometry_msgs::Pose2D msg;
           msg.x = center.x;
           msg.y = center.y;

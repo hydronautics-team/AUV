@@ -77,7 +77,9 @@ add_executable(gate_locator
         include/gate/GateDetector.h
         include/util/ImgprocPipeline.h
         src/util/ImgprocPipeline.cpp
-        src/gate/GateDetector.cpp)
+        src/gate/GateDetector.cpp
+        include/util/ImgprocUtil.h
+        src/util/ImgprocUtil.cpp)
 target_link_libraries(gate_locator ${catkin_LIBRARIES})
 target_link_libraries(gate_locator ${OpenCV_LIBS})
 
