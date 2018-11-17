@@ -3,7 +3,7 @@
 ## Building and launching
 Install dependencies:
 ```bash
-sudo apt-get install ros-kinetic-rosbridge-server ros-kinetic-web-video-server ros-kinetic-image-view
+sudo apt-get install ros-kinetic-rosbridge-server ros-kinetic-web-video-server ros-kinetic-image-view ros-kinetic-actionlib ros-kinetic-smach
 ```
 Initialize and update git submodules used in project:
 ```bash
