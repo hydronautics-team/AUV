@@ -4,13 +4,17 @@
 #include <gate/GateDescriptor.h>
 #include <gate/GateDetector.h>
 #include <util/ImgprocUtil.h>
-#include "../include/AbstractImageConverter.h"
+#include "common/AbstractImageConverter.h"
 
 static const std::string OPENCV_WINDOW = "Image window";
 
 static const std::string CAMERA_TOPIC = "/cam_front_1/image_raw";
 
-class SampleImageConverter : public AbstractImageConverter
+static const std::string GATE_PUBLISH_TOPIC = "/gate";
+
+static const std::string GATE_LOCATOR_NODE_NAME = "gate_locator";
+
+class GatePublisher : public AbstractImageConverter
 {
 
 private:
@@ -40,7 +44,7 @@ protected:
           cv::circle(image, corners[1], 10, CV_RGB(0,255,0));
           cv::circle(image, corners[2], 10, CV_RGB(0,255,0));
           cv::circle(image, corners[3], 10, CV_RGB(0,255,0));
-          cv::circle(image, center, 10, CV_RGB(0,0,255));
+          cv::circle(image, gate.getCenter(), 10, CV_RGB(0,0,255));
       }
 
       cv::imshow(OPENCV_WINDOW, image);
@@ -50,17 +54,18 @@ protected:
 
 public:
 
-    SampleImageConverter(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
+    GatePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
     {
-      gatePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>("/gate", 100);
+      gatePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>(GATE_PUBLISH_TOPIC, 100);
 
       cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
     }
 
-    ~SampleImageConverter()
+    ~GatePublisher()
     {
       cv::destroyWindow(OPENCV_WINDOW);
     }
+
 };
 
 
@@ -74,8 +79,8 @@ int main(int argc, char **argv)
     ROS_INFO("%s", "OpenCV version = 3");
 #endif
 
-  ros::init(argc, argv, "gate_locator");
-  SampleImageConverter ic(CAMERA_TOPIC);
+  ros::init(argc, argv, GATE_LOCATOR_NODE_NAME);
+  GatePublisher gatePublisher(CAMERA_TOPIC);
 
   ros::spin();
 

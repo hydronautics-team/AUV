@@ -1,4 +1,4 @@
-#include "AbstractImageConverter.h"
+#include "common/AbstractImageConverter.h"
 
 AbstractImageConverter::AbstractImageConverter(const std::string& inputImageTopic)
     : imageTransport(nodeHandle)

@@ -70,8 +70,8 @@ include_directories(
 
 add_executable(gate_locator
         src/gate_locator.cpp
-        include/AbstractImageConverter.h
-        src/AbstractImageConverter.cpp
+        include/common/AbstractImageConverter.h
+        src/common/AbstractImageConverter.cpp
         include/gate/GateDescriptor.h
         src/gate/GateDescriptor.cpp
         include/gate/GateDetector.h
@@ -85,8 +85,8 @@ target_link_libraries(gate_locator ${OpenCV_LIBS})
 
 add_executable(locators_handler
         src/locators_handler.cpp
-        include/AbstractImageConverter.h
-        src/AbstractImageConverter.cpp
+        include/common/AbstractImageConverter.h
+        src/common/AbstractImageConverter.cpp
         include/gate/GateDescriptor.h
         src/gate/GateDescriptor.cpp
         include/gate/GateDetector.h
