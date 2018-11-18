@@ -68,3 +68,6 @@ CATKIN_IGNORE
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+
+# Visual Studio Code
+/.vscode
