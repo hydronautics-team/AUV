@@ -83,19 +83,6 @@ add_executable(gate_locator
 target_link_libraries(gate_locator ${catkin_LIBRARIES})
 target_link_libraries(gate_locator ${OpenCV_LIBS})
 
-add_executable(locators_handler
-        src/locators_handler.cpp
-        include/common/AbstractImageConverter.h
-        src/common/AbstractImageConverter.cpp
-        include/gate/GateDescriptor.h
-        src/gate/GateDescriptor.cpp
-        include/gate/GateDetector.h
-        include/util/ImgprocPipeline.h
-        src/util/ImgprocPipeline.cpp
-        src/gate/GateDetector.cpp)
-target_link_libraries(locators_handler ${catkin_LIBRARIES})
-target_link_libraries(locators_handler ${OpenCV_LIBS})
-
 add_executable(video_recorder
         src/video_recorder.cpp
         include/util/ConcurrentQueue.h
