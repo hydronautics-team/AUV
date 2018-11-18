@@ -69,5 +69,8 @@ CATKIN_IGNORE
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+/**/.idea/**
+/**/cmake-build-debug/**
+
 # Visual Studio Code
 /.vscode
