@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+
+  <name>auv_common</name>
+  <version>0.0.1</version>
+  <description>The auv_common package that contains messages, services and actions</description>
+
+  <maintainer email="rentgeny@mail.ru">Timur Akhtyamov</maintainer>
+
+  <license>MIT</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+
+  <build_depend>message_generation</build_depend>
+
+  <build_export_depend>message_runtime</build_export_depend>
+
+  <exec_depend>message_runtime</exec_depend>
+
+  <export>
+
+  </export>
+
+</package>

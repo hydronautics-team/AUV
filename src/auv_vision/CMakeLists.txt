@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   image_transport
+  auv_common
 )
 
 ## Find OpenCV
@@ -50,7 +51,7 @@ find_package(OpenCV)
 ###################################
 
 catkin_package(
-#  CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS roscpp rospy std_msgs auv_common
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_vision
 #  CATKIN_DEPENDS roscpp rospy std_msgs
@@ -80,8 +81,9 @@ add_executable(gate_locator
         src/gate/GateDetector.cpp
         include/util/ImgprocUtil.h
         src/util/ImgprocUtil.cpp)
-target_link_libraries(gate_locator ${catkin_LIBRARIES})
-target_link_libraries(gate_locator ${OpenCV_LIBS})
+target_link_libraries(gate_locator ${catkin_LIBRARIES}
+        ${OpenCV_LIBS})
+add_dependencies(gate_locator auv_common_generate_messages_cpp)
 
 add_executable(video_recorder
         src/video_recorder.cpp
