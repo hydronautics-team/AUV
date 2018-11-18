@@ -2,7 +2,12 @@
 
     <!-- Root path for all output videos and images. MUST NOT END WITH SLASH!!!!!! -->
     <arg name="storage" />
+
+    <!-- Enables window displays for cameras -->
     <arg name="view" default="false" />
+
+    <!-- Enables web streaming -->
+    <arg name="stream" default="true" />
 
     <!-- First front camera -->
     <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
@@ -40,12 +45,6 @@
         <param name="io_method" value="mmap"/>
     </node>
 
-    <!-- Video web server -->
-    <node name="video_server" pkg="web_video_server" type="web_video_server" output="screen" >
-        <param name="server_threads" value="4" />
-        <param name="ros_threads" value="10" />
-    </node>
-
     <!-- First front camera recorder -->
     <!-- FPS in recorders are mostly empiric values! -->
     <node name="front_recorder_1" pkg="auv_vision" type="video_recorder" output="screen">
@@ -70,6 +69,14 @@
         <param name="codec" value="H264" />
         <param name="filename" value="$(arg storage)/bottom.avi" />
     </node>
+
+    <group if="$(arg stream)">
+        <!-- Video web server -->
+        <node name="video_server" pkg="web_video_server" type="web_video_server" output="screen" >
+            <param name="server_threads" value="4" />
+            <param name="ros_threads" value="10" />
+        </node>
+    </group>
 
     <group if="$(arg view)">
         <!-- First front camera view -->
