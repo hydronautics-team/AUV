@@ -1,98 +1,60 @@
 #include "ros/ros.h"
-#include "std_msgs/String.h"
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
+#include "geometry_msgs/Point.h"
+#include "std_msgs/Float32.h"
 #include <sstream>
+#include <util/ImgprocUtil.h>
+#include <common/AbstractImageConverter.h>
+#include "auv_common/OptionalPoint2D.h"
 
-static const std::string OPENCV_WINDOW = "Image window";
 
-class ImageConverter
+static const std::string CAMERA_TOPIC = "/cam_front_1/image_raw";
+
+static const std::string FLARE_PUBLISH_TOPIC = "/flare";
+
+static const std::string FLARE_LOCATOR_NODE_NAME = "flare_locator";
+
+class FlarePublisher : public AbstractImageConverter
 {
-  ros::NodeHandle nh_;
-  image_transport::ImageTransport it_;
-  image_transport::Subscriber image_sub_;
-  image_transport::Publisher image_pub_;
+
+private:
+
+    ros::Publisher publisher;
+
+protected:
+
+    // Stub logic
+    void process(const cv_bridge::CvImagePtr& cv_ptr)
+    {
+        auv_common::OptionalPoint2D msg;
+        // Stub values
+        msg.hasPoint = true;
+        msg.x = 10.0f;
+        msg.y = 15.0f;
+        publisher.publish(msg);
+    }
 
 public:
-  ImageConverter()
-    : it_(nh_)
-  {
-    // Subscrive to input video feed and publish output video feed
-    image_sub_ = it_.subscribe("image_raw", 1,
-      &ImageConverter::imageCb, this);
-    image_pub_ = it_.advertise("/image_converter/output_video", 1);
 
-    cv::namedWindow(OPENCV_WINDOW);
-  }
-
-  ~ImageConverter()
-  {
-    cv::destroyWindow(OPENCV_WINDOW);
-  }
-
-  void imageCb(const sensor_msgs::ImageConstPtr& msg)
-  {
-    cv_bridge::CvImagePtr cv_ptr;
-    try
+    FlarePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
     {
-      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    }
-    catch (cv_bridge::Exception& e)
-    {
-      ROS_ERROR("cv_bridge exception: %s", e.what());
-      return;
+      publisher = nodeHandle.advertise<auv_common::OptionalPoint2D>(FLARE_PUBLISH_TOPIC, 100);
     }
 
-    // Draw an example circle on the video stream
-    if (cv_ptr->image.rows > 60 && cv_ptr->image.cols > 60)
-      cv::circle(cv_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
+    ~FlarePublisher()
+    {
+    }
 
-    // Update GUI Window
-    cv::imshow(OPENCV_WINDOW, cv_ptr->image);
-    cv::waitKey(3);
-
-    // Output modified video stream
-    image_pub_.publish(cv_ptr->toImageMsg());
-  }
 };
 
+
+/* TODO Fix code style */
 int main(int argc, char **argv)
 {
 
-  ros::init(argc, argv, "gate_locator");
-  ImageConverter ic;
+  ros::init(argc, argv, FLARE_LOCATOR_NODE_NAME);
+  FlarePublisher gatePublisher(CAMERA_TOPIC);
+
   ros::spin();
-
-  /*ros::NodeHandle n;
-
-  ros::Publisher chatter_pub = n.advertise<std_msgs::String>("gate_location", 1000);
-
-  ros::Rate loop_rate(10);
-
-  int count = 0;
-  while (ros::ok())
-  {
-
-    std_msgs::String msg;
-
-    std::stringstream ss;
-    ss << "hello world " << count;
-    msg.data = ss.str();
-
-    ROS_INFO("%s", msg.data.c_str());
-
-    chatter_pub.publish(msg);
-
-    ros::spinOnce();
-
-    loop_rate.sleep();
-    ++count;
-  }*/
-
 
   return 0;
 }

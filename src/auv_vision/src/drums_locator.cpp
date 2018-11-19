@@ -2,8 +2,6 @@
 #include "geometry_msgs/Point.h"
 #include "std_msgs/Float32.h"
 #include <sstream>
-#include <gate/GateDescriptor.h>
-#include <gate/GateDetector.h>
 #include <util/ImgprocUtil.h>
 #include <common/AbstractImageConverter.h>
 #include "auv_common/LabeledPoint2D.h"

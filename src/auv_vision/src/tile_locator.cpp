@@ -2,8 +2,6 @@
 #include "geometry_msgs/Point.h"
 #include "std_msgs/Float32.h"
 #include <sstream>
-#include <gate/GateDescriptor.h>
-#include <gate/GateDetector.h>
 #include <util/ImgprocUtil.h>
 #include <common/AbstractImageConverter.h>
 
@@ -17,7 +15,7 @@ static const std::string TILE_POSITION_PUBLISH_TOPIC = "/tile/position";
 
 static const std::string TILE_LOCATOR_NODE_NAME = "tile_locator";
 
-class TilePublisher : public AbstractImageConverter
+class FlarePublisher : public AbstractImageConverter
 {
 
 private:
@@ -56,13 +54,13 @@ protected:
 
 public:
 
-    TilePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
+    FlarePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
     {
         anglePublisher = nodeHandle.advertise<std_msgs::Float32>(TILE_ANGLE_PUBLISH_TOPIC, 100);
         positionPublisher = nodeHandle.advertise<geometry_msgs::Point>(TILE_POSITION_PUBLISH_TOPIC, 100);
     }
 
-    ~TilePublisher()
+    ~FlarePublisher()
     {
     }
 
@@ -74,7 +72,7 @@ int main(int argc, char **argv)
 {
 
     ros::init(argc, argv, TILE_LOCATOR_NODE_NAME);
-    TilePublisher gatePublisher(CAMERA_TOPIC);
+    FlarePublisher gatePublisher(CAMERA_TOPIC);
 
     ros::spin();
 
