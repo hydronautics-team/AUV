@@ -4,6 +4,7 @@
 #include <sstream>
 #include <util/ImgprocUtil.h>
 #include <common/AbstractImageConverter.h>
+#include "std_msgs/Empty.h"
 
 
 // JUST FOR DEBUG! REAL TOPIC IS /cam_bottom/image_raw
@@ -13,15 +14,19 @@ static const std::string TILE_ANGLE_PUBLISH_TOPIC = "/tile/angle";
 
 static const std::string TILE_POSITION_PUBLISH_TOPIC = "/tile/position";
 
+static const std::string TILE_POSITION_RESET_TOPIC = "/tile/position/reset";
+
 static const std::string TILE_LOCATOR_NODE_NAME = "tile_locator";
 
-class FlarePublisher : public AbstractImageConverter
+class TilePublisher : public AbstractImageConverter
 {
 
 private:
 
     ros::Publisher anglePublisher;
     ros::Publisher positionPublisher;
+
+    ros::Subscriber resetSubscriber;
 
     // Stub values
     float angle = -90.0f;
@@ -52,15 +57,22 @@ protected:
         positionPublisher.publish(positionMsg);
     }
 
+    void reset(const std_msgs::EmptyPtr& empty_ptr)
+    {
+        positionX = 0;
+        positionY = 0;
+    }
+
 public:
 
-    FlarePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
+    TilePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
     {
         anglePublisher = nodeHandle.advertise<std_msgs::Float32>(TILE_ANGLE_PUBLISH_TOPIC, 100);
         positionPublisher = nodeHandle.advertise<geometry_msgs::Point>(TILE_POSITION_PUBLISH_TOPIC, 100);
+        resetSubscriber = nodeHandle.subscribe(TILE_POSITION_RESET_TOPIC, 1, &TilePublisher::reset, this);
     }
 
-    ~FlarePublisher()
+    ~TilePublisher()
     {
     }
 
@@ -72,7 +84,7 @@ int main(int argc, char **argv)
 {
 
     ros::init(argc, argv, TILE_LOCATOR_NODE_NAME);
-    FlarePublisher gatePublisher(CAMERA_TOPIC);
+    TilePublisher tilePublisher(CAMERA_TOPIC);
 
     ros::spin();
 

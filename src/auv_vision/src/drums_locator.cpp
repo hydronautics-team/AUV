@@ -91,7 +91,7 @@ public:
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, DRUMS_LOCATOR_NODE_NAME);
-    DrumPublisher gatePublisher(CAMERA_BOTTOM_TOPIC);
+    DrumPublisher drumPublisher(CAMERA_BOTTOM_TOPIC);
     MatPublisher matPublisher(CAMERA_FRONT_TOPIC);
 
     ros::spin();

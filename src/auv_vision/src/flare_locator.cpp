@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 {
 
   ros::init(argc, argv, FLARE_LOCATOR_NODE_NAME);
-  FlarePublisher gatePublisher(CAMERA_TOPIC);
+  FlarePublisher flarePublisher(CAMERA_TOPIC);
 
   ros::spin();
 
