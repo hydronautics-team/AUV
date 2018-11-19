@@ -51,6 +51,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
    FILES
    OptionalPoint2D.msg
+   LabeledPoint2D.msg
 )
 
 ## Generate services in the 'srv' folder

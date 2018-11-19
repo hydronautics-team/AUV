@@ -97,6 +97,20 @@ target_link_libraries(tile_locator
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES})
 
+add_executable(drums_locator
+        src/drums_locator.cpp
+        include/common/AbstractImageConverter.h
+        src/common/AbstractImageConverter.cpp
+        include/util/ImgprocPipeline.h
+        src/util/ImgprocPipeline.cpp
+        include/util/ImgprocUtil.h
+        src/util/ImgprocUtil.cpp)
+target_link_libraries(drums_locator
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBRARIES})
+add_dependencies(drums_locator auv_common_generate_messages_cpp)
+
+
 add_executable(video_recorder
         src/video_recorder.cpp
         include/util/ConcurrentQueue.h)
