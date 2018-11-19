@@ -1,0 +1,9 @@
+# Goal
+uint32 direction
+uint32 time # time in seconds, 0 means infinite moving mode
+---
+# Result
+uint32 totalTime # total time of movement
+---
+# Feedback
+uint32 currentTime # current movement time

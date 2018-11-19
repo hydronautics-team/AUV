@@ -1,0 +1,9 @@
+# Goal
+uint32 direction
+uint32 tiles # Number of tiles to move
+---
+# Result
+uint32 totalTiles # Number of passed tiles
+---
+# Feedback
+uint32 currentTiles # Number of currently passed tiles
