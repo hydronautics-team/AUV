@@ -5,7 +5,7 @@
 #include <gate/GateDetector.h>
 #include <util/ImgprocUtil.h>
 #include "common/AbstractImageConverter.h"
-#include "auv_common/GateMessage.h"
+#include "auv_common/OptionalPoint2D.h"
 
 static const std::string OPENCV_WINDOW = "Image window";
 
@@ -32,12 +32,12 @@ protected:
 
       GateDescriptor gate = detector.detect(image, true);
 
-      auv_common::GateMessage msg;
+      auv_common::OptionalPoint2D msg;
 
       if (gate.hasGate()) {
           cv::Point2f center = convertToCentralCoordinates(gate.getCenter(), image.cols, image.rows);
 
-          msg.hasGate = true;
+          msg.hasPoint = true;
           msg.x = center.x;
           msg.y = center.y;
           gatePublisher.publish(msg);
@@ -49,7 +49,7 @@ protected:
           cv::circle(image, corners[3], 10, CV_RGB(0,255,0));
           cv::circle(image, gate.getCenter(), 10, CV_RGB(0,0,255));
       } else {
-          msg.hasGate = false;
+          msg.hasPoint = false;
           msg.x = 0;
           msg.y = 0;
           gatePublisher.publish(msg);
@@ -65,7 +65,7 @@ public:
 
     GatePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
     {
-      gatePublisher = nodeHandle.advertise<auv_common::GateMessage>(GATE_PUBLISH_TOPIC, 100);
+      gatePublisher = nodeHandle.advertise<auv_common::OptionalPoint2D>(GATE_PUBLISH_TOPIC, 100);
 
       cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
     }
