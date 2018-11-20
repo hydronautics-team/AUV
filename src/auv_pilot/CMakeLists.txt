@@ -11,9 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   sensor_msgs
-  auv_common
-  actionlib_msgs 
   actionlib
+  actionlib_msgs 
+  auv_common
 )
 
 ## System dependencies are found with CMake's conventions
@@ -104,7 +104,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_pilot
-  CATKIN_DEPENDS rospy std_msgs auv_common actionlib_msgs
+  CATKIN_DEPENDS rospy std_msgs actionlib_msgs auv_common
 #  DEPENDS system_lib
 )
 
