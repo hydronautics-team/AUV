@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 
 
@@ -8,5 +9,14 @@
   <node pkg="auv_connection" name="message_handler" type="message_handler"/>
 
   <node pkg="auv_connection" name="i2c_server" type="i2c_server"/>
+
+
+  <!--
+  <node pkg="uvc_camera" name="front_camera" type="uvc_camera_node"/>
+  <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
+		<remap from="in" to="image_raw"/>
+  </node>
+  -->
+
 
 </launch>

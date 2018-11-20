@@ -74,9 +74,9 @@ int main(int argc, char **argv)
 {
 
 #if CV_MAJOR_VERSION == 2
-    ROS_INFO("%s", "OpenCV version = 20");
+    ROS_INFO("%s", "OpenCV version = 2");
 #elif CV_MAJOR_VERSION == 3
-    ROS_INFO("%s", "OpenCV version = 30");
+    ROS_INFO("%s", "OpenCV version = 3");
 #endif
 
   ros::init(argc, argv, "gate_locator");
