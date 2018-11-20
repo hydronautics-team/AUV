@@ -8,6 +8,8 @@
 
     <node pkg="auv_vision" name="flare_locator" type="flare_locator" output="screen" />
 
+    <node pkg="auv_pilot" name="simple_simulation_fsm" type="simple_simulation_fsm.py" output="screen" />
+
     <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
         <param name="video_device" value="/dev/video0" />
         <param name="image_width" value="640" />

@@ -18,6 +18,9 @@
   <depend>actionlib</depend>
   <depend>actionlib_msgs</depend>
 
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
   <export>
 
   </export>
