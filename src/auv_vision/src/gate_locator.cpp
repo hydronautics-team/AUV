@@ -4,6 +4,9 @@
 #include <gate/GateDescriptor.h>
 #include <gate/GateDetector.h>
 #include "../include/AbstractImageConverter.h"
+#include "std_msgs/String.h"
+#include <opencv2/highgui/highgui.hpp>
+#include <sensor_msgs/image_encodings.h>
 
 static const std::string OPENCV_WINDOW = "Image window";
 
@@ -17,6 +20,8 @@ private:
     GateDetector detector;
 
 protected:
+
+
 
     void process(const cv_bridge::CvImagePtr& cv_ptr)
     {
@@ -47,8 +52,11 @@ protected:
 
 public:
 
+    //SampleImageConverter() : AbstractImageConverter() {}
+
     SampleImageConverter()
     {
+
       gatePublisher = nodeHandle.advertise<geometry_msgs::Pose2D>("/gate", 100);
 
       cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
@@ -66,9 +74,9 @@ int main(int argc, char **argv)
 {
 
 #if CV_MAJOR_VERSION == 2
-    ROS_INFO("%s", "OpenCV version = 2");
+    ROS_INFO("%s", "OpenCV version = 20");
 #elif CV_MAJOR_VERSION == 3
-    ROS_INFO("%s", "OpenCV version = 3");
+    ROS_INFO("%s", "OpenCV version = 30");
 #endif
 
   ros::init(argc, argv, "gate_locator");

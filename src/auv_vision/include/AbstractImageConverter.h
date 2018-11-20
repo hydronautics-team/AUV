@@ -7,6 +7,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/opencv.hpp>
+#include "std_msgs/String.h"
+#include <opencv2/highgui/highgui.hpp>
+
 
 
 /**
@@ -25,7 +28,8 @@ class AbstractImageConverter
 protected:
 
     /* Defines which topic used to retrieve image */
-    const std::string inputImageTopic = "image_raw";
+    //const std::string inputImageTopic = "image_raw";
+    const std::string inputImageTopic = "/ROV_model_URDF/camera1/image_raw";
 
     ros::NodeHandle nodeHandle;
     image_transport::ImageTransport imageTransport;

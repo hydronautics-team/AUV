@@ -93,3 +93,8 @@ add_executable(locators_handler
         src/gate/GateDetector.cpp)
 target_link_libraries(locators_handler ${catkin_LIBRARIES})
 target_link_libraries(locators_handler ${OpenCV_LIBS})
+
+add_executable(drums_locator
+        src/drums_locator.cpp)
+target_link_libraries(drums_locator ${catkin_LIBRARIES})
+target_link_libraries(drums_locator ${OpenCV_LIBS})
