@@ -6,7 +6,7 @@ import smach_ros
 import actionlib
 import actionlib_msgs
 from auv_common.msg import OptionalPoint2D
-from auv_common.msg import MoveByTimeActionGoal, MoveByTimeAction
+from auv_common.msg import MoveByTimeGoal, MoveByTimeAction
 
 def exploreGate(userData, gateMessage):
     return not gateMessage.hasPoint
@@ -21,19 +21,12 @@ def main():
 
     with sm:
 
-        smach.StateMachine.add('EXPLORE', 
-                                smach_ros.MonitorState(
-                                    '/gate',
-                                    OptionalPoint2D,
-                                    exploreGate),
-                                {'valid':'EXPLORE', 'invalid':'SIDE_MOVE', 'preempted':'ABORTED'})
-
-        sideMoveGoal = MoveByTimeActionGoal()
-        sideMoveGoal.goal.direction = 2
-        sideMoveGoal.goal.time = 0
+        sideMoveGoal = MoveByTimeGoal()
+        sideMoveGoal.direction = 4
+        sideMoveGoal.time = 0
         smach.StateMachine.add('SIDE_MOVE',
                                 smach_ros.SimpleActionState(
-                                    'auv_pilot',
+                                    'move_by_time_server',
                                     MoveByTimeAction,
                                     goal=sideMoveGoal),
                                 {'succeeded':'GATE_MONITOR', 'preempted':'ABORTED', 'aborted':'ABORTED'})
@@ -45,12 +38,12 @@ def main():
                                     centerGate),
                                 {'valid':'GATE_MONITOR', 'invalid':'FORWARD_MOVE', 'preempted':'ABORTED'})
 
-        forwardMoveGoal = MoveByTimeActionGoal()
-        forwardMoveGoal.goal.direction = 1
-        forwardMoveGoal.goal.direction = 0
+        forwardMoveGoal = MoveByTimeGoal()
+        forwardMoveGoal.direction = 1
+        forwardMoveGoal.time = 5
         smach.StateMachine.add('FORWARD_MOVE',
                                 smach_ros.SimpleActionState(
-                                    'auv_pilot',
+                                    'move_by_time_server',
                                     MoveByTimeAction,
                                     goal=forwardMoveGoal),
                                 {'succeeded':'SUCCESS', 'preempted':'ABORTED', 'aborted':'ABORTED'})

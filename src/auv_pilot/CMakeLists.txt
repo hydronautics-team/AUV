@@ -8,11 +8,13 @@ project(auv_pilot)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
   rospy
   std_msgs
+  geometry_msgs
   sensor_msgs
   actionlib
-  actionlib_msgs 
+  actionlib_msgs
   auv_common
 )
 
@@ -65,12 +67,13 @@ catkin_python_setup()
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-   DEPENDENCIES
-   std_msgs
-   actionlib_msgs
-   auv_common
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+#   geometry_msgs
+#   actionlib_msgs
+#   auv_common
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -104,7 +107,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_pilot
-  CATKIN_DEPENDS rospy std_msgs actionlib_msgs auv_common
+  CATKIN_DEPENDS roscpp rospy actionlib std_msgs geometry_msgs actionlib_msgs auv_common
 #  DEPENDS system_lib
 )
 
@@ -134,6 +137,10 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/auv_pilot_node.cpp)
 
+add_executable(move_by_time_server src/MoveByTimeServer.cpp)
+target_link_libraries(move_by_time_server ${catkin_LIBRARIES})
+add_dependencies(move_by_time_server ${auv_common_EXPORTED_TARGETS})
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -159,7 +166,7 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
-   src/fsm/simple_simulation_pilot
+   scripts/simple_simulation_fsm.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
