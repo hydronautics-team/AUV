@@ -152,13 +152,13 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(message_handler src/message_handler.cpp)
-target_link_libraries(message_handler ${catkin_LIBRARIES})
-add_dependencies(message_handler auv_connection_generate_messages_cpp)
+add_executable(hardware_bridge src/message_handler.cpp)
+target_link_libraries(hardware_bridge ${catkin_LIBRARIES})
+# add_dependencies(hardware_bridge auv_connection_generate_messages_cpp)
 
-add_executable(i2c_server src/i2c_server.cpp)
-target_link_libraries(i2c_server ${catkin_LIBRARIES})
-add_dependencies(i2c_server auv_connection_generate_messages_cpp)
+add_executable(i2c_bridge src/i2c_server.cpp)
+target_link_libraries(i2c_bridge ${catkin_LIBRARIES})
+# add_dependencies(i2c_bridge auv_connection_generate_messages_cpp)
 
 #############
 ## Install ##

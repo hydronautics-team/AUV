@@ -6,6 +6,6 @@
 
     <node pkg="auv_pilot" name="simple_simulation_fsm" type="simple_simulation_fsm.py" output="screen" />
 
-    <node pkg="auv_pilot" name="move_by_time_server" type="move_by_time_server" output="screen" />
+    <node pkg="auv_pilot" name="simple_simulation_pilot" type="simple_simulation_pilot" output="screen" />
 
 </launch>
