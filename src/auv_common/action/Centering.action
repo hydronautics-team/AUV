@@ -1,0 +1,8 @@
+# Goal
+string targetSource # Topic or service name for retrieving centering value
+---
+# Result
+int64 resultError # Resulting error between image center and target point
+---
+# Feedback
+int64 currentError # Current error between image center and target point

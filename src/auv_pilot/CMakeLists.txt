@@ -120,6 +120,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  "include"
 )
 
 ## Declare a C++ library
@@ -137,9 +138,23 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/auv_pilot_node.cpp)
 
-add_executable(move_by_time_server src/MoveByTimeServer.cpp)
-target_link_libraries(move_by_time_server ${catkin_LIBRARIES})
-add_dependencies(move_by_time_server ${auv_common_EXPORTED_TARGETS})
+add_executable(pilot
+        src/pilot.cpp
+        include/real/MoveByTimeServer.h
+        src/real/MoveByTimeServer.cpp
+        include/real/MoveByTileServer.h
+        src/real/MoveByTileServer.cpp)
+target_link_libraries(pilot ${catkin_LIBRARIES})
+add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
+
+add_executable(simple_simulation_pilot
+        src/simple_simulation_pilot.cpp
+        include/simple_simulation/SimpleMoveByTimeServer.h
+        src/simple_simulation/SimpleMoveByTimeServer.cpp
+        include/simple_simulation/SimpleMoveByTileServer.h
+        src/simple_simulation/SimpleMoveByTileServer.cpp)
+target_link_libraries(simple_simulation_pilot ${catkin_LIBRARIES})
+add_dependencies(simple_simulation_pilot ${auv_common_EXPORTED_TARGETS})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

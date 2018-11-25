@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include <auv_common/MoveByTimeAction.h>
+#include <auv_common/MoveAction.h>
 #include <actionlib/server/simple_action_server.h>
 #include <geometry_msgs/Twist.h>
 #include <string>
@@ -12,7 +12,7 @@ class MoveByTimeActionServer
 protected:
 
     ros::NodeHandle n;
-    actionlib::SimpleActionServer<auv_common::MoveByTimeAction> server;
+    actionlib::SimpleActionServer<auv_common::MoveAction> server;
     std::string actionName;
     ros::Publisher publisher;
 
@@ -29,7 +29,7 @@ public:
     {
     }
 
-    void executeCB(const auv_common::MoveByTimeGoalConstPtr &goal)
+    void executeCB(const auv_common::MoveGoalConstPtr &goal)
     {
         geometry_msgs::Twist startMsg;
         int direction = goal->direction;
@@ -48,7 +48,7 @@ public:
             pollRate.sleep();
         publisher.publish(startMsg);
 
-        int time = goal->time;
+        int time = goal->value;
         if (time != 0) {
             ros::Duration(time).sleep();
             geometry_msgs::Twist endMsg;

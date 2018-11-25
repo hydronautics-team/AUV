@@ -1,0 +1,13 @@
+# Goal
+uint8 DIRECTION_FORWARD=1
+uint8 DIRECTION_BACKWARDS=2
+uint8 DIRECTION_RIGHT=3
+uint8 DIRECTION_LEFT=4
+uint8 direction
+uint32 value # Number of units (time, number of tiles) to till
+---
+# Result
+uint32 totalValue # Number of passed units
+---
+# Feedback
+uint32 currentValue # Number of currently passed units
