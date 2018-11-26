@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(auv_pilot)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -143,7 +143,9 @@ add_executable(pilot
         include/real/MoveByTimeServer.h
         src/real/MoveByTimeServer.cpp
         include/real/MoveByTileServer.h
-        src/real/MoveByTileServer.cpp)
+        src/real/MoveByTileServer.cpp
+        include/common/MoveActionServerBase.h
+        src/common/MoveActionServerBase.cpp)
 target_link_libraries(pilot ${catkin_LIBRARIES})
 add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 
@@ -152,7 +154,9 @@ add_executable(simple_simulation_pilot
         include/simple_simulation/SimpleMoveByTimeServer.h
         src/simple_simulation/SimpleMoveByTimeServer.cpp
         include/simple_simulation/SimpleMoveByTileServer.h
-        src/simple_simulation/SimpleMoveByTileServer.cpp)
+        src/simple_simulation/SimpleMoveByTileServer.cpp
+        include/common/MoveActionServerBase.h
+        src/common/MoveActionServerBase.cpp)
 target_link_libraries(simple_simulation_pilot ${catkin_LIBRARIES})
 add_dependencies(simple_simulation_pilot ${auv_common_EXPORTED_TARGETS})
 
