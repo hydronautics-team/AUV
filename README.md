@@ -1,5 +1,7 @@
 # Autonomus Underwater Vehicle AI Source Code
 
+For full information, see our [Wiki](https://github.com/hidronautics/AUV/wiki).
+
 ## Building and launching
 Install dependencies:
 ```bash
