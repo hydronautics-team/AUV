@@ -26,7 +26,7 @@ def main():
         sideMoveGoal.value = 0
         smach.StateMachine.add('SIDE_MOVE',
                                 smach_ros.SimpleActionState(
-                                    'simple_move_by_time',
+                                    'move_by_time',
                                     MoveAction,
                                     goal=sideMoveGoal),
                                 {'succeeded':'GATE_MONITOR', 'preempted':'ABORTED', 'aborted':'ABORTED'})
@@ -43,7 +43,7 @@ def main():
         forwardMoveGoal.value = 5
         smach.StateMachine.add('FORWARD_MOVE',
                                 smach_ros.SimpleActionState(
-                                    'simple_move_by_time',
+                                    'move_by_time',
                                     MoveAction,
                                     goal=forwardMoveGoal),
                                 {'succeeded':'SUCCESS', 'preempted':'ABORTED', 'aborted':'ABORTED'})

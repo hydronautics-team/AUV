@@ -145,7 +145,9 @@ add_executable(pilot
         include/real/MoveByTileServer.h
         src/real/MoveByTileServer.cpp
         include/common/MoveActionServerBase.h
-        src/common/MoveActionServerBase.cpp)
+        src/common/MoveActionServerBase.cpp
+        include/real/MoveCenteringServer.h
+        src/real/MoveCenteringServer.cpp)
 target_link_libraries(pilot ${catkin_LIBRARIES})
 add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 
@@ -156,7 +158,9 @@ add_executable(simple_simulation_pilot
         include/simple_simulation/SimpleMoveByTileServer.h
         src/simple_simulation/SimpleMoveByTileServer.cpp
         include/common/MoveActionServerBase.h
-        src/common/MoveActionServerBase.cpp)
+        src/common/MoveActionServerBase.cpp
+        include/simple_simulation/SimpleMoveCenteringServer.h
+        src/simple_simulation/SimpleMoveCenteringServer.cpp)
 target_link_libraries(simple_simulation_pilot ${catkin_LIBRARIES})
 add_dependencies(simple_simulation_pilot ${auv_common_EXPORTED_TARGETS})
 
