@@ -1,13 +1,9 @@
 #ifndef AUV_PILOT_SIMPLEMOVEBYTIMESERVER_H
 #define AUV_PILOT_SIMPLEMOVEBYTIMESERVER_H
 
-#include <common/MoveActionServerBase.h>
+#include <simple_simulation/SimpleMoveActionServerBase.h>
 
-class SimpleMoveByTimeServer : MoveActionServerBase {
-
-private:
-
-    ros::Publisher velocityPublisher;
+class SimpleMoveByTimeServer : public SimpleMoveActionServerBase {
 
 protected:
 

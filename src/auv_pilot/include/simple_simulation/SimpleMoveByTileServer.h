@@ -1,13 +1,9 @@
 #ifndef AUV_PILOT_SIMPLEMOVEBYTILESERVER_H
 #define AUV_PILOT_SIMPLEMOVEBYTILESERVER_H
 
-#include <common/MoveActionServerBase.h>
+#include <simple_simulation/SimpleMoveActionServerBase.h>
 
-class SimpleMoveByTileServer : MoveActionServerBase {
-
-private:
-
-    ros::Publisher velocityPublisher;
+class SimpleMoveByTileServer : public SimpleMoveActionServerBase {
 
 protected:
 

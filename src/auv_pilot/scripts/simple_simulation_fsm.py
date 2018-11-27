@@ -14,6 +14,7 @@ def exploreGate(userData, gateMessage):
 def centerGate(userData, gateMessage):
     return not (gateMessage.hasPoint and abs(gateMessage.x) < 5)
 
+
 def main():
     rospy.init_node('simple_simulation_fsm')
 
@@ -21,9 +22,11 @@ def main():
 
     with sm:
 
+        rate = rospy.Rate(1)
+        rate.sleep()
         sideMoveGoal = MoveGoal()
         sideMoveGoal.direction = MoveGoal.DIRECTION_LEFT
-        sideMoveGoal.value = 0
+        sideMoveGoal.value = 5
         smach.StateMachine.add('SIDE_MOVE',
                                 smach_ros.SimpleActionState(
                                     'move_by_time',

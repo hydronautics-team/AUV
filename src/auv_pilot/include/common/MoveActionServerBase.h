@@ -12,8 +12,14 @@ class MoveActionServerBase {
 
 protected:
 
+    static constexpr const float DEFAULT_VELOCITY = 0.5;
+
     ros::NodeHandle nodeHandle;
     actionlib::SimpleActionServer<auv_common::MoveAction> actionServer;
+
+    geometry_msgs::Twist createTwist(float x, float y, float z, float roll, float pitch, float yaw);
+    geometry_msgs::Twist createLinearTwist(float x, float y, float z);
+    geometry_msgs::Twist createDirectionTwist(int direction, float velocity = DEFAULT_VELOCITY);
 
     virtual void executeCallback(const auv_common::MoveGoalConstPtr& goal) = 0;
 

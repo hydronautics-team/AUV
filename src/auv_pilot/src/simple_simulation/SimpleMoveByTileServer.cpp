@@ -2,8 +2,7 @@
 #include <geometry_msgs/Twist.h>
 
 SimpleMoveByTileServer::SimpleMoveByTileServer(const std::string& actionName):
-        MoveActionServerBase(actionName),
-        velocityPublisher(nodeHandle.advertise<geometry_msgs::Twist>("/cmd_vel", 1)) { };
+        SimpleMoveActionServerBase(actionName) { };
 
 void SimpleMoveByTileServer::executeCallback(const auv_common::MoveGoalConstPtr &goal) {
     /** Temporary stub */

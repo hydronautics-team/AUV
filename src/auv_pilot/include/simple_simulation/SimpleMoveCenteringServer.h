@@ -1,9 +1,9 @@
 #ifndef AUV_PILOT_SIMPLEMOVECENTERINGSERVER_H
 #define AUV_PILOT_SIMPLEMOVECENTERINGSERVER_H
 
-#include <common/MoveActionServerBase.h>
+#include <simple_simulation/SimpleMoveActionServerBase.h>
 
-class SimpleMoveCenteringServer : MoveActionServerBase {
+class SimpleMoveCenteringServer : public SimpleMoveActionServerBase {
 
 protected:
 
