@@ -14,8 +14,6 @@ static const std::string TILE_ANGLE_PUBLISH_TOPIC = "/tile/angle";
 
 static const std::string TILE_POSITION_PUBLISH_TOPIC = "/tile/position";
 
-static const std::string TILE_POSITION_RESET_TOPIC = "/tile/position/reset";
-
 static const std::string TILE_LOCATOR_NODE_NAME = "tile_locator";
 
 class TilePublisher : public AbstractImageConverter
@@ -57,19 +55,12 @@ protected:
         positionPublisher.publish(positionMsg);
     }
 
-    void reset(const std_msgs::EmptyPtr& empty_ptr)
-    {
-        positionX = 0;
-        positionY = 0;
-    }
-
 public:
 
     TilePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
     {
         anglePublisher = nodeHandle.advertise<std_msgs::Float32>(TILE_ANGLE_PUBLISH_TOPIC, 100);
         positionPublisher = nodeHandle.advertise<geometry_msgs::Point>(TILE_POSITION_PUBLISH_TOPIC, 100);
-        resetSubscriber = nodeHandle.subscribe(TILE_POSITION_RESET_TOPIC, 1, &TilePublisher::reset, this);
     }
 
     ~TilePublisher()
