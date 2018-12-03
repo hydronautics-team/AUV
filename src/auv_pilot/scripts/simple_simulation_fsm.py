@@ -12,7 +12,7 @@ def exploreGate(userData, gateMessage):
     return not gateMessage.hasPoint
 
 def centerGate(userData, gateMessage):
-    return not (gateMessage.hasPoint and abs(gateMessage.x) < 5)
+    return not (gateMessage.hasPoint and abs(gateMessage.x) < 10)
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
         rate.sleep()
         sideMoveGoal = MoveGoal()
         sideMoveGoal.direction = MoveGoal.DIRECTION_LEFT
-        sideMoveGoal.value = 5
+        sideMoveGoal.value = 0
         smach.StateMachine.add('SIDE_MOVE',
                                 smach_ros.SimpleActionState(
                                     'move_by_time',
@@ -43,7 +43,7 @@ def main():
 
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
-        forwardMoveGoal.value = 5
+        forwardMoveGoal.value = 10
         smach.StateMachine.add('FORWARD_MOVE',
                                 smach_ros.SimpleActionState(
                                     'move_by_time',
