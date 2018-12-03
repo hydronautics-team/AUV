@@ -2,7 +2,7 @@
 
 MoveCenteringServer::MoveCenteringServer(const std::string& actionName) : MoveActionServerBase(actionName) { };
 
-void MoveCenteringServer::executeCallback(const auv_common::MoveGoalConstPtr &goal) {
+void MoveCenteringServer::goalCallback(const auv_common::MoveGoalConstPtr &goal) {
     /** Temporary stub */
     actionServer.setAborted();
 }

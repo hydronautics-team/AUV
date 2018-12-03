@@ -8,18 +8,21 @@ import actionlib_msgs
 from auv_common.msg import OptionalPoint2D
 from auv_common.msg import MoveGoal, MoveAction
 
+# Simple finite state machine for simple Gazebo simulation.
+
 def exploreGate(userData, gateMessage):
     return not gateMessage.hasPoint
 
 def centerGate(userData, gateMessage):
     return not (gateMessage.hasPoint and abs(gateMessage.x) < 10)
 
-
+# Initialization state
 class InitializationState(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['ok'])
         
     def execute(self, userdata):
+        # We have to wait our action servers to initialize
         rate = rospy.Rate(1)
         rate.sleep()
         return 'ok'

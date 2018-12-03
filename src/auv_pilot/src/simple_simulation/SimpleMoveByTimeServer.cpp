@@ -5,7 +5,7 @@
 SimpleMoveByTimeServer::SimpleMoveByTimeServer(const std::string& actionName):
         SimpleMoveActionServerBase(actionName) { };
 
-void SimpleMoveByTimeServer::executeCallback(const auv_common::MoveGoalConstPtr &goal) {
+void SimpleMoveByTimeServer::goalCallback(const auv_common::MoveGoalConstPtr &goal) {
 
     geometry_msgs::Twist startMsg = createDirectionTwist(goal->direction);
     publishToGazebo(startMsg);

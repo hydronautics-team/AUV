@@ -3,11 +3,16 @@
 
 #include <simple_simulation/SimpleMoveActionServerBase.h>
 
+
+/**
+ * Action server for apparatus movement
+ * using time delays in simple Gazebo simulation.
+ */
 class SimpleMoveByTimeServer : public SimpleMoveActionServerBase {
 
 protected:
 
-    void executeCallback(const auv_common::MoveGoalConstPtr& goal);
+    void goalCallback(const auv_common::MoveGoalConstPtr &goal);
 
 public:
 

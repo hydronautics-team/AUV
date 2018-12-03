@@ -4,7 +4,7 @@
 SimpleMoveByTileServer::SimpleMoveByTileServer(const std::string& actionName):
         SimpleMoveActionServerBase(actionName) { };
 
-void SimpleMoveByTileServer::executeCallback(const auv_common::MoveGoalConstPtr &goal) {
+void SimpleMoveByTileServer::goalCallback(const auv_common::MoveGoalConstPtr &goal) {
     /** Temporary stub */
     actionServer.setAborted();
 }

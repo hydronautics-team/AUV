@@ -3,11 +3,16 @@
 
 #include <common/MoveActionServerBase.h>
 
+
+/**
+ * Action server for apparatus movement
+ * using time delays.
+ */
 class MoveByTimeServer : MoveActionServerBase {
 
 protected:
 
-    void executeCallback(const auv_common::MoveGoalConstPtr& goal);
+    void goalCallback(const auv_common::MoveGoalConstPtr &goal);
 
 public:
 

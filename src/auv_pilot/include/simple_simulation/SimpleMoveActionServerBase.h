@@ -3,6 +3,11 @@
 
 #include <common/MoveActionServerBase.h>
 
+
+/**
+ * Base abstract class for implementing
+ * action servers for simple simulation in Gazebo.
+ */
 class SimpleMoveActionServerBase : public MoveActionServerBase {
 
 protected:
@@ -15,9 +20,13 @@ protected:
 
     ros::Publisher velocityPublisher;
 
+    /** Publishes message to Gazebo velocity topic.<br>
+     *  Gazebo simulation requires a bit special publishing mechanism
+     *  (see implementation).
+     */
     void publishToGazebo(const geometry_msgs::Twist& twist);
 
-    virtual void executeCallback(const auv_common::MoveGoalConstPtr& goal) = 0;
+    virtual void goalCallback(const auv_common::MoveGoalConstPtr &goal) = 0;
 
 public:
 

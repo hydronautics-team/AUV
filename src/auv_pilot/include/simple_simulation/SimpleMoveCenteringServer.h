@@ -3,11 +3,17 @@
 
 #include <simple_simulation/SimpleMoveActionServerBase.h>
 
+
+/**
+ * Action server for apparatus stabilization
+ * using center of recognized object in
+ * simple Gazebo simulation.
+ */
 class SimpleMoveCenteringServer : public SimpleMoveActionServerBase {
 
 protected:
 
-    void executeCallback(const auv_common::MoveGoalConstPtr& goal);
+    void goalCallback(const auv_common::MoveGoalConstPtr &goal);
 
 public:
 
