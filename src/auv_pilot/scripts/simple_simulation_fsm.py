@@ -15,6 +15,15 @@ def centerGate(userData, gateMessage):
     return not (gateMessage.hasPoint and abs(gateMessage.x) < 10)
 
 
+class InitializationState(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['ok'])
+        
+    def execute(self, userdata):
+        rate = rospy.Rate(1)
+        rate.sleep()
+        return 'ok'
+
 def main():
     rospy.init_node('simple_simulation_fsm')
 
@@ -22,8 +31,8 @@ def main():
 
     with sm:
 
-        rate = rospy.Rate(1)
-        rate.sleep()
+        smach.StateMachine.add('Init', InitializationState(), transitions={'ok':'SIDE_MOVE'})
+
         sideMoveGoal = MoveGoal()
         sideMoveGoal.direction = MoveGoal.DIRECTION_LEFT
         sideMoveGoal.value = 0
