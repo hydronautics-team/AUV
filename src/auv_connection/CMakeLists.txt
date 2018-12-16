@@ -118,7 +118,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -152,12 +152,12 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(hardware_bridge src/message_handler.cpp)
+add_executable(hardware_bridge src/hardware_bridge.cpp)
 target_link_libraries(hardware_bridge ${catkin_LIBRARIES})
 # add_dependencies(hardware_bridge auv_connection_generate_messages_cpp)
 
-add_executable(i2c_bridge src/i2c_server.cpp)
-target_link_libraries(i2c_bridge ${catkin_LIBRARIES})
+add_executable(uart_bridge src/uart_bridge.cpp)
+target_link_libraries(uart_bridge ${catkin_LIBRARIES})
 # add_dependencies(i2c_bridge auv_connection_generate_messages_cpp)
 
 #############
