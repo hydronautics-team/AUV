@@ -192,6 +192,7 @@ add_dependencies(simple_simulation_pilot ${auv_common_EXPORTED_TARGETS})
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
    scripts/simple_simulation_fsm.py
+   scripts/demo.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
