@@ -3,7 +3,16 @@ uint8 DIRECTION_FORWARD=1
 uint8 DIRECTION_BACKWARDS=2
 uint8 DIRECTION_RIGHT=3
 uint8 DIRECTION_LEFT=4
-uint8 STOP=5
+
+uint8 ROTATE_ROLL_CW=5
+uint8 ROTATE_ROLL_CCW=6
+uint8 ROTATE_PITCH_CW=7
+uint8 ROTATE_PITCH_CCW=8
+uint8 ROTATE_YAW_CW=9
+uint8 ROTATE_YAW_CCW=10
+
+uint8 STOP=11
+
 uint8 direction
 uint32 value # Number of units (time, number of tiles) to move till. 0 means inifinite move mode.
 ---
