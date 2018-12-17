@@ -4,7 +4,6 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <auv_common/MoveAction.h>
-#include <auv_common/RotateAction.h>
 #include <geometry_msgs/Twist.h>
 #include <string>
 #include <boost/bind.hpp>
