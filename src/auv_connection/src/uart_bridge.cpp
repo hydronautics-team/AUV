@@ -57,7 +57,7 @@ bool receiveData(Serial &port)
    		port >> answer;
 
    		for(int i=0; i<ResponseMessage::length; i++) {
-			msg_out.data[i] = answer[i];
+			msg_out.data.push_back(answer[i]);
 		}
 
 		return true;
@@ -74,7 +74,7 @@ bool receiveData(Serial &port)
 void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
 {
 	for(int i=0; i<RequestMessage::length; i++) {
-		msg_in.data[i] = msg->data[i];
+		msg_in.data.push_back(msg->data[i]);
 	}
 	isMessageReceived = true;
 }
@@ -90,15 +90,14 @@ int main(int argc, char **argv)
     // Input message container
     msg_in.layout.dim.push_back(std_msgs::MultiArrayDimension());
     msg_in.layout.dim[0].size = RequestMessage::length;
-    msg_in.layout.dim[0].stride = 1;
+    msg_in.layout.dim[0].stride = RequestMessage::length;
     msg_in.layout.dim[0].label = "msg_in";
 
     // Outnput message container
     msg_out.layout.dim.push_back(std_msgs::MultiArrayDimension());
     msg_out.layout.dim[0].size = ResponseMessage::length;
-    msg_out.layout.dim[0].stride = 1;
+    msg_out.layout.dim[0].stride = ResponseMessage::length;
     msg_out.layout.dim[0].label = "msg_out";
-    msg_in.layout.data_offset = 1;
 
     // ROS publishers
     ros::Publisher outputMessage_pub 	= n.advertise<std_msgs::UInt8MultiArray>("/hard_bridge/uart", 1000);
