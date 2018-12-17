@@ -65,19 +65,19 @@ void movement_callback(const geometry_msgs::Twist::ConstPtr &input)
 
 	RequestMessage req;
 
-  req.roll        = static_cast<int16_t> (input->angular.x);
-  req.yaw			    = static_cast<int16_t> (input->angular.y);
-  req.pitch       = static_cast<int16_t> (input->angular.z);
+  	req.roll      = static_cast<int16_t> (input->angular.x);
+  	req.yaw		  = static_cast<int16_t> (input->angular.y);
+  	req.pitch     = static_cast<int16_t> (input->angular.z);
 
-  req.march       = static_cast<int16_t> (input->linear.x);
-  req.depth       = static_cast<int16_t> (input->linear.y);
-  req.lag	       	= static_cast<int16_t> (input->linear.z); 
+  	req.march     = static_cast<int16_t> (input->linear.x);
+  	req.depth     = static_cast<int16_t> (input->linear.y);
+  	req.lag	      = static_cast<int16_t> (input->linear.z); 
 
-  std::vector<uint8_t> output_vector = req.formVector();
+  	std::vector<uint8_t> output_vector = req.formVector();
 
-  for(int i=0; i<output_vector.size(); i++) {
-    msg_out.data[i] = output_vector[i];
-  }
+  	for(int i=0; i<output_vector.size(); i++) {
+    	msg_out.data[i] = output_vector[i];
+  	}
 }
 
 int main(int argc, char **argv)
@@ -99,10 +99,12 @@ int main(int argc, char **argv)
     
     // ROS publishers
     ros::Publisher outputMessage_pub 	= n.advertise<std_msgs::UInt8MultiArray>("/hard_bridge/parcel", 1000);
+    //ros::Publisher outputMessage_pub 	= n.advertise<std_msgs::UInt8MultiArray>("", 1000);
 	// **************
 
     // ROS subscribers
     ros::Subscriber inputMessage_sub 	= n.subscribe("/hard_bridge/uart", 1000, inputMessage_callback);
+    ros::Subscriber movement_sub 		= n.subscribe("/pilot/velocity", 1000, movement_callback);
     // **************
 
     ros::Rate loop_rate(1000);

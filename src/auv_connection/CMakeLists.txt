@@ -108,7 +108,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_connection
 #  CATKIN_DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs
-#  DEPENDS system_lib
+  DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs
 )
 
 ###########
@@ -118,7 +118,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
+  "include"
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -152,13 +152,21 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(hardware_bridge src/hardware_bridge.cpp)
-target_link_libraries(hardware_bridge ${catkin_LIBRARIES})
-# add_dependencies(hardware_bridge auv_connection_generate_messages_cpp)
+add_executable(hardware_bridge
+        src/hardware_bridge.cpp
+        include/messages.h
+		src/messages.cpp)
+target_link_libraries(hardware_bridge ${catkin_LIBRARIES}
+        ${OpenCV_LIBS})
+#add_dependencies(hardware_bridge geometry_msgs)
 
-add_executable(uart_bridge src/uart_bridge.cpp)
-target_link_libraries(uart_bridge ${catkin_LIBRARIES})
-# add_dependencies(i2c_bridge auv_connection_generate_messages_cpp)
+add_executable(uart_bridge
+        src/uart_bridge.cpp
+        include/serial.h
+		src/serial.cpp)
+target_link_libraries(uart_bridge ${catkin_LIBRARIES}
+        ${OpenCV_LIBS})
+#add_dependencies(hardware_bridge geometry_msgs)
 
 #############
 ## Install ##
