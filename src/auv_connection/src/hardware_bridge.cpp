@@ -78,7 +78,7 @@ void movement_callback(const geometry_msgs::Twist::ConstPtr &input)
   std::vector<uint8_t> output_vector = req.formVector();
 
   for(int i=0; i<RequestMessage::length; i++) {
-    msg_out.data[i] = output_vector[i];
+    msg_out.data.push_back(output_vector[i]);
   }
 
   isReady = true;
@@ -92,13 +92,13 @@ int main(int argc, char **argv)
     // Input message container
     msg_in.layout.dim.push_back(std_msgs::MultiArrayDimension());
     msg_in.layout.dim[0].size = ResponseMessage::length;
-    msg_in.layout.dim[0].stride = 1;
+    msg_in.layout.dim[0].stride = ResponseMessage::length;
     msg_in.layout.dim[0].label = "msg_in";
 
     // Outnput message container
     msg_out.layout.dim.push_back(std_msgs::MultiArrayDimension());
     msg_out.layout.dim[0].size = RequestMessage::length;
-    msg_out.layout.dim[0].stride = 1;
+    msg_out.layout.dim[0].stride = RequestMessage::length;
     msg_out.layout.dim[0].label = "msg_out";
     
     // ROS publishers
