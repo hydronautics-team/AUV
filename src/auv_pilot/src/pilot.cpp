@@ -19,10 +19,10 @@ static const std::string MOVE_CENTERING = "move_centering";
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, PILOT_NODE_NAME);
-    ros::NodeHandle localNodeHandle("~");
+    ros::NodeHandle nodeHandle;
 
     bool isSimulation;
-    localNodeHandle.param("simulation", isSimulation, false);
+    nodeHandle.param("simulation", isSimulation, false);
     std::string topic = isSimulation ? GAZEBO_VELOCITY_TOPIC : REAL_VELOCITY_TOPIC;
 
     MoveByTimeServer moveByTimeServer(MOVE_BY_TIME_ACTION, topic);
