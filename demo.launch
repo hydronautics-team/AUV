@@ -1,0 +1,11 @@
+<launch>
+
+    <arg name="simulation" default="false" />
+
+    <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
+        <param name="simulation" value="$(arg simulation)" />
+    </node>
+
+    <node pkg="auv_pilot" name="demo" type="demo.py" output="screen" />
+
+</launch>

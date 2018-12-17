@@ -19,7 +19,7 @@ static const std::string MOVE_CENTERING = "move_centering";
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, PILOT_NODE_NAME);
-    ros::NodeHandle nodeHandle;
+    ros::NodeHandle nodeHandle(PILOT_NODE_NAME);
 
     bool isSimulation;
     nodeHandle.param("simulation", isSimulation, false);
