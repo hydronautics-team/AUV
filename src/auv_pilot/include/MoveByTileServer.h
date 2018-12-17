@@ -1,7 +1,7 @@
 #ifndef AUV_PILOT_MOVEBYTILESERVER_H
 #define AUV_PILOT_MOVEBYTILESERVER_H
 
-#include <common/MoveActionServerBase.h>
+#include <MoveActionServerBase.h>
 
 
 /**
@@ -16,7 +16,7 @@ protected:
 
 public:
 
-    MoveByTileServer(const std::string& actionName);
+    MoveByTileServer(const std::string& actionName, const std::string& velocityTopic);
     ~MoveByTileServer() = default;
 
 };

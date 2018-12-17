@@ -1,7 +1,7 @@
 #ifndef AUV_PILOT_MOVECENTERING_H
 #define AUV_PILOT_MOVECENTERING_H
 
-#include <common/MoveActionServerBase.h>
+#include <MoveActionServerBase.h>
 
 
 /**
@@ -16,7 +16,7 @@ protected:
 
 public:
 
-    MoveCenteringServer(const std::string& actionName);
+    MoveCenteringServer(const std::string& actionName, const std::string& velocityTopic);
     ~MoveCenteringServer() = default;
 
 };

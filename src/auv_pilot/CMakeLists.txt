@@ -140,31 +140,16 @@ include_directories(
 
 add_executable(pilot
         src/pilot.cpp
-        include/real/MoveByTimeServer.h
-        src/real/MoveByTimeServer.cpp
-        include/real/MoveByTileServer.h
-        src/real/MoveByTileServer.cpp
-        include/common/MoveActionServerBase.h
-        src/common/MoveActionServerBase.cpp
-        include/real/MoveCenteringServer.h
-        src/real/MoveCenteringServer.cpp)
+        include/MoveByTimeServer.h
+        src/MoveByTimeServer.cpp
+        include/MoveByTileServer.h
+        src/MoveByTileServer.cpp
+        include/MoveActionServerBase.h
+        src/MoveActionServerBase.cpp
+        include/MoveCenteringServer.h
+        src/MoveCenteringServer.cpp)
 target_link_libraries(pilot ${catkin_LIBRARIES})
 add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
-
-add_executable(simple_simulation_pilot
-        src/simple_simulation_pilot.cpp
-        include/common/MoveActionServerBase.h
-        src/common/MoveActionServerBase.cpp
-        include/simple_simulation/SimpleMoveActionServerBase.h
-        src/simple_simulation/SimpleMoveActionServerBase.cpp
-        include/simple_simulation/SimpleMoveByTimeServer.h
-        src/simple_simulation/SimpleMoveByTimeServer.cpp
-        include/simple_simulation/SimpleMoveByTileServer.h
-        src/simple_simulation/SimpleMoveByTileServer.cpp
-        include/simple_simulation/SimpleMoveCenteringServer.h
-        src/simple_simulation/SimpleMoveCenteringServer.cpp)
-target_link_libraries(simple_simulation_pilot ${catkin_LIBRARIES})
-add_dependencies(simple_simulation_pilot ${auv_common_EXPORTED_TARGETS})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

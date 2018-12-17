@@ -1,7 +1,7 @@
 #ifndef AUV_PILOT_MOVEBYTIMESERVER_H
 #define AUV_PILOT_MOVEBYTIMESERVER_H
 
-#include <common/MoveActionServerBase.h>
+#include <MoveActionServerBase.h>
 
 
 /**
@@ -16,7 +16,7 @@ protected:
 
 public:
 
-    MoveByTimeServer(const std::string& actionName);
+    MoveByTimeServer(const std::string& actionName, const std::string& velocityTopic);
     ~MoveByTimeServer() = default;
 
 };

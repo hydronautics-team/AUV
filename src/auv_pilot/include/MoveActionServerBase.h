@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <auv_common/MoveAction.h>
+#include <auv_common/RotateAction.h>
 #include <geometry_msgs/Twist.h>
 #include <string>
 #include <boost/bind.hpp>
@@ -17,7 +18,16 @@ class MoveActionServerBase {
 
 protected:
 
-    static constexpr const float DEFAULT_VELOCITY = 0.5;
+    static constexpr const float DEFAULT_VELOCITY = 0.5f;
+
+    static const int VELOCITY_TOPIC_QUEUE_SIZE = 1;
+
+    static const int VELOCITY_TOPIC_POLL_RATE = 100;
+
+    /** ROS topic to where velocity values will be published */
+    std::string velocityPublishTopic;
+
+    ros::Publisher velocityPublisher;
 
     ros::NodeHandle nodeHandle;
     actionlib::SimpleActionServer<auv_common::MoveAction> actionServer;
@@ -28,15 +38,22 @@ protected:
     /** Initializes twist message with zero angular velocities */
     geometry_msgs::Twist createLinearTwist(float x, float y, float z);
 
+    /** Initializes twist message with zero linear velocities */
+    geometry_msgs::Twist createAngularTwist(float roll, float pitch, float yaw);
+
+    geometry_msgs::Twist createRotationTwist(int direction, float velocity = DEFAULT_VELOCITY);
+
     /** Initializes twist message for specified direction */
     geometry_msgs::Twist createDirectionTwist(int direction, float velocity = DEFAULT_VELOCITY);
+
+    void safePublish(const geometry_msgs::Twist &twist);
 
     /** Implement your goal processing logic */
     virtual void goalCallback(const auv_common::MoveGoalConstPtr &goal) = 0;
 
 public:
 
-    MoveActionServerBase(const std::string& actionName);
+    MoveActionServerBase(const std::string& actionName, const std::string velocityTopic);
     ~MoveActionServerBase() = default;
 
 };
