@@ -27,6 +27,8 @@ std_msgs::UInt8MultiArray msg_in;
 // Protocol_bridge -> Hardware bridge
 std_msgs::UInt8MultiArray msg_out;
 
+bool isMessageReceived = false;
+
 static uint64_t GetTickCountMs();
 
 /// Returns the number of ticks since an undefined time (usually system startup).
@@ -74,6 +76,7 @@ void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
 	for(int i=0; i<RequestMessage::length; i++) {
 		msg_in.data[i] = msg->data[i];
 	}
+	isMessageReceived = true;
 }
 
 int main(int argc, char **argv)
@@ -86,13 +89,13 @@ int main(int argc, char **argv)
 
     // Input message container
     msg_in.layout.dim.push_back(std_msgs::MultiArrayDimension());
-    msg_in.layout.dim[0].size = ResponseMessage::length;
+    msg_in.layout.dim[0].size = RequestMessage::length;
     msg_in.layout.dim[0].stride = 1;
     msg_in.layout.dim[0].label = "msg_in";
 
     // Outnput message container
     msg_out.layout.dim.push_back(std_msgs::MultiArrayDimension());
-    msg_out.layout.dim[0].size = RequestMessage::length;
+    msg_out.layout.dim[0].size = ResponseMessage::length;
     msg_out.layout.dim[0].stride = 1;
     msg_out.layout.dim[0].label = "msg_out";
     msg_in.layout.data_offset = 1;
@@ -110,6 +113,10 @@ int main(int argc, char **argv)
 
   	while (ros::ok())
   	{
+  		if(!isMessageReceived) {
+  			continue;
+  		}
+
 	    if(!sendData(port)) {
 	    	ROS_INFO("Unable to send msg to STM32");
 	    }

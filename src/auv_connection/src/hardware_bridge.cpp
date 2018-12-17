@@ -30,6 +30,8 @@ std_msgs::UInt8MultiArray msg_out;
 // Protocol_bridge -> Hardware bridge
 std_msgs::UInt8MultiArray msg_in;
 
+bool isReady = false;
+
 /** @brief Make byte array to publish for protocol_node
   *
   */
@@ -65,19 +67,21 @@ void movement_callback(const geometry_msgs::Twist::ConstPtr &input)
 
 	RequestMessage req;
 
-  	req.roll      = static_cast<int16_t> (input->angular.x);
-  	req.yaw		  = static_cast<int16_t> (input->angular.y);
-  	req.pitch     = static_cast<int16_t> (input->angular.z);
+  req.roll      = static_cast<int16_t> (input->angular.x);
+  req.yaw		    = static_cast<int16_t> (input->angular.y);
+  req.pitch     = static_cast<int16_t> (input->angular.z);
 
-  	req.march     = static_cast<int16_t> (input->linear.x);
-  	req.depth     = static_cast<int16_t> (input->linear.y);
-  	req.lag	      = static_cast<int16_t> (input->linear.z); 
+  req.march     = static_cast<int16_t> (input->linear.x);
+  req.depth     = static_cast<int16_t> (input->linear.y);
+  req.lag	      = static_cast<int16_t> (input->linear.z); 
 
-  	std::vector<uint8_t> output_vector = req.formVector();
+  std::vector<uint8_t> output_vector = req.formVector();
 
-  	for(int i=0; i<output_vector.size(); i++) {
-    	msg_out.data[i] = output_vector[i];
-  	}
+  for(int i=0; i<RequestMessage::length; i++) {
+    msg_out.data[i] = output_vector[i];
+  }
+
+  isReady = true;
 }
 
 int main(int argc, char **argv)
@@ -110,12 +114,14 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(1000);
 
     while (ros::ok())
-    {
+    {        
+        if(isReady) {
+           outputMessage_pub.publish(msg_out);
+           isReady = false;
+        }
+
         ros::spinOnce();
-
-        loop_rate.sleep();
-
-       	outputMessage_pub.publish(msg_out);
+        loop_rate.sleep();              
     }
 
     return 0;
