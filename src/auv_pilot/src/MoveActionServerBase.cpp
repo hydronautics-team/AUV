@@ -29,19 +29,6 @@ geometry_msgs::Twist MoveActionServerBase::createAngularTwist(float roll, float 
     return createTwist(0.0f, 0.0f, 0.0f, roll, pitch, yaw);
 }
 
-geometry_msgs::Twist MoveActionServerBase::createRotationTwist(int direction, float velocity) {
-    switch (direction) {
-        case auv_common::RotateGoal::DIRECTION_ROLL:
-            return createAngularTwist(velocity, 0.0f, 0.0f);
-        case auv_common::RotateGoal::DIRECTION_PITCH:
-            return createAngularTwist(0.0f, velocity, 0.0f);
-        case auv_common::RotateGoal::DIRECTION_YAW:
-            return createAngularTwist(0.0f, 0.0f, velocity);
-        default:
-            return createAngularTwist(0.0f, 0.0f, 0.0f);
-    }
-}
-
 geometry_msgs::Twist MoveActionServerBase::createDirectionTwist(int direction, float velocity) {
     switch (direction) {
         case auv_common::MoveGoal::DIRECTION_FORWARD:

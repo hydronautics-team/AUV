@@ -41,8 +41,6 @@ protected:
     /** Initializes twist message with zero linear velocities */
     geometry_msgs::Twist createAngularTwist(float roll, float pitch, float yaw);
 
-    geometry_msgs::Twist createRotationTwist(int direction, float velocity = DEFAULT_VELOCITY);
-
     /** Initializes twist message for specified direction */
     geometry_msgs::Twist createDirectionTwist(int direction, float velocity = DEFAULT_VELOCITY);
 
