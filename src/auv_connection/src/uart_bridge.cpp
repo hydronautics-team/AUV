@@ -17,7 +17,7 @@
 #include "messages.h"
 
 // Name of the device file 
-std::string file = "/dev/ttyUSB0";
+std::string file = "/dev/ttyS0";
 
 // Hardware bridge -> Protocol_bridge
 std_msgs::UInt8MultiArray msg_in;
@@ -43,9 +43,8 @@ bool sendData(Serial &port)
 
 	for(int i=0; i<RequestMessage::length; i++) {
 		msg.push_back(msg_in.data[i]);
-    std::cout << msg[i] << " // " << msg_in.data[i];
 	}
-  std::cout << std::endl;
+
 	port << msg;
 	return true;
 }
@@ -75,7 +74,6 @@ bool receiveData(Serial &port)
   */
 void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
 {
-  std::cout << "READING" << std::endl;
   msg_in.data.clear();
 	for(int i=0; i<RequestMessage::length; i++) {
 		msg_in.data.push_back(msg->data[i]);
@@ -114,8 +112,8 @@ int main(int argc, char **argv)
     // Initialasing serial port
     Serial port;
     bool isOpened = false;
-    if(!port.openPort(file)) {
-      port.configurePort(57600, 8, PARITY_NONE, 1);
+    if(port.openPort(file)) {
+      port.configurePort(115200, 8, PARITY_NONE, 1);
       isOpened = true;
     }
 
