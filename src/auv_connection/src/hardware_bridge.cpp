@@ -77,6 +77,7 @@ void movement_callback(const geometry_msgs::Twist::ConstPtr &input)
 
   std::vector<uint8_t> output_vector = req.formVector();
 
+  msg_out.data.clear();
   for(int i=0; i<RequestMessage::length; i++) {
     msg_out.data.push_back(output_vector[i]);
   }

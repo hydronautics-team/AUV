@@ -56,11 +56,12 @@ bool receiveData(Serial &port)
    		std::vector<uint8_t> answer;
    		port >> answer;
 
+      msg_out.data.clear();
    		for(int i=0; i<ResponseMessage::length; i++) {
-			msg_out.data.push_back(answer[i]);
-		}
+			 msg_out.data.push_back(answer[i]);
+		  }
 
-		return true;
+  		return true;
    	}
    	else {
    		return false;
@@ -73,6 +74,7 @@ bool receiveData(Serial &port)
   */
 void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
 {
+  msg_in.data.clear();
 	for(int i=0; i<RequestMessage::length; i++) {
 		msg_in.data.push_back(msg->data[i]);
 	}
