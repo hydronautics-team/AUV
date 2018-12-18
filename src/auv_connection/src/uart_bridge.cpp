@@ -8,8 +8,6 @@
 
 #include "std_msgs/UInt16.h"
 #include "std_msgs/UInt8MultiArray.h"
-#include "geometry_msgs/Twist.h"
-#include "sensor_msgs/Imu.h"
 
 #include <sstream>
 #include <string>
@@ -42,9 +40,12 @@ static uint64_t GetTickCountMs()
 bool sendData(Serial &port)
 {
 	std::vector<uint8_t> msg;
+
 	for(int i=0; i<RequestMessage::length; i++) {
 		msg.push_back(msg_in.data[i]);
+    std::cout << msg[i] << " // " << msg_in.data[i];
 	}
+  std::cout << std::endl;
 	port << msg;
 	return true;
 }
@@ -52,20 +53,20 @@ bool sendData(Serial &port)
 bool receiveData(Serial &port)
 {
     uint64_t lasttick = GetTickCountMs();
-    if(port.bytesAvailable() < ResponseMessage::length) {
-   		std::vector<uint8_t> answer;
-   		port >> answer;
-
-      msg_out.data.clear();
-   		for(int i=0; i<ResponseMessage::length; i++) {
-			 msg_out.data.push_back(answer[i]);
-		  }
-
-  		return true;
+    while(port.bytesAvailable() < ResponseMessage::length) {
+      if(GetTickCountMs() - lasttick > 100) {
+        return false;
+      }
    	}
-   	else {
-   		return false;
-   	}
+
+    std::vector<uint8_t> answer;
+    port >> answer;
+
+    msg_out.data.clear();
+    for(int i=0; i<ResponseMessage::length; i++) {
+      msg_out.data.push_back(answer[i]);
+    }
+    return true;
 }
 
 /** @brief Parse string bitwise correctly into ResponseMessage and check 16bit checksum.
@@ -74,6 +75,7 @@ bool receiveData(Serial &port)
   */
 void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
 {
+  std::cout << "READING" << std::endl;
   msg_in.data.clear();
 	for(int i=0; i<RequestMessage::length; i++) {
 		msg_in.data.push_back(msg->data[i]);
@@ -110,26 +112,29 @@ int main(int argc, char **argv)
     // **************
 
     // Initialasing serial port
-    Serial port(file, 57600, 8, PARITY_NONE, 1);
+    Serial port;
+    bool isOpened = false;
+    if(!port.openPort(file)) {
+      port.configurePort(57600, 8, PARITY_NONE, 1);
+      isOpened = true;
+    }
 
   	while (ros::ok())
   	{
-  		if(!isMessageReceived) {
-  			continue;
-  		}
+      if(isMessageReceived && isOpened) {
+        if(!sendData(port)) {
+	    	  ROS_INFO("Unable to send msg to STM32");
+	      }
+	      delay_request_responce.sleep();
 
-	    if(!sendData(port)) {
-	    	ROS_INFO("Unable to send msg to STM32");
-	    }
-	    delay_request_responce.sleep();
-
-	    if(receiveData(port)) {
-	    	outputMessage_pub.publish(msg_in);
-	    }
-	    else {
-	   		ROS_INFO("Unable to receive msg from STM32");
-	    }
-	    delay_responce_request.sleep();
+	      if(receiveData(port)) {
+	    	  outputMessage_pub.publish(msg_in);
+	      }
+	      else {
+	   		  ROS_INFO("Unable to receive msg from STM32");
+	      }
+	      delay_responce_request.sleep();
+      }
 
 	    ros::spinOnce();
   	}
