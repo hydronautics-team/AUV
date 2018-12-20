@@ -123,7 +123,6 @@ int main(int argc, char **argv)
         if(!sendData(port)) {
 	    	  ROS_INFO("Unable to send msg to STM32");
 	      }
-	      delay_request_responce.sleep();
 
 	      if(receiveData(port)) {
 	    	  outputMessage_pub.publish(msg_in);

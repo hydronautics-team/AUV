@@ -53,9 +53,9 @@ static const uint8_t DevAmount = 6;
 
 void pushToVector(std::vector<uint8_t> &vector, int8_t var);
 void pushToVector(std::vector<uint8_t> &vector, uint8_t var);
-void pushToVector(std::vector<uint8_t> &vector, int16_t var, bool revert = true);
-void pushToVector(std::vector<uint8_t> &vector, uint16_t var, bool revert = true);
-void pushToVector(std::vector<uint8_t> &vector, float var, bool revert = true);
+void pushToVector(std::vector<uint8_t> &vector, int16_t var, bool revert = false);
+void pushToVector(std::vector<uint8_t> &vector, uint16_t var, bool revert = false);
+void pushToVector(std::vector<uint8_t> &vector, float var, bool revert = false);
 
 void popFromVector(std::vector<uint8_t> &container, int8_t &output);
 void popFromVector(std::vector<uint8_t> &container, uint8_t &output);
