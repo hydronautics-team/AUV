@@ -30,20 +30,29 @@ std_msgs::UInt8MultiArray msg_out;
 // Protocol_bridge -> Hardware bridge
 std_msgs::UInt8MultiArray msg_in;
 
+const uint32_t communicationDelayMilliseconds = 20;
 bool isReady = false;
+
+RequestMessage request;
+ResponseMessage response;
 
 /** @brief Make byte array to publish for protocol_node
   *
   */
-void makeOutputMessage(geometry_msgs::Twist::ConstPtr &input, std_msgs::UInt8MultiArray &output)
+void makeOutputMessage()
 {
+	std::vector<uint8_t> output_vector = request.formVector();
 
+  	msg_out.data.clear();
+  	for(int i=0; i<RequestMessage::length; i++) {
+  	  msg_out.data.push_back(output_vector[i]);
+  	}
 }
 
 /** @brief Parse input byte array from protocol_node subscriber
   *
   */
-void parseInputMessage(std_msgs::UInt8MultiArray &input, sensor_msgs::Imu &output)
+void parseInputMessage()
 {
 
 }
@@ -63,32 +72,23 @@ void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
   */
 void movement_callback(const geometry_msgs::Twist::ConstPtr &input)
 {
-	//makeOutputMessage(msg, msg_out);
+  	request.roll	= static_cast<int16_t> (input->angular.x);
+  	request.yaw		= static_cast<int16_t> (input->angular.y);
+  	request.pitch	= static_cast<int16_t> (input->angular.z);
 
-	RequestMessage req;
+  	request.march	= static_cast<int16_t> (input->linear.x);
+  	request.depth	= static_cast<int16_t> (input->linear.y);
+  	request.lag	    = static_cast<int16_t> (input->linear.z); 
 
-  req.roll      = static_cast<int16_t> (input->angular.x);
-  req.yaw		    = static_cast<int16_t> (input->angular.y);
-  req.pitch     = static_cast<int16_t> (input->angular.z);
-
-  req.march     = static_cast<int16_t> (input->linear.x);
-  req.depth     = static_cast<int16_t> (input->linear.y);
-  req.lag	      = static_cast<int16_t> (input->linear.z); 
-
-  std::vector<uint8_t> output_vector = req.formVector();
-
-  msg_out.data.clear();
-  for(int i=0; i<RequestMessage::length; i++) {
-    msg_out.data.push_back(output_vector[i]);
-  }
-
-  isReady = true;
+  	isReady = true;
 }
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "hardware_bridge");
     ros::NodeHandle n;
+
+    ros::Rate communication_delay(1000/communicationDelayMilliseconds);
 
     // Input message container
     msg_in.layout.dim.push_back(std_msgs::MultiArrayDimension());
@@ -112,17 +112,15 @@ int main(int argc, char **argv)
     ros::Subscriber movement_sub 		= n.subscribe("/pilot/velocity", 1000, movement_callback);
     // **************
 
-    ros::Rate loop_rate(1000);
-
     while (ros::ok())
     {        
         if(isReady) {
-           outputMessage_pub.publish(msg_out);
-           isReady = false;
+        	makeOutputMessage();
+        	outputMessage_pub.publish(msg_out);
         }
 
-        ros::spinOnce();
-        loop_rate.sleep();              
+    	ros::spinOnce();
+    	communication_delay.sleep();          
     }
 
     return 0;
