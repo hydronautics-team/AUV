@@ -70,7 +70,14 @@ def main():
                                     'move_by_time',
                                     MoveAction,
                                     goal=forward),
-                                {'succeeded':'SUCCESS', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+                                {'succeeded':'THIRD_ROTATION', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+
+        smach.StateMachine.add('THIRD_ROTATION',
+                                smach_ros.SimpleActionState(
+                                    'move_by_time',
+                                    MoveAction,
+                                    goal=rotation),
+                                {'succeeded':'FIRST_FORWARD', 'preempted':'ABORTED', 'aborted':'ABORTED'})
                                 
     
     outcome = sm.execute()
