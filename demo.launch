@@ -1,6 +1,8 @@
 <launch>
 
     <arg name="simulation" default="false" />
+    <arg name="record" default="false" />
+
 
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
         <param name="mulation" value="$(arg simulation)" />
@@ -11,5 +13,9 @@
     <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
 
     <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
+
+    <group if="$(arg record)">
+        <include file="record.launch" />
+    </group>
 
 </launch>
