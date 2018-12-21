@@ -30,7 +30,7 @@ std_msgs::UInt8MultiArray msg_out;
 // Protocol_bridge -> Hardware bridge
 std_msgs::UInt8MultiArray msg_in;
 
-const uint32_t communicationDelayMilliseconds = 20;
+const uint32_t communicationDelayMilliseconds = 100;
 bool isReady = false;
 
 RequestMessage request;

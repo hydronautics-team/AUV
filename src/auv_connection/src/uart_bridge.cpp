@@ -25,7 +25,7 @@ std_msgs::UInt8MultiArray msg_in;
 // Protocol_bridge -> Hardware bridge
 std_msgs::UInt8MultiArray msg_out;
 
-const uint64_t receiveDeadtime = 50;
+const uint64_t receiveDeadtime = 100;
 bool isTopicUpdated = false;
 
 /// Returns the number of ticks since an undefined time (usually system startup).
