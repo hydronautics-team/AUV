@@ -17,7 +17,7 @@ class MoveActionServerBase {
 
 protected:
 
-    static constexpr const float DEFAULT_VELOCITY = 10.000f;
+    static constexpr const float DEFAULT_VELOCITY = 10000.0f;
 
     static const int VELOCITY_TOPIC_QUEUE_SIZE = 1;
 

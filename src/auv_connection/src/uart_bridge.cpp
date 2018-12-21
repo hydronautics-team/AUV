@@ -137,7 +137,7 @@ int main(int argc, char **argv)
 
       if(receiveData(port)) {
 	     outputMessage_pub.publish(msg_in);
-     }
+      }
       else {
         ROS_INFO("Unable to receive msg from STM32");
       }
