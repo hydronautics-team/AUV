@@ -114,7 +114,7 @@ int main(int argc, char **argv)
     // Trying to open port
      if(!isOpened) {
       if(port.openPort(file)) {
-        if(port.configurePort(115200, 8, PARITY_NONE, 1)) {
+        if(!port.configurePort(115200, 8, PARITY_NONE, 1)) {
           ROS_INFO("Cannot configure port: ", file);
           break;
         }
