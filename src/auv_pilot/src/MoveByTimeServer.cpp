@@ -14,7 +14,7 @@ void MoveByTimeServer::goalCallback(const auv_common::MoveGoalConstPtr &goal) {
         ros::Duration(time).sleep();
         geometry_msgs::Twist endMsg = createDirectionTwist(auv_common::MoveGoal::STOP);
         safePublish(endMsg);
-        ros::Duration(1.0).sleep();
+        ros::Duration(2.0).sleep();
     }
 
     actionServer.setSucceeded();
