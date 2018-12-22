@@ -30,7 +30,7 @@ def main():
 
     rotation = MoveGoal()
     rotation.direction = MoveGoal.ROTATE_YAW_CCW
-    rotation.value = 300
+    rotation.value = 500
 
     with sm:
 
