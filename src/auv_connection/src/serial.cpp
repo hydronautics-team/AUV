@@ -251,7 +251,10 @@ bool Serial::writePort(std::string data)
     for(size_t i=0; i<bytes; i++) {
         buf[i] = data[i];
     }
-    write(file, reinterpret_cast<void*>(buf), bytes);
+    if(write(file, reinterpret_cast<void*>(buf), bytes) < bytes) {
+	delete[] buf;
+	return false;
+    }
     delete[] buf;
 
     return true;

@@ -45,7 +45,9 @@ bool sendData(Serial &port)
 	}
 	
 	port.flush();
-	port << msg;
+	if(!port.writePort(msg)) {
+		return false;
+	}
 	return true;
 }
 
@@ -140,7 +142,7 @@ int main(int argc, char **argv)
 	     outputMessage_pub.publish(msg_in);
       }
       else {
-        ROS_INFO("Unable to receive msg from STM32");
+//        ROS_INFO("Unable to receive msg from STM32");
       }
 
       isTopicUpdated = false;
