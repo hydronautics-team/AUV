@@ -41,28 +41,24 @@ bool sendData(Serial &port)
 	std::vector<uint8_t> msg;
 
 	for(int i=0; i<RequestMessage::length; i++) {
-		std::cout << static_cast<int>(msg_in.data[i]) << std::endl;
 		msg.push_back(msg_in.data[i]);
 	}
-	ROS_INFO("SENDIN");
-	//port.flush();
+	
+	port.flush();
 	port << msg;
 	return true;
 }
 
 bool receiveData(Serial &port)
 {
-  uint64_t lasttick = GetTickCountMs();
- ROS_INFO("START RECEIVIN"); 
+  uint64_t lasttick = GetTickCountMs(); 
  while(port.bytesAvailable() < ResponseMessage::length) {
     if(GetTickCountMs() - lasttick > receiveDeadtime) {
       return false;
     }
   }
 
-  ROS_INFO("RECEIVIN");
   std::vector<uint8_t> answer;
-  //port.flush();
   port >> answer;
 
   msg_out.data.clear();
