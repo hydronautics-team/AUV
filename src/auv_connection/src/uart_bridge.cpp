@@ -41,10 +41,11 @@ bool sendData(Serial &port)
 	std::vector<uint8_t> msg;
 
 	for(int i=0; i<RequestMessage::length; i++) {
+		std::cout << static_cast<int>(msg_in.data[i]) << std::endl;
 		msg.push_back(msg_in.data[i]);
 	}
-
-	port.flush();
+	ROS_INFO("SENDIN");
+	//port.flush();
 	port << msg;
 	return true;
 }
@@ -52,14 +53,16 @@ bool sendData(Serial &port)
 bool receiveData(Serial &port)
 {
   uint64_t lasttick = GetTickCountMs();
-  while(port.bytesAvailable() < ResponseMessage::length) {
+ ROS_INFO("START RECEIVIN"); 
+ while(port.bytesAvailable() < ResponseMessage::length) {
     if(GetTickCountMs() - lasttick > receiveDeadtime) {
       return false;
     }
   }
 
+  ROS_INFO("RECEIVIN");
   std::vector<uint8_t> answer;
-  port.flush();
+  //port.flush();
   port >> answer;
 
   msg_out.data.clear();
@@ -116,7 +119,7 @@ int main(int argc, char **argv)
     // Trying to open port
      if(!isOpened) {
       if(port.openPort(file)) {
-        if(!port.configurePort(115200, 8, PARITY_NONE, 1)) {
+        if(!port.configurePort(57600, 8, PARITY_NONE, 1)) {
           ROS_INFO("Cannot configure port: ", file);
           break;
         }
