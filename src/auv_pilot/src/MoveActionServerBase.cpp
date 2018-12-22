@@ -56,10 +56,10 @@ geometry_msgs::Twist MoveActionServerBase::createDirectionTwist(int direction, f
             return createAngularTwist(0.0f, -velocity, 0.0f);
 
         case auv_common::MoveGoal::ROTATE_YAW_CW:
-            return createAngularTwist(0.0f, 0.0f, velocity);
+            return createAngularTwist(0.0f, velocity, 0.0f); // TODO: Fix all directions
 
         case auv_common::MoveGoal::ROTATE_YAW_CCW:
-            return createAngularTwist(0.0f, 0.0f, -velocity);
+            return createAngularTwist(0.0f, -velocity, 0.0f);
 
         default:
             return createLinearTwist(0.0f, 0.0f, 0.0f);
