@@ -48,6 +48,7 @@ public:
     bool writePort(std::vector<uint8_t> data);
     bool readPort(std::string &data, size_t bytes);
     bool readPort(std::vector<uint8_t> &data, size_t bytes);
+    bool flush();
     size_t bytesAvailable();
 
 private:

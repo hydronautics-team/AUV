@@ -351,6 +351,19 @@ size_t Serial::bytesAvailable()
     return bytes;
 }
 
+/** @brief Flushes I/O buffers
+  *
+  */
+bool Serial::flush()
+{
+    if(!isOpened()) {
+        return false;
+    }
+
+    tcflush(file, TCIOFLUSH);
+    return true;
+}
+
 unsigned int copyVar(int var)
 {
     unsigned int *new_var = reinterpret_cast<unsigned int*>(&var);

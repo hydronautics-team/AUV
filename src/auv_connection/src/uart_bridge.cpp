@@ -44,6 +44,7 @@ bool sendData(Serial &port)
 		msg.push_back(msg_in.data[i]);
 	}
 
+	port.flush();
 	port << msg;
 	return true;
 }
@@ -58,6 +59,7 @@ bool receiveData(Serial &port)
   }
 
   std::vector<uint8_t> answer;
+  port.flush();
   port >> answer;
 
   msg_out.data.clear();
