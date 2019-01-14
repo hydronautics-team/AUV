@@ -16,7 +16,7 @@ protected:
 
 public:
 
-    MoveByTileServer(const std::string& actionName, const std::string& velocityTopic);
+    MoveByTileServer(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory);
     ~MoveByTileServer() = default;
 
 };

@@ -16,7 +16,7 @@ protected:
 
 public:
 
-    MoveCenteringServer(const std::string& actionName, const std::string& velocityTopic);
+    MoveCenteringServer(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory);
     ~MoveCenteringServer() = default;
 
 };

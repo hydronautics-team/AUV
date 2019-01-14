@@ -3,6 +3,8 @@
 #include <MoveByTimeServer.h>
 #include <MoveByTileServer.h>
 #include <MoveCenteringServer.h>
+#include <twist/SimulationTwistFactory.h>
+#include <twist/RealTwistFactory.h>
 
 static const std::string PILOT_NODE_NAME = "pilot";
 
@@ -24,9 +26,16 @@ int main(int argc, char **argv)
     bool isSimulation;
     nodeHandle.param("simulation", isSimulation, false);
     std::string topic = isSimulation ? GAZEBO_VELOCITY_TOPIC : REAL_VELOCITY_TOPIC;
+    TwistFactory* twistFactory;
+    if (isSimulation)
+        twistFactory = new SimulationTwistFactory();
+    else
+        twistFactory = new RealTwistFactory();
 
-    MoveByTimeServer moveByTimeServer(MOVE_BY_TIME_ACTION, topic);
-    MoveByTileServer moveByTileServer(MOVE_BY_TILE_ACTION, topic);
-    MoveCenteringServer moveCenteringServer(MOVE_CENTERING, topic);
+    MoveByTimeServer moveByTimeServer(MOVE_BY_TIME_ACTION, topic, *twistFactory);
+    MoveByTileServer moveByTileServer(MOVE_BY_TILE_ACTION, topic, *twistFactory);
+    MoveCenteringServer moveCenteringServer(MOVE_CENTERING, topic, *twistFactory);
     ros::spin();
+
+    delete twistFactory;
 }

@@ -5,14 +5,15 @@
 
 
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
-        <param name="mulation" value="$(arg simulation)" />
+        <param name="simulation" value="$(arg simulation)" />
     </node>
 
     <node pkg="auv_pilot" name="demo" type="demo.py" output="screen" />
 
-    <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
-
-    <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
+    <group unless="$(arg simulation)">
+        <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
+        <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
+    </group>
 
     <group if="$(arg record)">
         <include file="record.launch" />

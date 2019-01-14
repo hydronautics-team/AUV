@@ -16,7 +16,7 @@ protected:
 
 public:
 
-    MoveByTimeServer(const std::string& actionName, const std::string& velocityTopic);
+    MoveByTimeServer(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory);
     ~MoveByTimeServer() = default;
 
 };

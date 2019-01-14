@@ -7,6 +7,7 @@
 #include <geometry_msgs/Twist.h>
 #include <string>
 #include <boost/bind.hpp>
+#include <twist/TwistFactory.h>
 
 
 /**
@@ -16,8 +17,6 @@
 class MoveActionServerBase {
 
 protected:
-
-    static constexpr const float DEFAULT_VELOCITY = 10000.0f;
 
     static const int VELOCITY_TOPIC_QUEUE_SIZE = 1;
 
@@ -31,17 +30,7 @@ protected:
     ros::NodeHandle nodeHandle;
     actionlib::SimpleActionServer<auv_common::MoveAction> actionServer;
 
-    /** Initializes twist message */
-    geometry_msgs::Twist createTwist(float x, float y, float z, float roll, float pitch, float yaw);
-
-    /** Initializes twist message with zero angular velocities */
-    geometry_msgs::Twist createLinearTwist(float x, float y, float z);
-
-    /** Initializes twist message with zero linear velocities */
-    geometry_msgs::Twist createAngularTwist(float roll, float pitch, float yaw);
-
-    /** Initializes twist message for specified direction */
-    geometry_msgs::Twist createDirectionTwist(int direction, float velocity = DEFAULT_VELOCITY);
+    TwistFactory* twistFactory;
 
     void safePublish(const geometry_msgs::Twist &twist);
 
@@ -50,7 +39,7 @@ protected:
 
 public:
 
-    MoveActionServerBase(const std::string& actionName, const std::string velocityTopic);
+    MoveActionServerBase(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory);
     ~MoveActionServerBase() = default;
 
 };
