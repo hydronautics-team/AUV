@@ -64,7 +64,13 @@ def main():
                                 {'succeeded':'SUCCESS', 'preempted':'ABORTED', 'aborted':'ABORTED'})
                                 
     
+    server = smach_ros.IntrospectionServer('main_fsm', sm, '/fsm/main_fsm')
+    server.start()
+    
     outcome = sm.execute()
+
+    rospy.spin()
+    server.stop()
 
 if __name__ == '__main__':
     main()
