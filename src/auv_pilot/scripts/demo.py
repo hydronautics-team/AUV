@@ -15,7 +15,7 @@ class InitializationState(smach.State):
         
     def execute(self, userdata):
         # We have to wait our action servers to initialize
-        rate = rospy.Rate(1)
+        rate = rospy.Rate(10)
         rate.sleep()
         return 'ok'
 
