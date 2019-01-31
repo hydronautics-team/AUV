@@ -18,10 +18,10 @@ geometry_msgs::Twist RealTwistFactory::createDirectionTwist(int direction, float
             return createLinearTwist(-velocity, 0.0f, 0.0f);
 
         case auv_common::MoveGoal::DIRECTION_RIGHT:
-            return createLinearTwist(0.0f, velocity, 0.0f);
+            return createLinearTwist(0.0f, 0.0f, velocity);
 
         case auv_common::MoveGoal::DIRECTION_LEFT:
-            return createLinearTwist(0.0f, -velocity, 0.0f);
+            return createLinearTwist(0.0f, 0.0f, -velocity);
 
         case auv_common::MoveGoal::ROTATE_ROLL_CW:
             return createAngularTwist(velocity, 0.0f, 0.0f);
@@ -30,13 +30,13 @@ geometry_msgs::Twist RealTwistFactory::createDirectionTwist(int direction, float
             return createAngularTwist(-velocity, 0.0f, 0.0f);
 
         case auv_common::MoveGoal::ROTATE_PITCH_CW:
-            return createAngularTwist(0.0f, velocity, 0.0f);
+            return createAngularTwist(0.0f, 0.0f, velocity);
 
         case auv_common::MoveGoal::ROTATE_PITCH_CCW:
-            return createAngularTwist(0.0f, -velocity, 0.0f);
+            return createAngularTwist(0.0f, 0.0f, -velocity);
 
         case auv_common::MoveGoal::ROTATE_YAW_CW:
-            return createAngularTwist(0.0f, velocity, 0.0f); // This one is only correct
+            return createAngularTwist(0.0f, velocity, 0.0f);
 
         case auv_common::MoveGoal::ROTATE_YAW_CCW:
             return createAngularTwist(0.0f, -velocity, 0.0f);
