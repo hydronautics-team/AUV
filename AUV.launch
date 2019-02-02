@@ -3,65 +3,67 @@
     <arg name="missions" default="true" />
     <arg name="record" default="false" />
     <arg name="stream" default="false" />
+    <arg name="simulation" default="false" />
 
     <group if="$(arg missions)">
-        <!-- TODO: Add simulation mode -->
 
+  	    <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
+            <remap from="/cam_front_1/image_raw" to="/ROV_model_URDF/camera1/image_raw" if="$(arg simulation)" />
+        </node>
 <!--
         <node pkg="auv_vision" name="tile_locator" type="tile_locator" output="screen" />
-
         <node pkg="auv_vision" name="drums_locator" type="drums_locator" output="screen" />
-
         <node pkg="auv_vision" name="flare_locator" type="flare_locator" output="screen" />
 -->
 
-  	    <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen" />
-
         <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
-            <param name="simulation" value="false" />
+            <param name="simulation" value="$(arg simulation)" />
         </node>
-
-        <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
-
-        <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
+        
+        <group unless="$(arg simulation)">
+            <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
+            <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
+        </group>
           
     </group>
 
-    <!-- First front camera -->
-    <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
-        <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />
-        <param name="image_width" value="640" />
-        <param name="image_height" value="480" />
-        <param name="pixel_format" value="yuyv" />
-        <param name="framerate" value="30" />
-        <param name="camera_frame_id" value="cam_front_1" />
-        <param name="camera_name" value="cam_front_1" />
-        <param name="io_method" value="mmap"/>
-    </node>
+    <group unless="$(arg stream)">
+        <!-- First front camera -->
+        <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
+            <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />
+            <param name="image_width" value="640" />
+            <param name="image_height" value="480" />
+            <param name="pixel_format" value="yuyv" />
+            <param name="framerate" value="30" />
+            <param name="camera_frame_id" value="cam_front_1" />
+            <param name="camera_name" value="cam_front_1" />
+            <param name="io_method" value="mmap"/>
+        </node>
 
-    <!-- Second front camera -->
-    <node name="cam_front_2" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
-        <param name="video_device" value="/dev/v4l/by-id/usb-WQH_USB_Camera_20170821-video-index0" />
-        <param name="image_width" value="640" />
-        <param name="image_height" value="480" />
-        <param name="pixel_format" value="yuyv" />
-        <param name="framerate" value="30" />
-        <param name="camera_frame_id" value="cam_front_2" />
-        <param name="camera_name" value="cam_front_2" />
-        <param name="io_method" value="mmap"/>
-    </node>
+        <!-- Second front camera -->
+        <node name="cam_front_2" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
+            <param name="video_device" value="/dev/v4l/by-id/usb-WQH_USB_Camera_20170821-video-index0" />
+            <param name="image_width" value="640" />
+            <param name="image_height" value="480" />
+            <param name="pixel_format" value="yuyv" />
+            <param name="framerate" value="30" />
+            <param name="camera_frame_id" value="cam_front_2" />
+            <param name="camera_name" value="cam_front_2" />
+            <param name="io_method" value="mmap"/>
+        </node>
 
-    <!-- Bottom camera -->
-    <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
-        <param name="video_device" value="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._H264_USB_Camera_SN0001-video-index0" />
-        <param name="image_width" value="640" />
-        <param name="image_height" value="480" />
-        <param name="pixel_format" value="yuyv" />
-        <param name="framerate" value="30" />
-        <param name="camera_frame_id" value="cam_bottom" />
-        <param name="camera_name" value="cam_bottom" />
-        <param name="io_method" value="mmap"/>
-    </node>
+        <!-- Bottom camera -->
+        <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
+            <param name="video_device" value="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._H264_USB_Camera_SN0001-video-index0" />
+            <param name="image_width" value="640" />
+            <param name="image_height" value="480" />
+            <param name="pixel_format" value="yuyv" />
+            <param name="framerate" value="30" />
+            <param name="camera_frame_id" value="cam_bottom" />
+            <param name="camera_name" value="cam_bottom" />
+            <param name="io_method" value="mmap"/>
+        </node>
+    </group>
 
     <group if="$(arg record)">
         <!-- First front camera recorder -->
