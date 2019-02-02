@@ -1,9 +1,19 @@
 <launch>
 
+    <!-- Enables missions accomplishment -->
     <arg name="missions" default="true" />
+
+    <!-- Enables video recording. Use 'storage' parameter to specify recorded video location. -->
     <arg name="record" default="false" />
+
+    <!-- Enables video streaming through network -->
     <arg name="stream" default="false" />
+
+    <!-- Enables simulation mode (for simple simulator) -->
     <arg name="simulation" default="false" />
+
+    <!-- Root path for all output videos and images. MUST NOT END WITH SLASH!!!!!! -->
+    <arg name="storage" />
 
     <group if="$(arg missions)">
 
@@ -27,7 +37,7 @@
           
     </group>
 
-    <group unless="$(arg stream)">
+    <group unless="$(arg simulation)">
         <!-- First front camera -->
         <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
             <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />
