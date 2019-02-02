@@ -17,10 +17,10 @@ geometry_msgs::Twist SimulationTwistFactory::createDirectionTwist(int direction,
             return createLinearTwist(-velocity, 0.0f, 0.0f);
 
         case auv_common::MoveGoal::DIRECTION_RIGHT:
-            return createLinearTwist(0.0f, velocity, 0.0f);
+            return createLinearTwist(0.0f, -velocity, 0.0f);
 
         case auv_common::MoveGoal::DIRECTION_LEFT:
-            return createLinearTwist(0.0f, -velocity, 0.0f);
+            return createLinearTwist(0.0f, velocity, 0.0f);
 
         case auv_common::MoveGoal::ROTATE_ROLL_CW:
             return createAngularTwist(velocity, 0.0f, 0.0f);

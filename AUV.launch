@@ -16,25 +16,26 @@
     <arg name="storage" />
 
     <group if="$(arg missions)">
+        <!-- TODO: Rename -->
+        <node pkg="auv_pilot" name="simple_simulation_fsm" type="simple_simulation_fsm.py" output="screen" />
+    </group>
 
-  	    <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
-            <remap from="/cam_front_1/image_raw" to="/ROV_model_URDF/camera1/image_raw" if="$(arg simulation)" />
-        </node>
+    <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
+        <remap from="/cam_front_1/image_raw" to="/stereo/camera/right/image_raw" if="$(arg simulation)" />
+    </node>
 <!--
-        <node pkg="auv_vision" name="tile_locator" type="tile_locator" output="screen" />
-        <node pkg="auv_vision" name="drums_locator" type="drums_locator" output="screen" />
-        <node pkg="auv_vision" name="flare_locator" type="flare_locator" output="screen" />
+    <node pkg="auv_vision" name="tile_locator" type="tile_locator" output="screen" />
+    <node pkg="auv_vision" name="drums_locator" type="drums_locator" output="screen" />
+    <node pkg="auv_vision" name="flare_locator" type="flare_locator" output="screen" />
 -->
 
-        <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
-            <param name="simulation" value="$(arg simulation)" />
-        </node>
+    <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
+        <param name="simulation" value="$(arg simulation)" />
+    </node>
         
-        <group unless="$(arg simulation)">
-            <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
-            <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
-        </group>
-          
+    <group unless="$(arg simulation)">
+        <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
+        <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
     </group>
 
     <group unless="$(arg simulation)">
