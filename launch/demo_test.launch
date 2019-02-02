@@ -15,8 +15,4 @@
         <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
     </group>
 
-    <group if="$(arg record)">
-        <include file="record.launch" />
-    </group>
-
 </launch>

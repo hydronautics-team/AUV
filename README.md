@@ -17,7 +17,7 @@ Use following commands to build and launch:
 source /opt/ros/kinetic/setup.bash
 catkin_make
 source devel/setup.bash
-roslaunch AUV.launch
+roslaunch launch/AUV.launch
 ```
 For more details see our wiki.
 To build code with locally built OpenCV (not from ROS distribution), uncomment corresponding lines in [src/auv_vision/CMakeLists.txt](src/auv_vision/CMakeLists.txt).
