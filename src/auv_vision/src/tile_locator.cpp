@@ -17,9 +17,11 @@ using namespace std;
 using namespace cv;
 
 // JUST FOR DEBUG! REAL TOPIC IS /cam_bottom/image_raw
+static const std::string OPENCV_WINDOW = "tile_window";
+
 static const std::string CAMERA_TOPIC = "/cam_front_1/image_raw";
 
-static const std::string TILE_ANGLE_PUBLISH_TOPIC = "/tile/angle";
+static const std::string TILE_ANGLE_PUBLISH_TOPIC = "/tile/angle/cycki";
 
 static const std::string TILE_POSITION_PUBLISH_TOPIC = "/tile/position";
 
@@ -108,6 +110,8 @@ protected:
     // Stub logic
     void process(const cv_bridge::CvImagePtr& cv_ptr)
     {
+        
+
         cv::Mat frame = cv_ptr->image;
         string angle_text;
 
@@ -118,10 +122,13 @@ protected:
         //putText(frame,angle_text,Point(10,110),CV_FONT_NORMAL,1,255);
         //global angle
         angleVar(findVertical(frame), &angle, &quartcircle);
-        //angle_text = std::to_string(angle * 180 / CV_PI + quartcircle * 90);
-        //putText(frame,std::to_string(angle * 180 / CV_PI),Point(10,30),CV_FONT_NORMAL,1,255);
-        //putText(frame,std::to_string(quartcircle*45),Point(10,70),CV_FONT_NORMAL,1,255);
-        //putText(frame,angle_text,Point(10,110),CV_FONT_NORMAL,1,255);
+        angle_text = std::to_string(angle * 180 / CV_PI + quartcircle * 90);
+        putText(frame,std::to_string(angle * 180 / CV_PI),Point(10,30),CV_FONT_NORMAL,1,255);
+        putText(frame,std::to_string(quartcircle*45),Point(10,70),CV_FONT_NORMAL,1,255);
+        putText(frame,angle_text,Point(10,110),CV_FONT_NORMAL,1,255);
+
+        cv::imshow(OPENCV_WINDOW, frame);
+        cv::waitKey(3);
 
 
         std_msgs::Float32 angleMsg;
@@ -145,12 +152,15 @@ public:
 
     TilePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
     {
+        cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
+
         anglePublisher = nodeHandle.advertise<std_msgs::Float32>(TILE_ANGLE_PUBLISH_TOPIC, 100);
         positionPublisher = nodeHandle.advertise<geometry_msgs::Point>(TILE_POSITION_PUBLISH_TOPIC, 100);
     }
 
     ~TilePublisher()
     {
+        cv::destroyWindow(OPENCV_WINDOW);
     }
 
 };
