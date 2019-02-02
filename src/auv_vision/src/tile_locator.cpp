@@ -47,7 +47,7 @@ private:
     void imgProc(Mat img) //обработка изображения
     {
         blur(img, img, Size(9,9));
-        daptiveThreshold(img, img, 255, ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 15, 2);
+        adaptiveThreshold(img, img, 255, ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 15, 2);
         Canny( img, img, 200, 600, 3);
     }
 
