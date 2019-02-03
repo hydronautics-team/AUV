@@ -15,9 +15,9 @@
     <!-- Root path for all output videos and images. MUST NOT END WITH SLASH!!!!!! -->
     <arg name="storage" />
 
+
     <group if="$(arg missions)">
-        <!-- TODO: Rename -->
-        <node pkg="auv_pilot" name="simple_simulation_fsm" type="simple_simulation_fsm.py" output="screen" />
+        <node pkg="auv_pilot" name="main_fsm" type="main_fsm.py" output="screen" />
     </group>
 
     <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
