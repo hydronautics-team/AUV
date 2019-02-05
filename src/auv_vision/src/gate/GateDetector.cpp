@@ -174,7 +174,9 @@ GateDescriptor GateDetector::detect(const cv::Mat &src, bool withPreprocess) {
     // Step 6: check length relation between lines and relation between possible gates' sides
     float verticalRelation = getLength(line2) / getLength(line1);
     float sidesRelation = getDistance(line1[0], line1[1], line2[0], line2[1]) / getLength(line2);
-    if (verticalRelation < 0.4f || sidesRelation < 0.4f || sidesRelation > 1.51f)
+    if (sidesRelation < 1.0f)
+        sidesRelation = 1.0f / sidesRelation;
+    if (verticalRelation < 0.4f || sidesRelation > 1.21f)
         return GateDescriptor::noGates();
 
     // Step 7: find corners of the gates
