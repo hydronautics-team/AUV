@@ -12,11 +12,11 @@ from auv_common.msg import MoveGoal, MoveAction
 # TODO: Try to implement through extending smach.StateMachine class
 def create_gate_fsm():
 
-    def exploreGate(self, userData, gateMessage):
+    def exploreGate(userData, gateMessage):
         return not gateMessage.hasPoint
 
 
-    def centerGate(self, userData, gateMessage):
+    def centerGate(userData, gateMessage):
         return not (gateMessage.hasPoint and abs(gateMessage.x) < 10)
 
     sm = smach.StateMachine(outcomes=['OK', 'FAILED'])

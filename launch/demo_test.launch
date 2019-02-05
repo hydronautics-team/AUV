@@ -1,8 +1,6 @@
 <launch>
 
     <arg name="simulation" default="false" />
-    <arg name="record" default="false" />
-
 
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
         <param name="simulation" value="$(arg simulation)" />
