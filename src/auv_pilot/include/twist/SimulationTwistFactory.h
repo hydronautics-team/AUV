@@ -11,7 +11,7 @@ class SimulationTwistFactory : public TwistFactory {
 
 private:
 
-    static constexpr const float DEFAULT_VELOCITY = 3.0f;
+    static constexpr const float DEFAULT_VELOCITY = 1.5f;
 
 public:
 
