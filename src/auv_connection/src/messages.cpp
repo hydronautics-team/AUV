@@ -407,16 +407,19 @@ void popFromVector(std::vector<uint8_t> &vector, float &output, bool revert)
   */
 uint16_t getChecksum16b(std::vector<uint8_t> &vector)
 {
-    uint16_t crc = 0;
+    uint8_t *pcBlock = &vector[0]; 
+    uint16_t len = vector.size();
+    uint16_t crc = 0xFFFF;
+    //int crc_fix = reinterpret_cast<int*>(&crc);
+    uint8_t i;
+    len = len-2;
 
-    for(unsigned long i=0; i < vector.size(); i++) {
-        crc = static_cast<uint16_t>((crc >> 8) | (crc << 8));
-        crc ^= vector[i];
-        crc ^= static_cast<uint8_t>((crc & 0xFF) >> 4);
-        crc ^= (crc << 8) << 4;
-        crc ^= ((crc & 0xff) << 4) << 1;
+    while (len--) {
+        crc ^= *pcBlock++ << 8;
+
+        for (i = 0; i < 8; i++)
+            crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1;
     }
-
     return crc;
 }
 
