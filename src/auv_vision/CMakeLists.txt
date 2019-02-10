@@ -22,9 +22,9 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## Find OpenCV
-##find_package(OpenCV)
+find_package(OpenCV)
 ## For locally built OpenCV, comment previous line and uncomment following:
-find_package(OpenCV REQUIRED HINTS ${OpenCV_DIR} NO_DEFAULT_PATH)
+## find_package(OpenCV REQUIRED HINTS ${OpenCV_DIR} NO_DEFAULT_PATH)
 
 ################################################
 ## Declare ROS messages, services and actions ##
