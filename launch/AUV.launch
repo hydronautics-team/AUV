@@ -3,14 +3,17 @@
     <!-- Enables missions accomplishment -->
     <arg name="missions" default="true" />
 
-    <!-- Enables video recording. Use 'storage' parameter to specify recorded video location. -->
-    <arg name="record" default="false" />
-
     <!-- Enables video streaming through network -->
     <arg name="stream" default="false" />
 
     <!-- Enables simulation mode (for simple simulator) -->
     <arg name="simulation" default="false" />
+
+    <!-- Enables GUI windows for debugging visison nodes -->
+    <arg name="debugVision" default="false" />
+
+    <!-- Enables video recording. Use 'storage' parameter to specify recorded video location. -->
+    <arg name="record" default="false" />
 
     <!-- Root path for all output videos and images. MUST NOT END WITH SLASH!!!!!! -->
     <arg name="storage" />
@@ -22,6 +25,7 @@
 
     <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
         <remap from="/cam_front_1/image_raw" to="/stereo/camera/right/image_raw" if="$(arg simulation)" />
+        <param name="debugVision" value="$(arg debugVision)" />
     </node>
 <!--
     <node pkg="auv_vision" name="tile_locator" type="tile_locator" output="screen" />
