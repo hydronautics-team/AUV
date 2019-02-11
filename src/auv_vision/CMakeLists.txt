@@ -89,6 +89,8 @@ add_executable(tile_locator
         src/tile_locator.cpp
         include/common/AbstractImageConverter.h
         src/common/AbstractImageConverter.cpp
+        include/tile/TileAngle.h
+        src/tile/TileAngle.cpp
         include/util/ImgprocPipeline.h
         src/util/ImgprocPipeline.cpp
         include/util/ImgprocUtil.h
