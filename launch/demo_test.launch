@@ -2,9 +2,9 @@
 
     <arg name="simulation" default="false" />
 
-    <arg name="simulationVelocity" default="1.5f" />
+    <arg name="simulationVelocity" default="1.5" />
 
-    <arg name="realVelocity" default="3000.0f" />
+    <arg name="realVelocity" default="3000.0" />
 
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
         <param name="simulation" value="$(arg simulation)" />

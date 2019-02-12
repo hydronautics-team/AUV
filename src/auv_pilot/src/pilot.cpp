@@ -35,9 +35,9 @@ int main(int argc, char **argv)
     nodeHandle.param(PARAM_SIMULTATION, isSimulation, false);
     std::string topic = isSimulation ? GAZEBO_VELOCITY_TOPIC : REAL_VELOCITY_TOPIC;
     if (isSimulation)
-        nodeHandle.param(PARAM_SIMULATION_VELOCITY, defaultVelocity);
+        nodeHandle.param(PARAM_SIMULATION_VELOCITY, defaultVelocity, 0.0f);
     else
-        nodeHandle.param(PARAM_REAL_VELOCITY, defaultVelocity);
+        nodeHandle.param(PARAM_REAL_VELOCITY, defaultVelocity, 0.0f);
 
     TwistFactory* twistFactory;
     if (isSimulation)
