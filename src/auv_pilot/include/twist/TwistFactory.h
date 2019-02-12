@@ -16,9 +16,13 @@
  */
 class TwistFactory {
 
+protected:
+
+    float defaultVelocity;
+
 public:
 
-    TwistFactory() = default;
+    TwistFactory(float defaultVelocity);
     TwistFactory(TwistFactory& other) = default;
     ~TwistFactory() = default;
 

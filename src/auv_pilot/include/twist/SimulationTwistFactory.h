@@ -9,13 +9,9 @@
  */
 class SimulationTwistFactory : public TwistFactory {
 
-private:
-
-    static constexpr const float DEFAULT_VELOCITY = 1.5f;
-
 public:
 
-    SimulationTwistFactory();
+    SimulationTwistFactory(float defaultVelocity);
     SimulationTwistFactory(TwistFactory& other);
     ~SimulationTwistFactory() = default;
 

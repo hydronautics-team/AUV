@@ -2,7 +2,7 @@
 #include "../../include/twist/SimulationTwistFactory.h"
 
 
-SimulationTwistFactory::SimulationTwistFactory() : TwistFactory() {}
+SimulationTwistFactory::SimulationTwistFactory(float defaultVelocity) : TwistFactory(defaultVelocity) {}
 
 
 SimulationTwistFactory::SimulationTwistFactory(TwistFactory &other) : TwistFactory(other) {}
@@ -47,5 +47,5 @@ geometry_msgs::Twist SimulationTwistFactory::createDirectionTwist(int direction,
 
 
 geometry_msgs::Twist SimulationTwistFactory::createDirectionTwist(int direction) {
-    return createDirectionTwist(direction, DEFAULT_VELOCITY);
+    return createDirectionTwist(direction, defaultVelocity);
 }

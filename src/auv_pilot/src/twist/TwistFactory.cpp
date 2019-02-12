@@ -1,5 +1,6 @@
 #include "../../include/twist/TwistFactory.h"
 
+TwistFactory::TwistFactory(float defaultVelocity) : defaultVelocity(defaultVelocity) {}
 
 geometry_msgs::Twist TwistFactory::createTwist(float x, float y, float z, float roll, float pitch, float yaw) {
     geometry_msgs::Twist twist;

@@ -8,6 +8,12 @@
 
 static const std::string PILOT_NODE_NAME = "pilot";
 
+static const std::string PARAM_SIMULTATION = "simulation";
+
+static const std::string PARAM_REAL_VELOCITY = "realVelocity";
+
+static const std::string PARAM_SIMULATION_VELOCITY = "simulationVelocity";
+
 static const std::string GAZEBO_VELOCITY_TOPIC = "/cmd_vel";
 
 static const std::string REAL_VELOCITY_TOPIC = "/pilot/velocity";
@@ -24,13 +30,20 @@ int main(int argc, char **argv)
     ros::NodeHandle nodeHandle(PILOT_NODE_NAME);
 
     bool isSimulation;
-    nodeHandle.param("simulation", isSimulation, false);
+    float defaultVelocity;
+
+    nodeHandle.param(PARAM_SIMULTATION, isSimulation, false);
     std::string topic = isSimulation ? GAZEBO_VELOCITY_TOPIC : REAL_VELOCITY_TOPIC;
+    if (isSimulation)
+        nodeHandle.param(PARAM_SIMULATION_VELOCITY, defaultVelocity);
+    else
+        nodeHandle.param(PARAM_REAL_VELOCITY, defaultVelocity);
+
     TwistFactory* twistFactory;
     if (isSimulation)
-        twistFactory = new SimulationTwistFactory();
+        twistFactory = new SimulationTwistFactory(defaultVelocity);
     else
-        twistFactory = new RealTwistFactory();
+        twistFactory = new RealTwistFactory(defaultVelocity);
 
     MoveByTimeServer moveByTimeServer(MOVE_BY_TIME_ACTION, topic, *twistFactory);
     MoveByTileServer moveByTileServer(MOVE_BY_TILE_ACTION, topic, *twistFactory);

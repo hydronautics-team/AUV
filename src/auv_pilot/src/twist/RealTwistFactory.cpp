@@ -2,7 +2,7 @@
 #include "../../include/twist/RealTwistFactory.h"
 
 
-RealTwistFactory::RealTwistFactory() : TwistFactory() {}
+RealTwistFactory::RealTwistFactory(float defaultVelocity) : TwistFactory(defaultVelocity) {}
 
 
 RealTwistFactory::RealTwistFactory(TwistFactory &other) : TwistFactory(other) {}
@@ -48,5 +48,5 @@ geometry_msgs::Twist RealTwistFactory::createDirectionTwist(int direction, float
 
 
 geometry_msgs::Twist RealTwistFactory::createDirectionTwist(int direction) {
-    return createDirectionTwist(direction, DEFAULT_VELOCITY);
+    return createDirectionTwist(direction, defaultVelocity);
 }

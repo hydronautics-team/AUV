@@ -9,13 +9,9 @@
  */
 class RealTwistFactory : public TwistFactory {
 
-private:
-
-    static constexpr const float DEFAULT_VELOCITY = 10000.0f;
-
 public:
 
-    RealTwistFactory();
+    RealTwistFactory(float defaultVelocity);
     RealTwistFactory(TwistFactory& other);
     ~RealTwistFactory() = default;
 

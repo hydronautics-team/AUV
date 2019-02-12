@@ -2,8 +2,14 @@
 
     <arg name="simulation" default="false" />
 
+    <arg name="simulationVelocity" default="1.5f" />
+
+    <arg name="realVelocity" default="3000.0f" />
+
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
         <param name="simulation" value="$(arg simulation)" />
+        <param name="simulationVelocity" value="$(arg simulationVelocity)" />
+        <param name="realVelocity" value="$(arg realVelocity)" />
     </node>
 
     <node pkg="auv_pilot" name="demo" type="demo.py" output="screen" />
