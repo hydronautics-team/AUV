@@ -34,22 +34,57 @@ def main():
 
     with sm:
 
-        smach.StateMachine.add('Init', InitializationState(), transitions={'ok':'FORWARD'})
+        smach.StateMachine.add('Init', InitializationState(), transitions={'ok':'FORWARD_1'})
 
-        smach.StateMachine.add('FORWARD',
+        smach.StateMachine.add('FORWARD_1',
                                 smach_ros.SimpleActionState(
                                     'move_by_time',
                                     MoveAction,
                                     goal=forward),
-                                {'succeeded':'ROTATION', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+                                {'succeeded':'ROTATION_1', 'preempted':'ABORTED', 'aborted':'ABORTED'})
 
-        smach.StateMachine.add('ROTATION',
+        smach.StateMachine.add('ROTATION_1',
                                 smach_ros.SimpleActionState(
                                     'move_by_time',
                                     MoveAction,
                                     goal=rotation),
-                                {'succeeded':'FORWARD', 'preempted':'ABORTED', 'aborted':'ABORTED'})
-                                
+                                {'succeeded':'FORWARD_2', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+
+        smach.StateMachine.add('FORWARD_2',
+                                smach_ros.SimpleActionState(
+                                    'move_by_time',
+                                    MoveAction,
+                                    goal=forward),
+                                {'succeeded':'ROTATION_2', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+
+        smach.StateMachine.add('ROTATION_2',
+                                smach_ros.SimpleActionState(
+                                    'move_by_time',
+                                    MoveAction,
+                                    goal=rotation),
+                                {'succeeded':'FORWARD_3', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+
+
+        smach.StateMachine.add('FORWARD_3',
+                                smach_ros.SimpleActionState(
+                                    'move_by_time',
+                                    MoveAction,
+                                    goal=forward),
+                                {'succeeded':'ROTATION_3', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+
+        smach.StateMachine.add('ROTATION_3',
+                                smach_ros.SimpleActionState(
+                                    'move_by_time',
+                                    MoveAction,
+                                    goal=rotation),
+                                {'succeeded':'FORWARD_4', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+
+        smach.StateMachine.add('FORWARD_4',
+                                smach_ros.SimpleActionState(
+                                    'move_by_time',
+                                    MoveAction,
+                                    goal=forward),
+                                {'succeeded':'SUCCESS', 'preempted':'ABORTED', 'aborted':'ABORTED'})
     
     outcome = sm.execute()
 

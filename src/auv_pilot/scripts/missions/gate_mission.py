@@ -29,7 +29,7 @@ def create_gate_fsm():
 
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
-        forwardMoveGoal.value = 10
+        forwardMoveGoal.value = 1000
 
         smach.StateMachine.add('SIDE_MOVE',
                                 smach_ros.SimpleActionState(
