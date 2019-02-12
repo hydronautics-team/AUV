@@ -65,7 +65,7 @@
             <param name="io_method" value="mmap"/>
         </node>
 
-        <!-- Second front camera -->
+        <!-- Second front camera (temporary removed)
         <node name="cam_front_2" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
             <param name="video_device" value="/dev/v4l/by-id/usb-WQH_USB_Camera_20170821-video-index0" />
             <param name="image_width" value="640" />
@@ -76,6 +76,7 @@
             <param name="camera_name" value="cam_front_2" />
             <param name="io_method" value="mmap"/>
         </node>
+        -->
 
         <!-- Bottom camera -->
         <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
@@ -100,13 +101,14 @@
             <param name="filename" value="$(arg storage)/front-1.avi" />
         </node>
 
-        <!-- Second front camera recorder -->
+        <!-- Second front camera recorder (temporary disabled)
         <node name="front_recorder_2" pkg="auv_vision" type="video_recorder" output="screen">
             <remap from="image" to="/cam_front_2/image_raw"/>
             <param name="fps" value="30" />
             <param name="codec" value="H264" />
             <param name="filename" value="$(arg storage)/front-2.avi" />
         </node>
+        -->
 
         <!-- Bottom camera recorder -->
         <node name="bottom_recorder" pkg="auv_vision" type="video_recorder" output="screen">
