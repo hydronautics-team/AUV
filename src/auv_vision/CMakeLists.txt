@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   image_transport
+  dynamic_reconfigure
   auv_common
 )
 
@@ -45,6 +46,9 @@ find_package(OpenCV)
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
 
+generate_dynamic_reconfigure_options(
+        cfg/gate_locator.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -83,7 +87,7 @@ add_executable(gate_locator
         src/util/ImgprocUtil.cpp)
 target_link_libraries(gate_locator ${catkin_LIBRARIES}
         ${OpenCV_LIBS})
-add_dependencies(gate_locator auv_common_generate_messages_cpp)
+add_dependencies(gate_locator auv_common_generate_messages_cpp ${PROJECT_NAME}_gencfg)
 
 add_executable(tile_locator
         src/tile_locator.cpp

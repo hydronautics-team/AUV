@@ -4,6 +4,8 @@
 #include <gate/GateDescriptor.h>
 #include <gate/GateDetector.h>
 #include <util/ImgprocUtil.h>
+#include <dynamic_reconfigure/server.h>
+#include <auv_vision/GateLocatorConfig.h>
 #include "common/AbstractImageConverter.h"
 #include "auv_common/OptionalPoint2D.h"
 

@@ -134,7 +134,7 @@ GateDescriptor GateDetector::detect(const cv::Mat &src, bool withPreprocess) {
     std::sort(allPoints.begin(), allPoints.end(),
               [](const cv::Point2f& a, const cv::Point2f& b) -> bool { return a.x > b.x; });
 
-    // Step 4: gather points that lie on one vertical line - it is equals to mergin original detected lines
+    // Step 4: gather points that lie on one vertical line - it is equals to merging original detected lines
     cv::Point2f currentPoint = allPoints[0];
     std::vector<std::vector<cv::Point2f>> pointLines;
     std::vector<cv::Point2f> currentPointLine;
