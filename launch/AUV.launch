@@ -1,5 +1,8 @@
 <launch>
 
+    <!-- TODO: Decompose -->
+    <!-- TODO: Remove simulation velocities -->
+
     <!-- Enables missions accomplishment -->
     <arg name="missions" default="true" />
 
