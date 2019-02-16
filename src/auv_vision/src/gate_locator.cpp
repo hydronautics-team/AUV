@@ -19,13 +19,28 @@ static const std::string GATE_PUBLISH_TOPIC = "/gate";
 
 static const std::string GATE_LOCATOR_NODE_NAME = "gate_locator";
 
+
+GateDetector detector;
+
+void reconfigure(auv_vision::GateLocatorConfig& config, uint32_t level) {
+    detector.setVerticalSlope(config.vertical_slope);
+    detector.setVerticalLengthRelation(config.vertical_length_relation);
+    detector.setMergingLineDistance(config.merging_line_distance);
+    detector.setAngleQualityThreshold(config.angle_quality_threshold);
+    detector.setTotalQualityThreshold(config.total_quality_threshold);
+}
+
+
+
 class GatePublisher : public AbstractImageConverter {
 
 private:
 
-    ros::Publisher gatePublisher;
+    dynamic_reconfigure::Server<auv_vision::GateLocatorConfig> reconfigurationServer;
 
-    GateDetector detector;
+    image_transport::Publisher imagePublisher;
+
+    ros::Publisher gatePublisher;
 
     bool windowsEnabled;
 
@@ -63,12 +78,23 @@ protected:
             cv::imshow(OPENCV_WINDOW, image);
             cv::waitKey(3);
         }
+
+        sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
+        imagePublisher.publish(imageMsg);
     }
 
 public:
 
     GatePublisher(const std::string &inputImageTopic, bool enableWindows) : AbstractImageConverter(inputImageTopic),
                                                                             windowsEnabled(enableWindows) {
+
+        dynamic_reconfigure::Server<auv_vision::GateLocatorConfig>::CallbackType f;
+        f = boost::bind(&reconfigure, _1, _2);
+        reconfigurationServer.setCallback(f);
+
+        image_transport::ImageTransport it(nodeHandle);
+        imagePublisher = it.advertise("/gate/image", 100);
+
         gatePublisher = nodeHandle.advertise<auv_common::OptionalPoint2D>(GATE_PUBLISH_TOPIC, 100);
         if (windowsEnabled)
             cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);

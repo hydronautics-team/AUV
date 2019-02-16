@@ -9,6 +9,12 @@ class GateDetector {
 
 private:
 
+    float verticalSlope = 10.0f;
+    float verticalLengthRelation = 0.1f;
+    float mergingLineDistance = 22.0f;
+    float angleQualityThreshold = 5.0f;
+    float totalQualityThreshold = 1.5f;
+
     void defaultPreprocess(const cv::Mat& src, cv::Mat& dst);
 
     void detectVerticalLines(const cv::Mat& image, std::vector<cv::Vec4f>& lines);
@@ -37,6 +43,26 @@ public:
     GateDetector& operator=(const GateDetector& other) = default;
 
     GateDescriptor detect(const cv::Mat& src, bool withPreprocess);
+
+    float getVerticalSlope() const;
+
+    void setVerticalSlope(float verticalSlope);
+
+    float getVerticalLengthRelation() const;
+
+    void setVerticalLengthRelation(float verticalLengthRelation);
+
+    float getMergingLineDistance() const;
+
+    void setMergingLineDistance(float mergingLineDistance);
+
+    float getAngleQualityThreshold() const;
+
+    void setAngleQualityThreshold(float angleQualityThreshold);
+
+    float getTotalQualityThreshold() const;
+
+    void setTotalQualityThreshold(float totalQualityThreshold);
 
 };
 

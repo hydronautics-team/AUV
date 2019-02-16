@@ -66,7 +66,7 @@ void GateDetector::detectVerticalLines(const cv::Mat &image, std::vector<cv::Vec
     double maxLength = 0;
     std::vector<cv::Vec4f> filteredLines;
     for (int i = 0; i < allLines.size(); i++) {
-        if (getLineSlope(allLines[i]) < 10.0f) {
+        if (getLineSlope(allLines[i]) < verticalSlope) {
             filteredLines.push_back(allLines[i]);
             double length = getLength(allLines[i]);
             if (length > maxLength)
@@ -76,7 +76,7 @@ void GateDetector::detectVerticalLines(const cv::Mat &image, std::vector<cv::Vec
 
     for (int i = 0; i < filteredLines.size(); i++) {
         double length = getLength(filteredLines[i]);
-        if (length >= 0.1*maxLength)
+        if (length >= verticalLengthRelation * maxLength)
             lines.push_back(filteredLines[i]);
     }
 }
@@ -141,7 +141,7 @@ GateDescriptor GateDetector::detect(const cv::Mat &src, bool withPreprocess) {
     currentPointLine.push_back(currentPoint);
     for (int i = 1; i < allPoints.size(); i++) {
 
-        if (std::abs(allPoints[i].x - currentPoint.x) > 22.0f) {
+        if (std::abs(allPoints[i].x - currentPoint.x) > mergingLineDistance) {
             pointLines.push_back(currentPointLine);
             currentPointLine.clear();
         }
@@ -185,7 +185,7 @@ GateDescriptor GateDetector::detect(const cv::Mat &src, bool withPreprocess) {
 
             float angleQuality = std::max({angleDiff1, angleDiff2, angleDiff3, angleDiff4});
 
-            if (angleQuality > 5.0f)
+            if (angleQuality > angleQualityThreshold)
                 continue;
 
             // 2. How equal vertical and horizontal sides
@@ -234,7 +234,7 @@ GateDescriptor GateDetector::detect(const cv::Mat &src, bool withPreprocess) {
             float sidesQuality = 1.0f - std::min({sideRelation1, sideRelation2, sideRelation3, sideRelation4});
 
             float totalQuality = verticalRelationQuality + horizontalRelationQuality + squareQuality + sidesQuality + angleQuality;
-            if (totalQuality > 1.5f)
+            if (totalQuality > totalQualityThreshold)
                 continue;
 
             passedThreshold = true;
@@ -268,7 +268,6 @@ GateDescriptor GateDetector::detect(const cv::Mat &src, bool withPreprocess) {
     return GateDescriptor::create({topLeft, topRight, bottomRight, bottomLeft});
 }
 
-
 float GateDetector::getAngle(float x1, float y1, float x2, float y2, float x3, float y3) {
     float dx21 = x2-x1;
     float dx31 = x3-x1;
@@ -277,4 +276,44 @@ float GateDetector::getAngle(float x1, float y1, float x2, float y2, float x3, f
     float m12 = sqrt( dx21*dx21 + dy21*dy21 );
     float m13 = sqrt( dx31*dx31 + dy31*dy31 );
     return acos( (dx21*dx31 + dy21*dy31) / (m12 * m13) );
+}
+
+float GateDetector::getVerticalSlope() const {
+    return verticalSlope;
+}
+
+void GateDetector::setVerticalSlope(float verticalSlope) {
+    GateDetector::verticalSlope = verticalSlope;
+}
+
+float GateDetector::getVerticalLengthRelation() const {
+    return verticalLengthRelation;
+}
+
+void GateDetector::setVerticalLengthRelation(float verticalLengthRelation) {
+    GateDetector::verticalLengthRelation = verticalLengthRelation;
+}
+
+float GateDetector::getMergingLineDistance() const {
+    return mergingLineDistance;
+}
+
+void GateDetector::setMergingLineDistance(float mergingLineDistance) {
+    GateDetector::mergingLineDistance = mergingLineDistance;
+}
+
+float GateDetector::getAngleQualityThreshold() const {
+    return angleQualityThreshold;
+}
+
+void GateDetector::setAngleQualityThreshold(float angleQualityThreshold) {
+    GateDetector::angleQualityThreshold = angleQualityThreshold;
+}
+
+float GateDetector::getTotalQualityThreshold() const {
+    return totalQualityThreshold;
+}
+
+void GateDetector::setTotalQualityThreshold(float totalQualityThreshold) {
+    GateDetector::totalQualityThreshold = totalQualityThreshold;
 }
