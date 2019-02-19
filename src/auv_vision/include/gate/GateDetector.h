@@ -27,8 +27,6 @@ private:
 
     void morphology(const cv::Mat& src, cv::Mat& dst);
 
-    float getAngle(float x1, float y1, float x2, float y2, float x3, float y3);
-
 public:
 
     GateDetector() = default;

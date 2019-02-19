@@ -1,5 +1,6 @@
 #include "common/AbstractImageConverter.h"
 
+/// Constructor's body, a colon (:) and a list of initializations for class members (the constructor initializes its members imageTransport and imageSubscriber
 AbstractImageConverter::AbstractImageConverter(const std::string& inputImageTopic)
     : imageTransport(nodeHandle)
 {

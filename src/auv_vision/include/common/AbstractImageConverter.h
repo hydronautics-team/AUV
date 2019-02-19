@@ -17,7 +17,7 @@
  * <br>
  * <br>Note that base class does not publish
  * data to any topics, all publishing logic
- * has to be implmented in child classes.
+ * has to be implemented in child classes.
  */
 class AbstractImageConverter
 {

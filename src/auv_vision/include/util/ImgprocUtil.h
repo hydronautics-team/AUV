@@ -13,4 +13,6 @@
  */
 cv::Point2f convertToCentralCoordinates(const cv::Point2f& point, int imageWidth, int imageHeight);
 
+cv::Point2f computeIntersect(cv::Vec4f a, cv::Vec4f b);
+
 #endif //AUV_VISION_IMGPROCUTIL_H

@@ -89,8 +89,6 @@ add_executable(tile_locator
         src/tile_locator.cpp
         include/common/AbstractImageConverter.h
         src/common/AbstractImageConverter.cpp
-        include/tile/TileAngle.h
-        src/tile/TileAngle.cpp
         include/util/ImgprocPipeline.h
         src/util/ImgprocPipeline.cpp
         include/util/ImgprocUtil.h
@@ -103,6 +101,14 @@ add_executable(drums_locator
         src/drums_locator.cpp
         include/common/AbstractImageConverter.h
         src/common/AbstractImageConverter.cpp
+        include/mat/MatDetector.h
+        src/mat/MatDetector.cpp
+        include/drums/DrumDetector.h
+        src/drums/DrumDetector.cpp
+        include/mat/MatDescriptor.h
+        src/mat/MatDescriptor.cpp
+        include/drums/DrumDescriptor.h
+        src/drums/DrumDescriptor.cpp
         include/util/ImgprocPipeline.h
         src/util/ImgprocPipeline.cpp
         include/util/ImgprocUtil.h

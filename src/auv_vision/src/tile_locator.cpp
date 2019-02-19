@@ -5,17 +5,12 @@
 #include <util/ImgprocUtil.h>
 #include <common/AbstractImageConverter.h>
 #include "std_msgs/Empty.h"
-#include "../include/tile/TileAngle.h"
 
-static const std::string OPENCV_WINDOW = "tile_window";
 
-static const std::string ENABLE_WINDOWS_PARAM = "debugVision";
+// JUST FOR DEBUG! REAL TOPIC IS /cam_bottom/image_raw
+static const std::string CAMERA_TOPIC = "/cam_front_1/image_raw";
 
-static const std::string CAMERA_TOPIC = "/cam_bottom/image_raw";
-
-static const std::string TILE_GLOBAL_ANGLE_PUBLISH_TOPIC = "/tile/angle/global";
-
-static const std::string TILE_VERTICAL_ANGLE_PUBLISH_TOPIC = "/tile/angle/vertical";
+static const std::string TILE_ANGLE_PUBLISH_TOPIC = "/tile/angle";
 
 static const std::string TILE_POSITION_PUBLISH_TOPIC = "/tile/position";
 
@@ -26,41 +21,27 @@ class TilePublisher : public AbstractImageConverter
 
 private:
 
-    ros::Publisher globalAnglePublisher;
-    ros::Publisher verticalAnglePublisher;
+    ros::Publisher anglePublisher;
     ros::Publisher positionPublisher;
 
     ros::Subscriber resetSubscriber;
 
     // Stub values
+    float angle = -90.0f;
     int positionX = 0;
     int positionY = 0;
 
-    TileAngle tracker;
-
-    bool windowsEnabled;
-
 protected:
 
+    // Stub logic
     void process(const cv_bridge::CvImagePtr& cv_ptr)
     {
-        cv::Mat frame = cv_ptr->image;
-        std_msgs::Float32 globalAngle, verticalAngle;
+        if (angle > 90.0f)
+            angle = -90.0f;
+        std_msgs::Float32 angleMsg;
+        angleMsg.data = angle;
+        anglePublisher.publish(angleMsg);
 
-        tracker.processing(frame);
-
-        if (windowsEnabled) {
-            cv::imshow(OPENCV_WINDOW, frame);
-            cv::waitKey(3);
-        }
-
-        globalAngle.data = tracker.globalAngle();
-        verticalAngle.data = tracker.verticalAngle();
-
-        globalAnglePublisher.publish(globalAngle);
-        verticalAnglePublisher.publish(verticalAngle);
-
-        /* Example of tile navigation
         if (positionX > 2000)
             positionX = 0;
         if (positionY > 2000)
@@ -72,40 +53,29 @@ protected:
         positionMsg.y = positionY;
         positionMsg.z = 0;
         positionPublisher.publish(positionMsg);
-        */
     }
 
 public:
 
-    TilePublisher(const std::string& inputImageTopic, bool enableWindows) : AbstractImageConverter(inputImageTopic),
-                                                                            windowsEnabled(enableWindows)
+    TilePublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
     {
-        globalAnglePublisher = nodeHandle.advertise<std_msgs::Float32>(TILE_GLOBAL_ANGLE_PUBLISH_TOPIC, 100);
-        verticalAnglePublisher = nodeHandle.advertise<std_msgs::Float32>(TILE_VERTICAL_ANGLE_PUBLISH_TOPIC, 100);
+        anglePublisher = nodeHandle.advertise<std_msgs::Float32>(TILE_ANGLE_PUBLISH_TOPIC, 100);
         positionPublisher = nodeHandle.advertise<geometry_msgs::Point>(TILE_POSITION_PUBLISH_TOPIC, 100);
-
-        if (windowsEnabled)
-            cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
     }
 
     ~TilePublisher()
     {
-        if (windowsEnabled)
-            cv::destroyWindow(OPENCV_WINDOW);
     }
 
 };
 
+
 /* TODO Fix code style */
 int main(int argc, char **argv)
 {
+
     ros::init(argc, argv, TILE_LOCATOR_NODE_NAME);
-
-    ros::NodeHandle nodeHandle(TILE_LOCATOR_NODE_NAME);
-    bool windowsEnabled;
-    nodeHandle.param(ENABLE_WINDOWS_PARAM, windowsEnabled, false);
-
-    TilePublisher tilePublisher(CAMERA_TOPIC, windowsEnabled);
+    TilePublisher tilePublisher(CAMERA_TOPIC);
 
     ros::spin();
 

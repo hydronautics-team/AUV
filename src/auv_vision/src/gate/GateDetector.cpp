@@ -164,117 +164,49 @@ GateDescriptor GateDetector::detect(const cv::Mat &src, bool withPreprocess) {
     }
 
 
-    // Step 5: Acquire quality metrics for each pair of lines
-    float bestQuality = INFINITY;
-    cv::Vec4f bestLine1, bestLine2;
-    bool passedThreshold = false;
+    // Step 5: find two longest lines
+    std::sort(mergedLines.begin(), mergedLines.end(), [this](const cv::Vec4f& a, const cv::Vec4f& b) {
+        return getLength(a) > getLength(b);
+    });
+    cv::Vec4f line1 = mergedLines[0];
+    cv::Vec4f line2 = mergedLines[1];
 
-    for (int i = 0; i < mergedLines.size(); i++) {
-        for (int j = 0; j < mergedLines.size(); j++) {
-            if (i == j)
-                continue;
-
-            cv::Vec4f line1 = mergedLines[i];
-            cv::Vec4f line2 = mergedLines[j];
-
-            // 1. How angles of polygon close to PI/2
-            float angleDiff1 = std::abs(CV_PI / 2 - getAngle(line1[2], line1[3], line1[0], line1[1], line2[2], line2[3]));
-            float angleDiff2 = std::abs(CV_PI / 2 - getAngle(line1[0], line1[1], line1[2], line1[3], line2[0], line2[1]));
-            float angleDiff3 = std::abs(CV_PI / 2 - getAngle(line2[2], line2[3], line2[0], line2[1], line1[2], line1[3]));
-            float angleDiff4 = std::abs(CV_PI / 2 - getAngle(line2[0], line2[1], line2[2], line2[3], line1[0], line1[1]));
-
-            float angleQuality = std::max({angleDiff1, angleDiff2, angleDiff3, angleDiff4});
-
-            if (angleQuality > 5.0f)
-                continue;
-
-            // 2. How equal vertical and horizontal sides
-            float verticalRelation = getLength(line2) / getLength(line1);
-            if (verticalRelation > 1.0f)
-                verticalRelation = 1.0f / verticalRelation;
-            float horizontalRelation = getDistance(line1[0], line1[1], line2[0], line2[1]) /
-                                       getDistance(line1[2], line1[3], line2[2], line2[3]);
-            if (horizontalRelation > 1.0f)
-                horizontalRelation = 1.0f / horizontalRelation;
-
-            float verticalRelationQuality = 1.0f - verticalRelation;
-            float horizontalRelationQuality = 1.0f - horizontalRelation;
-
-            // 3. How area of polygon differs from area of its bounding rectangle
-            std::vector<cv::Point2f> contour, hull;
-            contour.emplace_back(line1[0], line1[1]);
-            contour.emplace_back(line1[2], line1[3]);
-            contour.emplace_back(line2[0], line2[1]);
-            contour.emplace_back(line2[2], line2[3]);
-            cv::convexHull(contour, hull);
-            cv::Rect boundingRect = cv::boundingRect(contour);
-
-            float contourArea = cv::contourArea(hull);
-            float rectArea = boundingRect.area();
-            float squareRelation = contourArea / rectArea;
-            if (squareRelation > 1.0f)
-                squareRelation = 1.0f /squareRelation;
-
-            float squareQuality = 1.0f -squareRelation;
-
-            // 4. How equal horizontal and vertical sides
-            float sideRelation1 = getLength(line1) / getLength(cv::Vec4f(line1[2], line1[3], line2[2], line2[3]));
-            if (sideRelation1 > 1.0f)
-                sideRelation1 = 1.0f / sideRelation1;
-            float sideRelation2 = getLength(line1) / getLength(cv::Vec4f(line1[0], line1[1], line2[0], line2[1]));
-            if (sideRelation2 > 1.0f)
-                sideRelation2 = 1.0f / sideRelation2;
-            float sideRelation3 = getLength(line2) / getLength(cv::Vec4f(line2[2], line2[3], line1[2], line1[3]));
-            if (sideRelation3 > 1.0f)
-                sideRelation3 = 1.0f / sideRelation3;
-            float sideRelation4 = getLength(line2) / getLength(cv::Vec4f(line2[0], line2[1], line1[0], line1[1]));
-            if (sideRelation4 > 1.0f)
-                sideRelation4 = 1.0f / sideRelation4;
-
-            float sidesQuality = 1.0f - std::min({sideRelation1, sideRelation2, sideRelation3, sideRelation4});
-
-            float totalQuality = verticalRelationQuality + horizontalRelationQuality + squareQuality + sidesQuality + angleQuality;
-            if (totalQuality > 1.5f)
-                continue;
-
-            passedThreshold = true;
-            if (totalQuality < bestQuality) {
-                bestQuality = totalQuality;
-                bestLine1 = line1;
-                bestLine2 = line2;
-            }
-        }
-    }
-
-    if (!passedThreshold)
+    // Step 6: check length relation between lines and relation between possible gates' sides
+    float verticalRelation = getLength(line2) / getLength(line1);
+    float sidesRelation = getDistance(line1[0], line1[1], line2[0], line2[1]) / getLength(line2);
+    if (verticalRelation < 0.4f || sidesRelation < 0.4f || sidesRelation > 1.51f)
         return GateDescriptor::noGates();
 
-
-    // Step 6: Form gate from lines with best quality metrics
+    // Step 7: find corners of the gates
     cv::Vec4f leftLine, rightLine;
-    if (bestLine1[2] < bestLine2[2]) {
-        leftLine = bestLine1;
-        rightLine = bestLine2;
+    if (line1[2] < line2[2]) {
+        leftLine = line1;
+        rightLine = line2;
     } else {
-        leftLine = bestLine2;
-        rightLine = bestLine1;
+        leftLine = line2;
+        rightLine = line1;
     }
 
-    cv::Point2f topLeft = cv::Point2f(leftLine[2], leftLine[3]);
-    cv::Point2f topRight = cv::Point2f(rightLine[2], rightLine[3]);
-    cv::Point2f bottomLeft = cv::Point2f(leftLine[0], leftLine[1]);
-    cv::Point2f bottomRight = cv::Point2f(rightLine[0], rightLine[1]);
+    //cv::Point2f topLeft(std::min(line1[2], line2[2]), std::min(line1[3], line2[3]));
+    //cv::Point2f bottomRight(std::max(line1[0], line2[0]), std::min(line1[1], line2[1]));
+
+    cv::Point2f topLeft, topRight, bottomRight, bottomLeft;
+
+    if (leftLine[3] < rightLine[3]) {
+        topLeft = cv::Point2f(leftLine[2], leftLine[3]);
+        topRight = getProjection(rightLine, topLeft);
+    } else {
+        topRight = cv::Point2f(rightLine[2], rightLine[3]);
+        topLeft = getProjection(leftLine, topRight);
+    }
+
+    if (rightLine[1] < leftLine[1]) {
+        bottomRight = cv::Point2f(rightLine[0], rightLine[1]);
+        bottomLeft = getProjection(leftLine, bottomRight);
+    } else {
+        bottomLeft = cv::Point2f(leftLine[0], leftLine[1]);
+        bottomRight = getProjection(rightLine, bottomLeft);
+    }
 
     return GateDescriptor::create({topLeft, topRight, bottomRight, bottomLeft});
-}
-
-
-float GateDetector::getAngle(float x1, float y1, float x2, float y2, float x3, float y3) {
-    float dx21 = x2-x1;
-    float dx31 = x3-x1;
-    float dy21 = y2-y1;
-    float dy31 = y3-y1;
-    float m12 = sqrt( dx21*dx21 + dy21*dy21 );
-    float m13 = sqrt( dx31*dx31 + dy31*dy31 );
-    return acos( (dx21*dx31 + dy21*dy31) / (m12 * m13) );
 }
