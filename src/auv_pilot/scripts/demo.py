@@ -26,11 +26,13 @@ def main():
 
     forward = MoveGoal()
     forward.direction = MoveGoal.DIRECTION_FORWARD
+    forward.velocityLevel = MoveGoal.VELOCITY_LEVEL_3
     forward.value = 2000
 
     rotation = MoveGoal()
     rotation.direction = MoveGoal.ROTATE_YAW_CCW
-    rotation.value = 500
+    rotation.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+    rotation.value = 800
 
     with sm:
 
@@ -84,7 +86,7 @@ def main():
                                     'move_by_time',
                                     MoveAction,
                                     goal=forward),
-                                {'succeeded':'SUCCESS', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+                                {'succeeded':'FORWARD_1', 'preempted':'ABORTED', 'aborted':'ABORTED'})
     
     outcome = sm.execute()
 

@@ -34,6 +34,8 @@ protected:
 
     void safePublish(const geometry_msgs::Twist &twist);
 
+    geometry_msgs::Twist createTwistFromGoal(const auv_common::MoveGoal &goal);
+
     /** Implement your goal processing logic */
     virtual void goalCallback(const auv_common::MoveGoalConstPtr &goal) = 0;
 
