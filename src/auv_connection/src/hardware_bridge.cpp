@@ -12,6 +12,7 @@
 #include "sensor_msgs/Imu.h"
 
 #include <auv_common/VelocityCmd.h>
+#include <auv_common/DepthCmd.h>
 
 #include <sstream>
 #include <string>
@@ -90,6 +91,14 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
     return true;
 }
 
+
+/* TODO: Implement */
+bool depth_callback(auv_common::DepthCmd::Request& depthRequest,
+                       auv_common::DepthCmd::Response& depthResponse)
+{
+    return true;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "hardware_bridge");
@@ -121,6 +130,7 @@ int main(int argc, char **argv)
 
     // ROS services
     ros::ServiceServer velocity_srv = n.advertiseService("velocity_service", movement_callback);
+    ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
     // **************
 
     while (ros::ok())
