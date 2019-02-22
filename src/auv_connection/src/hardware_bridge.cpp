@@ -21,6 +21,13 @@
 #include "serial.h"
 #include "messages.h"
 
+#define SHORE_STABILIZE_DEPTH_BIT 		0
+#define SHORE_STABILIZE_ROLL_BIT 		1
+#define SHORE_STABILIZE_PITCH_BIT 		2
+#define SHORE_STABILIZE_YAW_BIT 		3
+#define SHORE_STABILIZE_IMU_BIT 		4
+#define SHORE_STABILIZE_SAVE_BIT		5
+
 // High level -> Hardware bridge
 geometry_msgs::Twist movement;
 
@@ -38,6 +45,23 @@ bool isReady = false;
 
 RequestMessage request;
 ResponseMessage response;
+
+bool pick_bit(uint8_t &input, uint8_t bit)
+{
+    return static_cast<bool>((input << (8 - bit)) >> 8);
+}
+
+
+void set_bit(uint8_t &byte, uint8_t bit, bool state)
+{
+    uint8_t value = 1;
+    if(state) {
+        byte = byte | (value << bit);
+    }
+    else {
+        byte = byte & ~(value << bit);
+    }
+}
 
 /** @brief Make byte array to publish for protocol_node
   *
@@ -83,6 +107,9 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
   	request.march	= static_cast<int16_t> (velocityRequest.twist.linear.x);
   	request.depth	= static_cast<int16_t> (velocityRequest.twist.linear.y);
   	request.lag	    = static_cast<int16_t> (velocityRequest.twist.linear.z);
+
+  	set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
+  	set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
 
   	isReady = true;
 
