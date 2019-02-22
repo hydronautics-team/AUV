@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   image_transport
+  dynamic_reconfigure
   auv_common
 )
 
@@ -44,6 +45,11 @@ find_package(OpenCV)
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
+
+generate_dynamic_reconfigure_options(
+        cfg/gate_locator.cfg
+        cfg/drums_locator.cfg
+)
 
 
 ###################################

@@ -6,11 +6,13 @@
 #include <util/ImgprocUtil.h>
 #include "common/AbstractImageConverter.h"
 #include "auv_common/OptionalPoint2D.h"
-#include <mat/MatDetector.h>
-#include <mat/MatDescriptor.h>
-#include <drums/DrumDetector.h>
-#include <drums/DrumDescriptor.h>
+#include "mat/MatDetector.h"
+#include "mat/MatDescriptor.h"
+#include "drums/DrumDetector.h"
+#include "drums/DrumDescriptor.h"
 #include <auv_common/OptionalPoint2D.h>
+#include <dynamic_reconfigure/server.h>
+#include <auv_vision/DrumsLocatorConfig.h>
 
 // Gazebo:
 static const std::string CAMERA_FRONT_TOPIC = "stereo/camera/left/image_raw";
@@ -24,6 +26,8 @@ static const std::string DRUMS_MAT_PUBLISH_TOPIC_BOTTOM = "/drums/mat/cam_bottom
 
 static const std::string DRUMS_MAT_PUBLISH_TOPIC_FRONT = "/drums/mat/cam_front";
 
+static const std::string ENABLE_WINDOWS_PARAM = "debugVision";
+
 static const std::string DRUMS_DRUM_PUBLISH_TOPIC = "/drums/drum";
 
 static const std::string DRUMS_LOCATOR_NODE_NAME = "drums_locator";
@@ -32,6 +36,61 @@ static const std::string OPENCV_WINDOW_FRONT_CAM_MAT = "Front Camera Mat Detecti
 static const std::string OPENCV_WINDOW_BOTTOM_CAM_MAT = "Bottom Camera";
 static const std::string OPENCV_WINDOW_DRUM = "Bottom Camera Drum Detection";
 
+MatDetector detector;
+MatDetectorFrontCamera detector_frontCamera;
+MatDetectorBottomCamera detector_bottomCamera;
+DrumDetector drum_detector;
+
+void reconfigureDrums(auv_vision::DrumsLocatorConfig& config, uint32_t level) {
+
+                    /// Front Camera mat
+                    detector.setLowerGreenH(config.lowerGreenH);
+                    detector.setHigherGreenH(config.higherGreenH);
+
+                    detector.setLowerGreenS(config.lowerGreenS);
+                    detector.setHigherGreenS(config.higherGreenS);
+
+                    detector.setLowerGreenV(config.lowerGreenV);
+                    detector.setHigherGreenV(config.higherGreenV);
+
+
+                    /// Bottom camera mat
+                    detector_bottomCamera.setLengthThreshold(config.lengthThreshold);
+                    detector_bottomCamera.setDistanceThreshold(config.distanceThreshold);
+                    detector_bottomCamera.setMinAngleCriteria(config.minAngleCriteria);
+                    detector_bottomCamera.setMaxAngleCriteria(config.maxAngleCriteria);
+
+
+                    /// Bottom camera drums
+                    drum_detector.setLowerBlueH(config.lowerBlueH);
+                    drum_detector.setHigherBlueH(config.higherBlueH);
+                    drum_detector.setLowerBlueS(config.lowerBlueS);
+                    drum_detector.setHigherBlueS(config.higherBlueS);
+                    drum_detector.setLowerBlueV(config.lowerBlueV);
+                    drum_detector.setHigherBlueV(config.higherBlueV);
+
+
+                    drum_detector.setLowerRED_1H(config.lowerRed1H);
+                    drum_detector.setHigherRED_1H(config.higherRed1H);
+                    drum_detector.setLowerRED_2H(config.lowerRed2H);
+                    drum_detector.setHigherRED_2H(config.higherRed2H);
+
+                    drum_detector.setLowerRED_1S(config.lowerRed1S);
+                    drum_detector.setHigherRED_1S(config.higherRed1S);
+                    drum_detector.setLowerRED_2S(config.lowerRed2S);
+                    drum_detector.setHigherRED_2S(config.higherRed2S);
+
+                    drum_detector.setLowerRED_1V(config.lowerRed1V);
+                    drum_detector.setHigherRED_1V(config.higherRed1V);
+                    drum_detector.setLowerRED_2V(config.lowerRed2V);
+                    drum_detector.setHigherRED_2V(config.higherRed2V);
+
+
+                    drum_detector.setMinDist(config.minDist);
+                    drum_detector.setParam1(config.param1);
+                    drum_detector.setParam2(config.param2);
+}
+
 class MatPublisherFrontCam : public AbstractImageConverter
 {
 
@@ -39,8 +98,9 @@ private:
 
     ros::Publisher matFrontCamPublisher;
 
-    MatDetector detector;
-    MatDetectorFrontCamera detector_frontCamera;
+    image_transport::Publisher imagePublisher, maskedImagePublisher, linesImagePublisher, contoursImagePublisher;
+
+    bool windowsEnabled;
 
 protected:
 
@@ -66,8 +126,7 @@ protected:
             std::vector<std::vector<cv::Point>> contour = front_image.getContour();
 
             cv::RNG rng;
-            cv::Scalar color = cv::Scalar(rng.uniform(0, 255), rng.uniform(0, 255),
-                                          rng.uniform(0, 255)); /// Random colors
+            cv::Scalar color = cv::Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255)); /// Random colors
             //cv::drawContours(drawing, contour, 0, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
 
             //cv::namedWindow("Biggest Contour IN MAIN");
@@ -90,28 +149,58 @@ protected:
 
         }
 
-        if (!image_copy_descriptor_front.empty()) cv::imshow(OPENCV_WINDOW_FRONT_CAM_MAT, image_copy_descriptor_front);
-        cv::waitKey(3);
+        if (windowsEnabled) {
+            if (!image_copy_descriptor_front.empty()) cv::imshow(OPENCV_WINDOW_FRONT_CAM_MAT, image_copy_descriptor_front);
+            cv::waitKey(3);
+        }
+
+
+        sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_front).toImageMsg();
+        imagePublisher.publish(imageMsg);
+
+        if (!image.empty()) {
+            sensor_msgs::ImagePtr imageMsgLines = cv_bridge::CvImage(std_msgs::Header(), "bgr8", detector.getLinesImage()).toImageMsg();
+            linesImagePublisher.publish(imageMsgLines);
+
+            sensor_msgs::ImagePtr imageMsgContours = cv_bridge::CvImage(std_msgs::Header(), "bgr8", detector.getimageAfterContourDetection()).toImageMsg();
+            contoursImagePublisher.publish(imageMsgContours);
+        }
+
+
+        sensor_msgs::ImagePtr imageMsgMasked = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_copy).toImageMsg();
+        maskedImagePublisher.publish(imageMsgMasked);
     }
 
 public:
 
     /// Constructor
-    MatPublisherFrontCam(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
-    {
+    MatPublisherFrontCam(const std::string& inputImageTopic, bool enableWindows) : AbstractImageConverter(inputImageTopic),
+                                                                                   windowsEnabled(enableWindows) {
+
+        image_transport::ImageTransport it(nodeHandle);
+        linesImagePublisher = it.advertise("/frontCamMat/image_lines", 100);
+        maskedImagePublisher = it.advertise("/frontCamMat/image_masked", 100);
+        imagePublisher = it.advertise("/frontCamMat/image", 100);
+        contoursImagePublisher = it.advertise("/frontCamMat/image_contours", 100);
+
         /**
          * Tell the master that we are going to be publishing a message
          * of type auv_common/OptionalPoint2D on the topic DRUMS_MAT_PUBLISH_TOPIC_FRONT ("/drums/mat/cam_front").
          * This lets the master tell any nodes listening on DRUMS_MAT_PUBLISH_TOPIC_FRONT
          * that we are going to publish data on that topic.
          */
+
         matFrontCamPublisher = nodeHandle.advertise<auv_common::OptionalPoint2D>(DRUMS_MAT_PUBLISH_TOPIC_FRONT, 100);
-        cv::namedWindow(OPENCV_WINDOW_FRONT_CAM_MAT, CV_WINDOW_AUTOSIZE);
+        if (windowsEnabled)
+            cv::namedWindow(OPENCV_WINDOW_FRONT_CAM_MAT, CV_WINDOW_AUTOSIZE);
+
     }
 
     /// Destructor
     ~MatPublisherFrontCam()
     {
+        if (windowsEnabled)
+            cv::destroyWindow(OPENCV_WINDOW_FRONT_CAM_MAT);
     }
 
 };
@@ -125,8 +214,9 @@ private:
 
     ros::Publisher matBottomCamPublisher;
 
-    MatDetector detector;
-    MatDetectorBottomCamera detector_bottomCamera;
+    image_transport::Publisher imagePublisher, maskedImagePublisher;
+
+    bool windowsEnabled;
 
 protected:
 
@@ -139,7 +229,12 @@ protected:
 
         auv_common::OptionalPoint2D msg_bottom_cam;
 
-        if (!image.empty()) detector.detectContours(image, image_copy, contours, true);
+        if (!image.empty()) {
+            detector.detectContours(image, image_copy, contours, true);
+
+            sensor_msgs::ImagePtr imageMsgMasked = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_copy).toImageMsg();
+            maskedImagePublisher.publish(imageMsgMasked);
+        }
 
         MatDescriptorBottomCamera bottom_image = detector_bottomCamera.detect(image_copy, image_copy);
 
@@ -175,7 +270,10 @@ protected:
                          cv::Point(bottom_image.getHorizontalLines()[i][2], bottom_image.getHorizontalLines()[i][3]),
                          color, 2, CV_AA);
 
-                std::cout<<bottom_image.getIntersectionWithHorizontal(image, bottom_image.getHorizontalLines()[i])<<" Intersection Y"<<std::endl;
+                std::cerr<<bottom_image.getIntersectionWithHorizontal(image, bottom_image.getHorizontalLines()[i])<<" Intersection Y"<<std::endl;
+
+                msg_bottom_cam.hasPoint = true;
+                msg_bottom_cam.y = bottom_image.getIntersectionWithHorizontal(image, bottom_image.getHorizontalLines()[i]);
             }
         }
         //drawing = cv::Mat::zeros(image.size(), CV_8UC3); /// Black
@@ -210,7 +308,9 @@ protected:
                          cv::Point(bottom_image.getVerticalLines()[i][2], bottom_image.getVerticalLines()[i][3]),
                          color, 2, CV_AA);
 
-                std::cout<<bottom_image.getIntersectionWithVertical(image, bottom_image.getVerticalLines()[i])<<" Intersection X"<<std::endl;
+                std::cerr<<bottom_image.getIntersectionWithVertical(image, bottom_image.getVerticalLines()[i])<<" Intersection X"<<std::endl;
+
+                msg_bottom_cam.x = bottom_image.getIntersectionWithVertical(image, bottom_image.getVerticalLines()[i]);
             }
 
             //cv::namedWindow("Lines Expanded");
@@ -218,13 +318,22 @@ protected:
         }
         //if (!image_copy_descriptor_bottom.empty()) cv::imshow(OPENCV_WINDOW_BOTTOM_CAM_MAT, image_copy_descriptor_bottom);
         //cv::waitKey(3);
+
+        matBottomCamPublisher.publish(msg_bottom_cam);
+
+        sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_bottom).toImageMsg();
+        imagePublisher.publish(imageMsg);
     }
 
 public:
 
     /// Constructor
-    MatPublisherBottomCam(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
-    {
+    MatPublisherBottomCam(const std::string& inputImageTopic, bool enableWindows) : AbstractImageConverter(inputImageTopic), windowsEnabled(enableWindows) {
+
+        image_transport::ImageTransport it(nodeHandle);
+        imagePublisher = it.advertise("/bottomCamMat/image", 100);
+        maskedImagePublisher = it.advertise("/bottomCamMat/image_masked", 100);
+
         /**
          * Tell the master that we are going to be publishing a message
          * of type auv_common/OptionalPoint2D on the topic DRUMS_MAT_PUBLISH_TOPIC_BOTTOM ("/drums/mat/cam_bottom").
@@ -232,12 +341,16 @@ public:
          * that we are going to publish data on that topic.
          */
         matBottomCamPublisher = nodeHandle.advertise<auv_common::OptionalPoint2D>(DRUMS_MAT_PUBLISH_TOPIC_BOTTOM, 100);
-        cv::namedWindow(OPENCV_WINDOW_BOTTOM_CAM_MAT, CV_WINDOW_AUTOSIZE);
+        if (windowsEnabled)
+            cv::namedWindow(OPENCV_WINDOW_BOTTOM_CAM_MAT, CV_WINDOW_AUTOSIZE);
+
     }
 
     /// Destructor
     ~MatPublisherBottomCam()
     {
+        if (windowsEnabled)
+            cv::destroyWindow(OPENCV_WINDOW_BOTTOM_CAM_MAT);
     }
 
 };
@@ -249,7 +362,9 @@ private:
 
     ros::Publisher drumPublisher;
 
-    DrumDetector Drum_detector;
+    image_transport::Publisher imagePublisher, imagePublisherAfterMorphology, imagePublisherAfterMask, imagePublisherAfterColorEnhancement, imagePublisherImage_red, imagePublisherImage_blue;
+
+    bool windowsEnabled;
 
 protected:
 
@@ -257,7 +372,7 @@ protected:
     {
         cv::Mat image = cv_ptr->image;
 
-        DrumDescriptor image_with_Drums = Drum_detector.detect(image, false);
+        DrumDescriptor image_with_Drums = drum_detector.detect(image, false);
 
         cv::Mat image_copy_descriptor_Drums = image.clone();
 
@@ -277,7 +392,7 @@ protected:
                         cv::circle (image_copy_descriptor_bottom, RedDrumCenter, RedDrums[i][2], cv::Scalar(255, 0, 0));
 
                         RedDrumCenter = convertToCentralCoordinates(RedDrumCenter, image.cols, image.rows);
-                        std::cout<<RedDrumCenter<<" THIS IS MAIN RED"<<std::endl;
+                        std::cerr<<RedDrumCenter<<"RED"<<std::endl;
                     }
                 }
 
@@ -294,7 +409,7 @@ protected:
 
                         BlueDrumCenter = convertToCentralCoordinates(BlueDrumCenter, image.cols, image.rows);
 
-                        std::cout<<BlueDrumCenter<<" THIS IS MAIN BlUE"<<std::endl;
+                        std::cerr<<BlueDrumCenter<<"BlUE"<<std::endl;
                     }
                 }
             }
@@ -315,7 +430,7 @@ protected:
 
                             BlueDrumCenter = convertToCentralCoordinates(BlueDrumCenter, image.cols, image.rows);
 
-                            std::cout << BlueDrumCenter << " THIS IS MAIN BlUE 1" << std::endl;
+                            std::cerr << BlueDrumCenter << "BlUE" << std::endl;
                         }
                     }
                 }
@@ -334,7 +449,7 @@ protected:
                             cv::circle (image_copy_descriptor_bottom, RedDrumCenter, RedDrums[i][2], cv::Scalar(255, 0, 0));
 
                             RedDrumCenter = convertToCentralCoordinates(RedDrumCenter, image.cols, image.rows);
-                            std::cout<<RedDrumCenter<<" THIS IS MAIN RED 1"<<std::endl;
+                            std::cerr<<RedDrumCenter<<"RED"<<std::endl;
 
                             auv_common::OptionalPoint2D msg_bottom_cam;
 
@@ -354,7 +469,7 @@ protected:
         }
 
         else {
-            std::cerr<<"NO Drums"<<std::endl;
+            //std::cerr<<"NO Drums"<<std::endl;
 
             auv_common::OptionalPoint2D msg_bottom_cam;
 
@@ -364,20 +479,62 @@ protected:
             drumPublisher.publish(msg_bottom_cam);
             ///STUFF
         }
-        if (!image_copy_descriptor_Drums.empty()) cv::imshow(OPENCV_WINDOW_DRUM, image_copy_descriptor_Drums);
-        if (!image_copy_descriptor_bottom.empty()) cv::imshow(OPENCV_WINDOW_BOTTOM_CAM_MAT, image_copy_descriptor_bottom);
-        cv::waitKey(3);
+        if (windowsEnabled) {
+            if (!image_copy_descriptor_Drums.empty()) cv::imshow(OPENCV_WINDOW_DRUM, image_copy_descriptor_Drums);
+            if (!image_copy_descriptor_bottom.empty()) cv::imshow(OPENCV_WINDOW_BOTTOM_CAM_MAT, image_copy_descriptor_bottom);
+            cv::waitKey(3);
+        }
+
+        sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_bottom).toImageMsg();
+        imagePublisher.publish(imageMsg);
+
+        sensor_msgs::ImagePtr imageMsgAfterMorphology = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfImageAfterMorphology()).toImageMsg();
+        imagePublisherAfterMorphology.publish(imageMsgAfterMorphology);
+
+        sensor_msgs::ImagePtr imageMsgAfterMask = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfImageAfterMask()).toImageMsg();
+        imagePublisherAfterMask.publish(imageMsgAfterMask);
+
+        sensor_msgs::ImagePtr imageMsgAfterColorEnhancement = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfImageAfterColorEnhancement()).toImageMsg();
+        imagePublisherAfterColorEnhancement.publish(imageMsgAfterColorEnhancement);
+
+        sensor_msgs::ImagePtr imageMsgImage_red = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfmaskedImage_red()).toImageMsg();
+        imagePublisherImage_red.publish(imageMsgImage_red);
+
+        sensor_msgs::ImagePtr imageMsgImage_blue = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfmaskedImage_blue()).toImageMsg();
+        imagePublisherImage_blue.publish(imageMsgImage_blue);
+
+
     }
 
 public:
 
-    DrumPublisher(const std::string& inputImageTopic) : AbstractImageConverter(inputImageTopic)
-    {
+    DrumPublisher(const std::string& inputImageTopic, bool enableWindows) : AbstractImageConverter(inputImageTopic), windowsEnabled(enableWindows) {
+
+        image_transport::ImageTransport it(nodeHandle);
+        imagePublisher = it.advertise("/CamDrums/image", 100);
+
+        imagePublisherAfterMorphology = it.advertise("/CamDrums/imageAfterMorphology", 100);
+        imagePublisherAfterMask = it.advertise("/CamDrums/imageAfterMask", 100);
+        imagePublisherAfterColorEnhancement = it.advertise("/CamDrums/imageAfterColorEnhancement", 100);
+        imagePublisherImage_red = it.advertise("/CamDrums/Image_red", 100);
+        imagePublisherImage_blue = it.advertise("/CamDrums/Image_blue", 100);
+
+        /**
+         * Tell the master that we are going to be publishing a message
+         * of type auv_common/OptionalPoint2D on the topic DRUMS_MAT_PUBLISH_TOPIC_BOTTOM ("/drums/mat/cam_bottom").
+         * This lets the master tell any nodes listening on DRUMS_MAT_PUBLISH_TOPIC_BOTTOM
+         * that we are going to publish data on that topic.
+         */
+
         drumPublisher = nodeHandle.advertise<auv_common::OptionalPoint2D>(DRUMS_DRUM_PUBLISH_TOPIC, 100);
+        if (windowsEnabled)
+            cv::namedWindow(OPENCV_WINDOW_DRUM, CV_WINDOW_AUTOSIZE);
     }
 
     ~DrumPublisher()
     {
+        if (windowsEnabled)
+            cv::destroyWindow(OPENCV_WINDOW_DRUM);
     }
 
 };
@@ -393,11 +550,21 @@ int main(int argc, char **argv)
     #endif
 
     ros::init(argc, argv, DRUMS_LOCATOR_NODE_NAME);
+    ros::NodeHandle nodeHandle(DRUMS_LOCATOR_NODE_NAME);
 
-    MatPublisherFrontCam matPublisherFrontCam(CAMERA_FRONT_TOPIC);
-    MatPublisherBottomCam matPublisherBottomCam(CAMERA_BOTTOM_TOPIC);
+    bool windowsEnabled;
+    nodeHandle.param(ENABLE_WINDOWS_PARAM, windowsEnabled, false);
 
-    DrumPublisher drumPublisher(CAMERA_BOTTOM_TOPIC);
+    dynamic_reconfigure::Server<auv_vision::DrumsLocatorConfig> reconfigurationServer;
+
+    dynamic_reconfigure::Server<auv_vision::DrumsLocatorConfig>::CallbackType f;
+    f = boost::bind(&reconfigureDrums, _1, _2);
+    reconfigurationServer.setCallback(f);
+
+    MatPublisherFrontCam matPublisherFrontCam(CAMERA_FRONT_TOPIC, windowsEnabled);
+    MatPublisherBottomCam matPublisherBottomCam(CAMERA_BOTTOM_TOPIC, windowsEnabled);
+
+    DrumPublisher drumPublisher(CAMERA_BOTTOM_TOPIC, windowsEnabled);
 
     ros::spin();
 

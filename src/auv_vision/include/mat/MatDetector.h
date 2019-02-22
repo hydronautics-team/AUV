@@ -9,6 +9,15 @@ class MatDetector {
 
 private:
 
+    float lower_green_H = 78;
+    float lower_green_S = 95;
+    float lower_green_V = 0;
+
+    float higher_green_H = 180;
+    float higher_green_S = 255;
+    float higher_green_V = 146;
+
+
     void defaultPreprocess(const cv::Mat& src, cv::Mat& dst); // Image filter
     void extractGreenColour(const cv::Mat& src, cv::Mat& dst); // For colour filtering
     void extractValueChannel(const cv::Mat& src, cv::Mat& dst);
@@ -19,6 +28,27 @@ private:
     void meanShift(const cv::Mat& src, cv::Mat& dst);
 
 public:
+
+    float setLowerGreenH() const;
+    void setLowerGreenH(float lower_green_H);
+
+    float setHigherGreenH() const;
+    void setHigherGreenH(float higher_green_H);
+
+    float setLowerGreenS() const;
+    void setLowerGreenS(float lower_green_S);
+
+    float setHigherGreenS() const;
+    void setHigherGreenS(float higher_green_S);
+
+    float setLowerGreenV() const;
+    void setLowerGreenV(float lower_green_V);
+
+    float setHigherGreenV() const;
+    void setHigherGreenV(float higher_green_V);
+
+    cv::Mat getimageAfterContourDetection();
+    cv::Mat getLinesImage();
 
     void detectContours(const cv::Mat& src, cv::Mat& dst, std::vector<std::vector<cv::Point>>& contours, bool withPreprocess);
 
@@ -52,6 +82,11 @@ class MatDetectorBottomCamera {
 
 private:
 
+    float length_threshold = 60;
+    float distance_threshold = 6;
+    float min_angle_criteria = 8;
+    float max_angle_criteria = 83;
+
     void detectLines(const cv::Mat& image, std::vector<cv::Vec4f>& lines);
     std::vector<std::vector<float>> drawAndSortLines(cv::Mat& image, std::vector<cv::Vec4f>& lines);
     float getLineSlope(const cv::Vec4f& line);
@@ -61,6 +96,18 @@ private:
     float getDistance(float x1, float y1, float x2, float y2);
 
 public:
+
+    float setLengthThreshold() const;
+    void setLengthThreshold(float length_threshold);
+
+    float setDistanceThreshold() const;
+    void setDistanceThreshold(float distance_threshold);
+
+    float setMinAngleCriteria() const;
+    void setMinAngleCriteria(float min_angle_criteria);
+
+    float setMaxAngleCriteria() const;
+    void setMaxAngleCriteria(float max_angle_criteria);
 
     MatDetectorBottomCamera() = default;
     ~MatDetectorBottomCamera() = default;

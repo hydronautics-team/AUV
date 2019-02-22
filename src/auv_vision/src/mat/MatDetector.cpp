@@ -214,15 +214,21 @@ void MatDetector::extractGreenColour(const cv::Mat &src, cv::Mat &dst) {
     cv::Scalar higher_green(m[0]+v[0], m[1]+v[1], m[2]+v[2]); /// Mean + var for high
     */
 
-    // TODO change the range (add blue?? and red)
+    // TODO change the range (add blue??)
+    /*
     cv::Scalar lower_green(78, 95, 0); /// Mean - var for low
     cv::Scalar higher_green(180, 255, 146); /// Mean + var for high
+    */
+
+    cv::Scalar lower_green(lower_green_H, lower_green_S, lower_green_V); /// Mean - var for low
+    cv::Scalar higher_green(higher_green_H, higher_green_S, higher_green_V); /// Mean + var for high
 
     cv::Scalar lower_red_1(0, 70, 50); /// Mean - var for low
     cv::Scalar higher_red_1(10, 255, 255); /// Mean + var for high
 
     cv::Scalar lower_red_2(170, 70, 50); /// Mean - var for low
     cv::Scalar higher_red_2(180, 255, 255); /// Mean + var for high
+
 
     /**
     mean, var (RED):
@@ -323,7 +329,13 @@ void MatDetector::morphology(const cv::Mat &src, cv::Mat &dst) {
     int size = 2;
     element = cv::getStructuringElement(CV_SHAPE_RECT, cv::Size(2*size+1, 2*size+1));
     cv::morphologyEx(dst, dst, cv::MORPH_CLOSE, element);
-    if (!dst.empty()) {cv::namedWindow("After morphologyEx"); cv::imshow("After morphologyEx", dst);}
+    if (!dst.empty()) {
+        //cv::namedWindow("After morphologyEx"); cv::imshow("After morphologyEx", dst);
+
+
+
+
+    }
 }
 
 /// Uncomment this if you want to use trackbars to adjust canny parameters
@@ -376,6 +388,9 @@ float MatDetectorBottomCamera::getDistance(float x1, float y1, float x2, float y
     return std::sqrt((x1 - x2)*(x1 - x2) - (y1 - y2)*(y1 - y2));
 }
 
+/// Global for reconfigure
+cv::Mat imageAfterContourDetection;
+
 bool MatDetectorFrontCamera::getMatContour(std::vector<std::vector<cv::Point>>& contours, const cv::Mat& image) {
 
     cv::Rect bounding_rect;
@@ -397,7 +412,8 @@ bool MatDetectorFrontCamera::getMatContour(std::vector<std::vector<cv::Point>>& 
     contours = hull;
 
     /// Show in a window
-    if (!drawing.empty()) cv::imshow("After Contour detection", drawing);
+    //if (!drawing.empty()) cv::imshow("After Contour detection", drawing);
+    imageAfterContourDetection = drawing;
 
     // TODO add max possible contour area
     int largest_contour_index = -1;
@@ -427,7 +443,7 @@ bool MatDetectorFrontCamera::getMatContour(std::vector<std::vector<cv::Point>>& 
     cv::Scalar color(255, 100, 255);
     cv::drawContours(drawing, contours, largest_contour_index, color, 1, 8, std::vector<cv::Vec4i>(), 0); /// Draw the largest contour using previously stored index
 
-    if (!drawing.empty()) {cv::namedWindow("Biggest Contour"); cv::imshow("Biggest Contour", drawing);}
+    //if (!drawing.empty()) {cv::namedWindow("Biggest Contour"); cv::imshow("Biggest Contour", drawing);}
 
     //std::cout<<largest_contour_index<<" - Biggest contour index"<<std::endl;
     //std::cout<<global_contours.size()<<" - Counters amount"<<std::endl;
@@ -451,13 +467,13 @@ bool MatDetectorFrontCamera::getMatContour(std::vector<std::vector<cv::Point>>& 
     cv::Point center_of_rect = (bounding_rect.br() + bounding_rect.tl())*0.5;
     cv::circle(drawing_approx, center_of_rect, 3, cv::Scalar(0, 0, 255));
 
-    if (!drawing_approx.empty()) {cv::namedWindow("After approxPolyDP"); cv::imshow("After approxPolyDP", drawing_approx);}
+    //if (!drawing_approx.empty()) {cv::namedWindow("After approxPolyDP"); cv::imshow("After approxPolyDP", drawing_approx);}
 
     //std::cout<<center_of_rect<<" - Centre coordinates"<<std::endl;
 
     if ((center_of_rect.x != 0) || (center_of_rect.y != 0)) {
         cv::Point center_of_rect_CC = convertToCentralCoordinates(center_of_rect, drawing_approx.size().width, drawing_approx.size().height);
-        std::cout<<center_of_rect_CC<<" - Centre coordinates in CC"<<std::endl;
+        //std::cout<<center_of_rect_CC<<" - Centre coordinates in CC"<<std::endl;
     }
 
     if (largest_contour_index != -1) contours[0] = contours[largest_contour_index];
@@ -521,6 +537,9 @@ int canny_aperture_size = 3;
 /// Uncomment this if you want to use trackbars to adjust HoughLinesP parameters
 //int threshold (20), maxLineGap (20), minLineLength (20);
 
+/// Global Mat variables for rqt_reconfigure (sorry)
+cv::Mat reconfImageAfterLineDetector;
+
 void MatDetectorBottomCamera::detectLines(const cv::Mat& image, std::vector<cv::Vec4f>& lines) {
 
     cv::Mat gray = image;
@@ -546,9 +565,24 @@ void MatDetectorBottomCamera::detectLines(const cv::Mat& image, std::vector<cv::
     cv::Ptr<cv::ximgproc::FastLineDetector> detector = cv::ximgproc::createFastLineDetector(length_threshold, 3, canny_th1, canny_th2, canny_aperture_size, false);
     */
 
-    cv::Ptr<cv::ximgproc::FastLineDetector> detector = cv::ximgproc::createFastLineDetector(60, 6, 50, 50, 3, false);
+    //cv::Ptr<cv::ximgproc::FastLineDetector> detector = cv::ximgproc::createFastLineDetector(60, 6, 50, 50, 3, false);
+    cv::Ptr<cv::ximgproc::FastLineDetector> detector = cv::ximgproc::createFastLineDetector(length_threshold, distance_threshold, 50, 50, 3, false);
 
     if (!gray.empty()) detector->detect(gray, lines);
+
+    //cv::Mat drawing(image.size(), CV_8UC3, cv::Scalar(255, 255, 255)); /// White
+    cv::Mat drawing(image.size(), CV_8UC3, cv::Scalar(0, 0, 0)); /// Black
+
+    std::vector<std::vector<float>> angle(4, std::vector<float>(lines.size())); // Array for slopes
+
+    for (int i = 0; i < lines.size(); i++) {
+        /// Draw the lines
+        cv::Vec4f l = lines[i];
+        cv::Scalar color(rand() & 255, rand() & 255, rand() & 255);
+        cv::line(drawing, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), color, 2, CV_AA);
+    }
+
+    reconfImageAfterLineDetector = drawing;
 
     /// Or this (HoughLinesP)
     /*
@@ -559,6 +593,14 @@ void MatDetectorBottomCamera::detectLines(const cv::Mat& image, std::vector<cv::
     */
 
     //if (lines.size() != 0) std::cout << lines.size() << " - Number of lines" << std::endl;
+}
+
+cv::Mat MatDetector::getLinesImage() {
+    return reconfImageAfterLineDetector;
+};
+
+cv::Mat MatDetector::getimageAfterContourDetection() {
+    return imageAfterContourDetection;
 }
 
 int line_number = 100;
@@ -743,7 +785,7 @@ std::vector<cv::Vec4f> MatDetectorBottomCamera::findHorizontalLines(const cv::Ma
 
     /// Find Horizontal lines
     for (int i = lines.size() - 1; i >= 0; i--) {
-        if ((!lines.empty()) && ((angle [1][i] < min_angle) || (abs(abs(angle [1][i]) - abs(min_angle)) == parallel_criteria)) && (angle [1][i] < 8) && (getLength(lines[angle [0][i]]) > (image.cols/3))) {
+        if ((!lines.empty()) && ((angle [1][i] < min_angle) || (abs(abs(angle [1][i]) - abs(min_angle)) == parallel_criteria)) && (angle [1][i] < min_angle_criteria) && (getLength(lines[angle [0][i]]) > (image.cols/3))) {
                 min_angle = angle [1][i];
                 std::cout<<min_angle<<" - min Angle"<<std::endl;
                 index_paral = i;
@@ -811,7 +853,7 @@ std::vector<cv::Vec4f> MatDetectorBottomCamera::findVerticalLines(const cv::Mat&
     /// Find Vertical lines
 
     for (int i = 0; i <= lines.size()-1; i++) {
-        if ((!lines.empty()) && ((angle [1][i] > max_angle) || (abs(abs(angle [1][i]) - abs(max_angle)) == parallel_criteria)) && (angle [1][i] > 80) && (getLength(lines[angle [0][i]]) > (image.rows/3))) {
+        if ((!lines.empty()) && ((angle [1][i] > max_angle) || (abs(abs(angle [1][i]) - abs(max_angle)) == parallel_criteria)) && (angle [1][i] > max_angle_criteria) && (getLength(lines[angle [0][i]]) > (image.rows/3))) {
                 max_angle = angle [1][i];
                 std::cout<<max_angle<<" - max Angle"<<std::endl;
                 index_paral = i;
@@ -897,4 +939,87 @@ MatDescriptorBottomCamera MatDetectorBottomCamera::detect(const cv::Mat& src, cv
         }
     }
     else return MatDescriptorBottomCamera::noLines();
+}
+
+/// For Dynamic Reconfigure
+/// GREEN H channeldistance_threshold
+float MatDetector::setLowerGreenH() const {
+    return lower_green_H;
+}
+void MatDetector::setLowerGreenH(float lower_green_H) {
+    MatDetector::lower_green_H = lower_green_H;
+}
+
+
+float MatDetector::setHigherGreenH() const {
+    return higher_green_H;
+}
+void MatDetector::setHigherGreenH(float higher_green_H) {
+    MatDetector::higher_green_H = higher_green_H;
+}
+
+/// GREEN S channel
+float MatDetector::setLowerGreenS() const {
+    return lower_green_S;
+}
+void MatDetector::setLowerGreenS(float lower_green_S) {
+    MatDetector::lower_green_S = lower_green_S;
+}
+
+
+float MatDetector::setHigherGreenS() const {
+    return higher_green_S;
+}
+void MatDetector::setHigherGreenS(float higher_green_S) {
+    MatDetector::higher_green_S = higher_green_S;
+}
+
+/// GREEN V channel
+float MatDetector::setLowerGreenV() const {
+    return lower_green_V;
+}
+void MatDetector::setLowerGreenV(float lower_green_V) {
+    MatDetector::lower_green_V = lower_green_V;
+}
+
+
+float MatDetector::setHigherGreenV() const {
+    return higher_green_V;
+}
+void MatDetector::setHigherGreenV(float higher_green_V) {
+    MatDetector::higher_green_V = higher_green_V;
+}
+/**********/ /**********/ /**********/ /**********/
+
+
+/// For line detector
+float MatDetectorBottomCamera::setLengthThreshold() const {
+    return length_threshold;
+}
+void MatDetectorBottomCamera::setLengthThreshold(float length_threshold) {
+    MatDetectorBottomCamera::length_threshold = length_threshold;
+}
+
+float MatDetectorBottomCamera::setDistanceThreshold() const {
+    return distance_threshold;
+}
+void MatDetectorBottomCamera::setDistanceThreshold(float distance_threshold) {
+    MatDetectorBottomCamera::distance_threshold = distance_threshold;
+}
+
+
+/// max_angle
+float MatDetectorBottomCamera::setMinAngleCriteria() const {
+    return min_angle_criteria;
+}
+void MatDetectorBottomCamera::setMinAngleCriteria(float min_angle_criteria) {
+    MatDetectorBottomCamera::min_angle_criteria = min_angle_criteria;
+}
+
+/// min_angle
+float MatDetectorBottomCamera::setMaxAngleCriteria() const {
+    return max_angle_criteria;
+}
+void MatDetectorBottomCamera::setMaxAngleCriteria(float max_angle_criteria) {
+    MatDetectorBottomCamera::max_angle_criteria = max_angle_criteria;
 }

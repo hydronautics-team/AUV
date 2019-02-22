@@ -46,6 +46,9 @@ void DrumDetector::meanShift(const cv::Mat &src, cv::Mat &dst) {
 */
 }
 
+/// Global Mat variables for rqt_reconfigure (sorry)
+cv::Mat reconfImageAfterMorphology, reconfImageAfterMask, reconfImageAfterColorEnhancement, reconfmaskedImage_red, reconfmaskedImage_blue;
+
 void DrumDetector::extractValueChannel(const cv::Mat &src, cv::Mat &dst) {
     cv::Mat hsv;
     cv::cvtColor(src, hsv, CV_BGR2HSV);
@@ -62,7 +65,8 @@ void DrumDetector::morphology(const cv::Mat &src, cv::Mat &dst) {
     element = cv::getStructuringElement(CV_SHAPE_RECT, cv::Size(2*size+1, 2*size+1));
     cv::morphologyEx(src, dst, cv::MORPH_CLOSE, element);
 
-    if (!dst.empty()) cv::imshow("After morphologyEx", dst);
+    //if (!dst.empty()) cv::imshow("After morphologyEx", dst);
+    reconfImageAfterMorphology = dst;
 
 }
 
@@ -71,6 +75,7 @@ std::vector<cv::Vec3f> DrumDetector::findCircles(const cv::Mat& src, cv::Mat& ds
 
     /// https://www.tydac.ch/color/
     /// In HSV space, the red color wraps around 180
+    /*
     cv::Scalar lower_red_1(0, 0, 0); /// Mean - var for low
     cv::Scalar higher_red_1(40, 255, 255); /// Mean + var for high
 
@@ -79,6 +84,16 @@ std::vector<cv::Vec3f> DrumDetector::findCircles(const cv::Mat& src, cv::Mat& ds
 
     cv::Scalar lower_blue(80, 160, 0); /// Mean - var for low
     cv::Scalar higher_blue(180, 255, 255); /// Mean + var for high
+    */
+
+    cv::Scalar lower_red_1(lower_red_1_H, lower_red_1_S, lower_red_1_V); /// Mean - var for low
+    cv::Scalar higher_red_1(higher_red_1_H, higher_red_1_S, higher_red_1_V); /// Mean + var for high
+
+    cv::Scalar lower_red_2(lower_red_2_H, lower_red_2_S, lower_red_2_V); /// Mean - var for low
+    cv::Scalar higher_red_2(higher_red_2_H, higher_red_2_S, higher_red_2_V); /// Mean + var for high
+
+    cv::Scalar lower_blue(lower_blue_H, lower_blue_S, lower_blue_V); /// Mean - var for low
+    cv::Scalar higher_blue(higher_blue_H, higher_blue_S, higher_blue_V); /// Mean + var for high
 
 
     /// CLAHE stuff
@@ -133,7 +148,8 @@ std::vector<cv::Vec3f> DrumDetector::findCircles(const cv::Mat& src, cv::Mat& ds
 
     //cv::blur(mask, mask, cv::Size(3,3));
     cv::GaussianBlur(mask, mask, cv::Size(0, 0), 2);
-    cv::imshow("Mask", mask);
+    //cv::imshow("Mask", mask);
+    reconfImageAfterMask = mask;
 
 
     cv::bitwise_and(hsv, hsv, src_copy, mask = mask);
@@ -141,16 +157,30 @@ std::vector<cv::Vec3f> DrumDetector::findCircles(const cv::Mat& src, cv::Mat& ds
     cv::addWeighted(hsv, 1, src_copy, 1, 0, src_copy); /// Sum to increase Drum color intensity
 
 
-    cv::namedWindow("After color enhancement");
+    //cv::namedWindow("After color enhancement");
     cv::cvtColor(src_copy, src_copy, CV_HSV2BGR);
-    cv::imshow("After color enhancement", src_copy);
+    //cv::imshow("After color enhancement", src_copy);
+    reconfImageAfterColorEnhancement = src_copy;
 
     cv::Mat gray;
 
     cv::cvtColor(src_copy, gray, CV_BGR2GRAY);
 
     /// Apply the Hough Transform to find the circles
-    cv::HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, gray.rows/2, 100, 60, 0, 0);
+    /**
+            src_gray: Input image (grayscale)
+            circles: A vector that stores sets of 3 values: x_{c}, y_{c}, r for each detected circle.
+            CV_HOUGH_GRADIENT: Define the detection method. Currently this is the only one available in OpenCV
+            dp = 1: The inverse ratio of resolution
+            min_dist = src_gray.rows/8: Minimum distance between detected centers
+            param_1 = 200: Upper threshold for the internal Canny edge detector
+            param_2 = 100*: Threshold for center detection.
+            min_radius = 0: Minimum radio to be detected. If unknown, put zero as default.
+            max_radius = 0: Maximum radius to be detected. If unknown, put zero as default
+     */
+    //cv::HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, gray.rows/2, 100, 60, 0, 0);
+
+    cv::HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, min_dist, param_1, param_2, 0, 0);
 
     src_copy = src.clone();
 
@@ -162,7 +192,7 @@ std::vector<cv::Vec3f> DrumDetector::findCircles(const cv::Mat& src, cv::Mat& ds
         cv::circle(src_copy, center, radius, cv::Scalar(0,0,255), 1);
     }
 
-    cv::imshow("Circles", src_copy);
+    //cv::imshow("Circles", src_copy);
 
     return circles;
 }
@@ -238,11 +268,18 @@ bool DrumDetector::isRed(const cv::Mat& src, const cv::Vec3f circle) {
     //cv::Scalar higher_red(147, 219, 210); /// Mean + var for high
 
     /// In HSV space, the red color wraps around 180
-    cv::Scalar lower_red_1(0, 0, 0); /// Mean - var for low
-    cv::Scalar higher_red_1(60, 255, 255); /// Mean + var for high
+    //cv::Scalar lower_red_1(0, 0, 0); /// Mean - var for low
+    //cv::Scalar higher_red_1(60, 255, 255); /// Mean + var for high
 
-    cv::Scalar lower_red_2(110, 0, 0); /// Mean - var for low
-    cv::Scalar higher_red_2(180, 255, 255); /// Mean + var for high
+    //cv::Scalar lower_red_2(110, 0, 0); /// Mean - var for low
+    //cv::Scalar higher_red_2(180, 255, 255); /// Mean + var for high
+
+    cv::Scalar lower_red_1(lower_red_1_H, lower_red_1_S, lower_red_1_V); /// Mean - var for low
+    cv::Scalar higher_red_1(higher_red_1_H, higher_red_1_S, higher_red_1_V); /// Mean + var for high
+
+    cv::Scalar lower_red_2(lower_red_2_H, lower_red_2_S, lower_red_2_V); /// Mean - var for low
+    cv::Scalar higher_red_2(higher_red_2_H, higher_red_2_S, higher_red_2_V); /// Mean + var for high
+
 
     /**
     mean, var (RED):
@@ -276,8 +313,10 @@ bool DrumDetector::isRed(const cv::Mat& src, const cv::Vec3f circle) {
 
     src.copyTo(maskedImage, mask); // creates masked Image and copies it to maskedImage
 
-    cv::namedWindow("maskedImage_red");
-    if (!maskedImage.empty()) cv::imshow("maskedImage_red", maskedImage);
+    //cv::namedWindow("maskedImage_red");
+    //if (!maskedImage.empty()) cv::imshow("maskedImage_red", maskedImage);
+
+    reconfmaskedImage_red = maskedImage;
 
     cv::Scalar m, v;
     cv::meanStdDev(hsv, m, v, mask);
@@ -322,8 +361,11 @@ bool DrumDetector::isBlue(const cv::Mat& src, const cv::Vec3f circle) {
     //cv::Scalar lower_blue(0, 121, 166); /// Mean - var for low
     //cv::Scalar higher_blue(58, 245, 242); /// Mean + var for high
 
-    cv::Scalar lower_blue(80, 160, 0); /// Mean - var for low
-    cv::Scalar higher_blue(180, 255, 255); /// Mean + var for high
+    //cv::Scalar lower_blue(80, 160, 0); /// Mean - var for low
+    //cv::Scalar higher_blue(180, 255, 255); /// Mean + var for high
+
+    cv::Scalar lower_blue(lower_blue_H, lower_blue_S, lower_blue_V); /// Mean - var for low
+    cv::Scalar higher_blue(higher_blue_H, higher_blue_S, higher_blue_V); /// Mean + var for high
 
     /**
     mean, var (BLUE):
@@ -352,8 +394,9 @@ bool DrumDetector::isBlue(const cv::Mat& src, const cv::Vec3f circle) {
 
     src.copyTo(maskedImage, mask); // Creates masked Image and copies it to maskedImage
 
-    cv::namedWindow("maskedImage_blue");
-    if (!maskedImage.empty()) cv::imshow("maskedImage_blue", maskedImage);
+    //cv::namedWindow("maskedImage_blue");
+    //if (!maskedImage.empty()) cv::imshow("maskedImage_blue", maskedImage);
+    reconfmaskedImage_blue = maskedImage;
 
     cv::Scalar m, v;
     cv::meanStdDev(hsv, m, v, mask);
@@ -413,3 +456,173 @@ DrumDescriptor DrumDetector::detect(const cv::Mat& src, bool withPreprocess) {
     } else return DrumDescriptor::noDrums();
 }
 
+cv::Mat DrumDetector::getreconfImageAfterMorphology(){
+    return reconfImageAfterMorphology;
+}
+cv::Mat DrumDetector::getreconfImageAfterMask() {
+    return reconfImageAfterMask;
+}
+cv::Mat DrumDetector::getreconfImageAfterColorEnhancement() {
+    return reconfImageAfterColorEnhancement;
+}
+cv::Mat DrumDetector::getreconfmaskedImage_red() {
+    return reconfmaskedImage_red;
+}
+cv::Mat DrumDetector::getreconfmaskedImage_blue() {
+    return reconfmaskedImage_blue;
+}
+
+/// For Dynamic Reconfigure
+/// BLUE H channel
+float DrumDetector::setLowerBlueH() const {
+    return lower_blue_H;
+}
+void DrumDetector::setLowerBlueH(float lower_blue_H) {
+    DrumDetector::lower_blue_H = lower_blue_H;
+}
+
+
+float DrumDetector::setHigherBlueH() const {
+    return higher_blue_H;
+}
+void DrumDetector::setHigherBlueH(float higher_blue_H) {
+    DrumDetector::higher_blue_H = higher_blue_H;
+}
+
+/// BLUE S channel
+float DrumDetector::setLowerBlueS() const {
+    return lower_blue_S;
+}
+void DrumDetector::setLowerBlueS(float lower_blue_S) {
+    DrumDetector::lower_blue_S = lower_blue_S;
+}
+
+
+float DrumDetector::setHigherBlueS() const {
+    return higher_blue_S;
+}
+void DrumDetector::setHigherBlueS(float higher_blue_S) {
+    DrumDetector::higher_blue_S = higher_blue_S;
+}
+
+/// BLUE V channel
+float DrumDetector::setLowerBlueV() const {
+    return lower_blue_V;
+}
+void DrumDetector::setLowerBlueV(float lower_blue_V) {
+    DrumDetector::lower_blue_V = lower_blue_V;
+}
+
+
+float DrumDetector::setHigherBlueV() const {
+    return higher_blue_V;
+}
+void DrumDetector::setHigherBlueV(float higher_blue_V) {
+    DrumDetector::higher_blue_V = higher_blue_V;
+}
+
+/*********************/ /*********************/
+
+/// RED H channel
+float DrumDetector::setLowerRED_1H() const {
+    return lower_red_1_H;
+}
+void DrumDetector::setLowerRED_1H(float lower_red_1_H) {
+    DrumDetector::lower_red_1_H = lower_red_1_H;
+}
+float DrumDetector::setHigherRED_1H() const {
+    return higher_red_1_H;
+}
+void DrumDetector::setHigherRED_1H(float higher_red_1_H) {
+    DrumDetector::higher_red_1_H = higher_red_1_H;
+}
+
+
+float DrumDetector::setLowerRED_2H() const {
+    return lower_red_2_H;
+}
+void DrumDetector::setLowerRED_2H(float lower_red_2_H) {
+    DrumDetector::lower_red_2_H = lower_red_2_H;
+}
+float DrumDetector::setHigherRED_2H() const {
+    return higher_red_2_H;
+}
+void DrumDetector::setHigherRED_2H(float higher_red_2_H) {
+    DrumDetector::higher_red_2_H = higher_red_2_H;
+}
+
+/// RED S channel
+float DrumDetector::setLowerRED_1S() const {
+    return lower_red_1_S;
+}
+void DrumDetector::setLowerRED_1S(float lower_red_1_S) {
+    DrumDetector::lower_red_1_S = lower_red_1_S;
+}
+float DrumDetector::setHigherRED_1S() const {
+    return higher_red_1_S;
+}
+void DrumDetector::setHigherRED_1S(float higher_red_1_S) {
+    DrumDetector::higher_red_1_S = higher_red_1_S;
+}
+
+float DrumDetector::setLowerRED_2S() const {
+    return lower_red_2_S;
+}
+void DrumDetector::setLowerRED_2S(float lower_red_2_S) {
+    DrumDetector::lower_red_2_S = lower_red_2_S;
+}
+float DrumDetector::setHigherRED_2S() const {
+    return higher_red_2_S;
+}
+void DrumDetector::setHigherRED_2S(float higher_red_2_S) {
+    DrumDetector::higher_red_2_S = higher_red_2_S;
+}
+
+/// RED V channel
+float DrumDetector::setLowerRED_1V() const {
+    return lower_red_1_V;
+}
+void DrumDetector::setLowerRED_1V(float lower_red_1_V) {
+    DrumDetector::lower_red_1_V = lower_red_1_V;
+}
+float DrumDetector::setHigherRED_1V() const {
+    return higher_red_1_V;
+}
+void DrumDetector::setHigherRED_1V(float higher_red_1_V) {
+    DrumDetector::higher_red_1_V = higher_red_1_V;
+}
+
+float DrumDetector::setLowerRED_2V() const {
+    return lower_red_2_V;
+}
+void DrumDetector::setLowerRED_2V(float lower_red_2_V) {
+    DrumDetector::lower_red_2_V = lower_red_2_V;
+}
+float DrumDetector::setHigherRED_2V() const {
+    return higher_red_2_V;
+}
+void DrumDetector::setHigherRED_2V(float higher_red_2_V) {
+    DrumDetector::higher_red_2_V = higher_red_2_V;
+}
+/*********************/ /*********************/
+
+float DrumDetector::setMinDist() const {
+    return min_dist;
+}
+void DrumDetector::setMinDist(float min_dist) {
+    DrumDetector::min_dist = min_dist;
+}
+
+float DrumDetector::setParam1() const {
+    return param_1;
+}
+void DrumDetector::setParam1(float param_1) {
+    DrumDetector::param_1 = param_1;
+}
+
+float DrumDetector::setParam2() const {
+    return param_2;
+}
+void DrumDetector::setParam2(float param_2) {
+    DrumDetector::param_2 = param_2;
+}
