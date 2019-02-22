@@ -11,6 +11,8 @@
 #include "geometry_msgs/Twist.h"
 #include "sensor_msgs/Imu.h"
 
+#include <auv_common/VelocityCmd.h>
+
 #include <sstream>
 #include <string>
 #include <vector>
@@ -70,17 +72,22 @@ void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
   *
   * @param[in]  &input String to parse.
   */
-void movement_callback(const geometry_msgs::Twist::ConstPtr &input)
+bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
+        auv_common::VelocityCmd::Response& velocityResponse)
 {
-  	request.roll	= static_cast<int16_t> (input->angular.x);
-  	request.yaw		= static_cast<int16_t> (input->angular.y);
-  	request.pitch	= static_cast<int16_t> (input->angular.z);
+  	request.roll	= static_cast<int16_t> (velocityRequest.twist.angular.x);
+  	request.yaw		= static_cast<int16_t> (velocityRequest.twist.angular.y);
+  	request.pitch	= static_cast<int16_t> (velocityRequest.twist.angular.z);
 
-  	request.march	= static_cast<int16_t> (input->linear.x);
-  	request.depth	= static_cast<int16_t> (input->linear.y);
-  	request.lag	    = static_cast<int16_t> (input->linear.z); 
+  	request.march	= static_cast<int16_t> (velocityRequest.twist.linear.x);
+  	request.depth	= static_cast<int16_t> (velocityRequest.twist.linear.y);
+  	request.lag	    = static_cast<int16_t> (velocityRequest.twist.linear.z);
 
   	isReady = true;
+
+  	velocityResponse.success.data = true;
+
+    return true;
 }
 
 int main(int argc, char **argv)
@@ -109,7 +116,11 @@ int main(int argc, char **argv)
 
     // ROS subscribers
     ros::Subscriber inputMessage_sub 	= n.subscribe("/hard_bridge/uart", 1000, inputMessage_callback);
-    ros::Subscriber movement_sub 		= n.subscribe("/pilot/velocity", 1000, movement_callback);
+    //ros::Subscriber movement_sub 		= n.subscribe("/pilot/velocity", 1000, movement_callback);
+    // **************
+
+    // ROS services
+    ros::ServiceServer velocity_srv = n.advertiseService("velocity_service", movement_callback);
     // **************
 
     while (ros::ok())

@@ -8,6 +8,7 @@
 #include <string>
 #include <boost/bind.hpp>
 #include <twist/TwistFactory.h>
+#include <twist/TwistPublisher.h>
 
 
 /**
@@ -18,21 +19,11 @@ class MoveActionServerBase {
 
 protected:
 
-    static const int VELOCITY_TOPIC_QUEUE_SIZE = 1;
-
-    static const int VELOCITY_TOPIC_POLL_RATE = 100;
-
-    /** ROS topic to where velocity values will be published */
-    std::string velocityPublishTopic;
-
-    ros::Publisher velocityPublisher;
-
     ros::NodeHandle nodeHandle;
     actionlib::SimpleActionServer<auv_common::MoveAction> actionServer;
 
     TwistFactory* twistFactory;
-
-    void safePublish(const geometry_msgs::Twist &twist);
+    TwistPublisher* twistPublisher;
 
     geometry_msgs::Twist createTwistFromGoal(const auv_common::MoveGoal &goal);
 
@@ -41,8 +32,9 @@ protected:
 
 public:
 
-    MoveActionServerBase(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory);
-    ~MoveActionServerBase() = default;
+    MoveActionServerBase(const std::string& actionName, bool isSimulation, const std::string& velocityTopicOrService,
+            const TwistFactory& twistFactory);
+    ~MoveActionServerBase();
 
 };
 

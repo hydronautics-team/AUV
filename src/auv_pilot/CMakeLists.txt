@@ -153,7 +153,8 @@ add_executable(pilot
         include/twist/SimulationTwistFactory.h 
         src/twist/SimulationTwistFactory.cpp 
         include/twist/RealTwistFactory.h 
-        src/twist/RealTwistFactory.cpp)
+        src/twist/RealTwistFactory.cpp
+        include/twist/TwistPublisher.h include/twist/SimulationTwistPublisher.h include/twist/RealTwistPublisher.h src/twist/SimulationTwistPublisher.cpp src/twist/RealTwistPublisher.cpp)
 target_link_libraries(pilot ${catkin_LIBRARIES})
 add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 

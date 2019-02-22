@@ -1,15 +1,22 @@
-
 #include <MoveActionServerBase.h>
 
 #include "../include/MoveActionServerBase.h"
+#include <twist/SimulationTwistPublisher.h>
+#include <twist/RealTwistPublisher.h>
 
-MoveActionServerBase::MoveActionServerBase(const std::string& actionName, const std::string& velocityTopic,
-        const TwistFactory& twistFactory):
-        actionServer(nodeHandle, actionName, boost::bind(&MoveActionServerBase::goalCallback, this, _1), false),
-        velocityPublishTopic(velocityTopic) {
+MoveActionServerBase::MoveActionServerBase(const std::string& actionName, bool isSimulation,
+        const std::string& velocityTopicOrService, const TwistFactory& twistFactory):
+        actionServer(nodeHandle, actionName, boost::bind(&MoveActionServerBase::goalCallback, this, _1), false) {
     this->twistFactory = const_cast<TwistFactory*>(&twistFactory);
-    velocityPublisher = nodeHandle.advertise<geometry_msgs::Twist>(velocityTopic, VELOCITY_TOPIC_QUEUE_SIZE);
+    if (isSimulation)
+        this->twistPublisher = new SimulationTwistPublisher(this->nodeHandle, velocityTopicOrService);
+    else
+        this->twistPublisher = new RealTwistPublisher(this->nodeHandle, velocityTopicOrService);
     actionServer.start();
+}
+
+MoveActionServerBase::~MoveActionServerBase() {
+    delete twistPublisher;
 }
 
 geometry_msgs::Twist MoveActionServerBase::createTwistFromGoal(const auv_common::MoveGoal &goal) {
@@ -86,11 +93,4 @@ geometry_msgs::Twist MoveActionServerBase::createTwistFromGoal(const auv_common:
         default: /* Must not appear */
             return twistFactory->createStopTwist();
     }
-}
-
-void MoveActionServerBase::safePublish(const geometry_msgs::Twist& twist) {
-    ros::Rate pollRate(VELOCITY_TOPIC_POLL_RATE);
-    while (velocityPublisher.getNumSubscribers() == 0)
-        pollRate.sleep();
-    velocityPublisher.publish(twist);
 }

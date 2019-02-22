@@ -12,11 +12,12 @@ class MoveByTileServer : MoveActionServerBase {
 
 protected:
 
-    void goalCallback(const auv_common::MoveGoalConstPtr &goal);
+    void goalCallback(const auv_common::MoveGoalConstPtr &goal) override;
 
 public:
 
-    MoveByTileServer(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory);
+    MoveByTileServer(const std::string& actionName, bool isSimulation, const std::string& velocityTopicOrService,
+            const TwistFactory& twistFactory);
     ~MoveByTileServer() = default;
 
 };
