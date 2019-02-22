@@ -1,16 +1,16 @@
 #include "MoveByTimeServer.h"
-#include <iostream>
 
-MoveByTimeServer::MoveByTimeServer(const std::string& actionName, bool isSimulation, const std::string& velocityTopicOrService,
-                                   const TwistFactory& twistFactory):
-    MoveActionServerBase(actionName, isSimulation, velocityTopicOrService, twistFactory) { };
+
+MoveByTimeServer::MoveByTimeServer(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory):
+        MoveActionServerBase(actionName, velocityTopic, twistFactory) { };
 
 void MoveByTimeServer::goalCallback(const auv_common::MoveGoalConstPtr &goal) {
 
+    /* TODO: Check responses */
     geometry_msgs::Twist startMsg = createTwistFromGoal(*goal);
-
-    /* TODO: check if publish returned false */
-    twistPublisher->publishTwist(startMsg);
+    auv_common::VelocityCmd startCmd;
+    startCmd.request.twist = startMsg;
+    ros::service::call(velocityService, startCmd);
 
     if (goal->value != auv_common::MoveGoal::VALUE_INFINITY) {
         int timeMs = goal->value;
@@ -18,7 +18,10 @@ void MoveByTimeServer::goalCallback(const auv_common::MoveGoalConstPtr &goal) {
         if (time != 0) {
             ros::Duration(time).sleep();
             geometry_msgs::Twist endMsg = twistFactory->createStopTwist();
-            twistPublisher->publishTwist(endMsg);
+            auv_common::VelocityCmd endCmd;
+            endCmd.request.twist = endMsg;
+            ros::service::call(velocityService, endCmd);
+
             ros::Duration(2.0).sleep();
         }
     } else if (goal->holdIfInfinityValue) {

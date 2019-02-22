@@ -12,12 +12,11 @@ class MoveByTimeServer : MoveActionServerBase {
 
 protected:
 
-    void goalCallback(const auv_common::MoveGoalConstPtr &goal);
+    void goalCallback(const auv_common::MoveGoalConstPtr &goal) override;
 
 public:
 
-    MoveByTimeServer(const std::string& actionName, bool isSimulation, const std::string& velocityTopicOrService,
-                     const TwistFactory& twistFactory);
+    MoveByTimeServer(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory);
     ~MoveByTimeServer() = default;
 
 };

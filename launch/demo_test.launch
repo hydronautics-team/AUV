@@ -19,4 +19,9 @@
         <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
     </group>
 
+    <group if="$(arg simulation)">
+        <node pkg="auv_connection" name="gazebo_bridge" type="gazebo_bridge" output="screen" />
+    </group>
+
+
 </launch>

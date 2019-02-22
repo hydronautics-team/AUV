@@ -18,9 +18,7 @@ static const std::string PARAM_VELOCITY_LEVEL_3 = "velocityLevel3";
 
 static const std::string PARAM_VELOCITY_LEVEL_4 = "velocityLevel4";
 
-static const std::string GAZEBO_VELOCITY_TOPIC = "/cmd_vel";
-
-static const std::string REAL_VELOCITY_SERVICE = "velocity_service";
+static const std::string VELOCITY_SERVICE = "velocity_service";
 
 static const std::string MOVE_BY_TIME_ACTION = "move_by_time";
 
@@ -39,7 +37,6 @@ int main(int argc, char **argv)
     TwistFactory* twistFactory;
 
     nodeHandle.param(PARAM_SIMULTATION, isSimulation, false);
-    std::string target = isSimulation ? GAZEBO_VELOCITY_TOPIC : REAL_VELOCITY_SERVICE;
 
     if (!isSimulation) {
         float velocity1, velocity2, velocity3, velocity4;
@@ -53,9 +50,9 @@ int main(int argc, char **argv)
         twistFactory = new SimulationTwistFactory();
     }
 
-    MoveByTimeServer moveByTimeServer(MOVE_BY_TIME_ACTION, isSimulation, target, *twistFactory);
-    MoveByTileServer moveByTileServer(MOVE_BY_TILE_ACTION, isSimulation, target, *twistFactory);
-    MoveCenteringServer moveCenteringServer(MOVE_CENTERING, isSimulation, target, *twistFactory);
+    MoveByTimeServer moveByTimeServer(MOVE_BY_TIME_ACTION, VELOCITY_SERVICE, *twistFactory);
+    MoveByTileServer moveByTileServer(MOVE_BY_TILE_ACTION, VELOCITY_SERVICE, *twistFactory);
+    MoveCenteringServer moveCenteringServer(MOVE_CENTERING, VELOCITY_SERVICE, *twistFactory);
     ros::spin();
 
     delete twistFactory;

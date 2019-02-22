@@ -1,8 +1,7 @@
 #include "MoveByTileServer.h"
 
-MoveByTileServer::MoveByTileServer(const std::string& actionName, bool isSimulation, const std::string& velocityTopicOrService,
-                                   const TwistFactory& twistFactory):
-    MoveActionServerBase(actionName, isSimulation, velocityTopicOrService, twistFactory) { };
+MoveByTileServer::MoveByTileServer(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory):
+        MoveActionServerBase(actionName, velocityTopic, twistFactory) { };
 
 void MoveByTileServer::goalCallback(const auv_common::MoveGoalConstPtr &goal) {
     /** Temporary stub */

@@ -46,13 +46,19 @@
 
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
         <param name="simulation" value="$(arg simulation)" />
-        <param name="simulationVelocity" value="$(arg simulationVelocity)" />
-        <param name="realVelocity" value="$(arg realVelocity)" />
+        <param name="velocityLevel1" value="3000.0">
+        <param name="velocityLevel2" value="7000.0">
+        <param name="velocityLevel3" value="1000.0">
+        <param name="velocityLevel4" value="13000.0">
     </node>
         
     <group unless="$(arg simulation)">
         <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
         <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
+    </group>
+
+    <group if="$(arg simulation)">
+        <node pkg="auv_connection" name="gazebo_bridge" type="gazebo_bridge" output="screen" />
     </group>
 
     <group unless="$(arg simulation)">

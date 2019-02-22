@@ -167,6 +167,11 @@ add_executable(uart_bridge
 target_link_libraries(uart_bridge ${catkin_LIBRARIES})
 add_dependencies(hardware_bridge auv_common_generate_messages_cpp)
 
+add_executable(gazebo_bridge
+		src/gazebo_bridge.cpp)
+target_link_libraries(gazebo_bridge ${catkin_LIBRARIES})
+add_dependencies(gazebo_bridge auv_common_generate_messages_cpp)
+
 #############
 ## Install ##
 #############

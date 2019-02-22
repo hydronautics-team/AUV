@@ -152,12 +152,11 @@ int main(int argc, char **argv)
 
     // ROS subscribers
     ros::Subscriber inputMessage_sub 	= n.subscribe("/hard_bridge/uart", 1000, inputMessage_callback);
-    //ros::Subscriber movement_sub 		= n.subscribe("/pilot/velocity", 1000, movement_callback);
     // **************
 
     // ROS services
     ros::ServiceServer velocity_srv = n.advertiseService("velocity_service", movement_callback);
-    ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
+    //ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
     // **************
 
     while (ros::ok())

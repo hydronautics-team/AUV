@@ -12,12 +12,11 @@ class MoveCenteringServer : MoveActionServerBase {
 
 protected:
 
-    void goalCallback(const auv_common::MoveGoalConstPtr &goal);
+    void goalCallback(const auv_common::MoveGoalConstPtr &goal) override;
 
 public:
 
-    MoveCenteringServer(const std::string& actionName, bool isSimulation, const std::string& velocityTopicOrService,
-                        const TwistFactory& twistFactory);
+    MoveCenteringServer(const std::string& actionName, const std::string& velocityTopic, const TwistFactory& twistFactory);
     ~MoveCenteringServer() = default;
 
 };
