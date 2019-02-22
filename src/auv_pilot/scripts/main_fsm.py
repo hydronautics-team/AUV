@@ -14,7 +14,7 @@ def main():
 
     with sm:
 
-        smach.StateMachine.add('INIT', init_states.SimpleInitState(), transitions={'OK': 'GATE_MISSION'})
+        smach.StateMachine.add('INIT', init_states.create_diving_state(1.5), transitions={'OK': 'GATE_MISSION'})
         smach.StateMachine.add('GATE_MISSION', gate_mission.create_gate_fsm(), transitions={'OK': 'SUCCESS', 'FAILED': 'ABORTED'})
         
     server = smach_ros.IntrospectionServer('main_fsm', sm, '/fsm/main_fsm')

@@ -26,9 +26,12 @@ def create_gate_fsm():
         sideMoveGoal = MoveGoal()
         sideMoveGoal.direction = MoveGoal.DIRECTION_LEFT
         sideMoveGoal.value = 0
+        sideMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_2
+        sideMoveGoal.holdIfInfinityValue = False
 
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
+        forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         forwardMoveGoal.value = 10000
 
         smach.StateMachine.add('SIDE_MOVE',
