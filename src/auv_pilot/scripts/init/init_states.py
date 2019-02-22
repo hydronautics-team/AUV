@@ -7,12 +7,13 @@ from auv_common.msg import MoveGoal, MoveAction
 
 
 class SimpleInitState(smach.State):
-    def __init__(self):
+    def __init__(self, delay):
         smach.State.__init__(self, outcomes=['OK'])
+        self.delay = delay
         
     def execute(self, userdata):
         # We have to wait our action servers to initialize
-        rate = rospy.Rate(1)
+        rate = rospy.Rate(1.0 / self.delay)
         rate.sleep()
         return 'OK'
 

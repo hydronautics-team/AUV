@@ -5,19 +5,10 @@ import smach
 import smach_ros
 import actionlib
 import actionlib_msgs
+from init import init_states
 from auv_common.msg import OptionalPoint2D
 from auv_common.msg import MoveGoal, MoveAction
 
-# Initialization state
-class InitializationState(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['ok'])
-        
-    def execute(self, userdata):
-        # We have to wait our action servers to initialize
-        rate = rospy.Rate(10)
-        rate.sleep()
-        return 'ok'
 
 def main():
     rospy.init_node('demo')
@@ -36,7 +27,7 @@ def main():
 
     with sm:
 
-        smach.StateMachine.add('Init', InitializationState(), transitions={'ok':'FORWARD_1'})
+        smach.StateMachine.add('Init', init_states.SimpleInitState(10), transitions={'OK':'FORWARD_1'})
 
         smach.StateMachine.add('FORWARD_1',
                                 smach_ros.SimpleActionState(
