@@ -21,10 +21,6 @@
     <!-- Root path for all output videos and images. MUST NOT END WITH SLASH!!!!!! -->
     <arg name="storage" />
 
-    <arg name="simulationVelocity" default="1.5" />
-
-    <arg name="realVelocity" default="3000.0" />
-
     <group if="$(arg missions)">
         <node pkg="auv_pilot" name="main_fsm" type="main_fsm.py" output="screen" />
     </group>
