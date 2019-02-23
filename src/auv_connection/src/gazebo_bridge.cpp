@@ -2,15 +2,21 @@
 
 #include "geometry_msgs/Twist.h"
 #include <auv_common/VelocityCmd.h>
+#include <auv_common/DepthCmd.h>
 
 static const std::string GAZEBO_VELOCITY_TOPIC = "/cmd_vel";
 
 static const std::string VELOCITY_SERVICE = "velocity_service";
 
+static const std::string DEPTH_SERVICE = "depth_service";
+
 ros::Publisher velocityPublisher;
 
 bool movementCallback(auv_common::VelocityCmd::Request& velocityRequest,
                        auv_common::VelocityCmd::Response& velocityResponse);
+
+bool depthCallback(auv_common::VelocityCmd::Request& depthRequest,
+                      auv_common::VelocityCmd::Response& depthResponse);
 
 
 int main(int argc, char **argv)
@@ -21,6 +27,7 @@ int main(int argc, char **argv)
     velocityPublisher = nodeHandle.advertise<geometry_msgs::Twist>(GAZEBO_VELOCITY_TOPIC, 100);
 
     ros::ServiceServer velocity_srv = nodeHandle.advertiseService(VELOCITY_SERVICE, movementCallback);
+    ros::ServiceServer depth_srv = nodeHandle.advertiseService(DEPTH_SERVICE, depthCallback);
 
     ros::spin();
 
@@ -37,5 +44,12 @@ bool movementCallback(auv_common::VelocityCmd::Request& velocityRequest,
 
     velocityResponse.success.data = true;
 
+    return true;
+}
+
+bool depthCallback(auv_common::VelocityCmd::Request& depthRequest,
+                   auv_common::VelocityCmd::Response& depthResponse) {
+    /* Currently not supported in simulation */
+    depthResponse.success.data = true;
     return true;
 }
