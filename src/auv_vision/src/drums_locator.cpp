@@ -6,11 +6,12 @@
 #include <util/ImgprocUtil.h>
 #include "common/AbstractImageConverter.h"
 #include "auv_common/OptionalPoint2D.h"
+#include "auv_common/DistancesToMatEdges.h"
+#include "auv_common/DrumsCoordinates.h"
 #include "mat/MatDetector.h"
 #include "mat/MatDescriptor.h"
 #include "drums/DrumDetector.h"
 #include "drums/DrumDescriptor.h"
-#include <auv_common/OptionalPoint2D.h>
 #include <dynamic_reconfigure/server.h>
 #include <auv_vision/DrumsLocatorConfig.h>
 
@@ -155,20 +156,25 @@ protected:
         }
 
 
-        sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_front).toImageMsg();
-        imagePublisher.publish(imageMsg);
+        if (!image_copy_descriptor_front.empty()) {
+            sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_front).toImageMsg();
+            imagePublisher.publish(imageMsg);
+        }
 
-        if (!image.empty()) {
+        if (!detector.getLinesImage().empty()) {
             sensor_msgs::ImagePtr imageMsgLines = cv_bridge::CvImage(std_msgs::Header(), "bgr8", detector.getLinesImage()).toImageMsg();
             linesImagePublisher.publish(imageMsgLines);
+        }
 
+        if (!detector.getimageAfterContourDetection().empty()) {
             sensor_msgs::ImagePtr imageMsgContours = cv_bridge::CvImage(std_msgs::Header(), "bgr8", detector.getimageAfterContourDetection()).toImageMsg();
             contoursImagePublisher.publish(imageMsgContours);
         }
 
-
-        sensor_msgs::ImagePtr imageMsgMasked = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_copy).toImageMsg();
-        maskedImagePublisher.publish(imageMsgMasked);
+        if (!image_copy.empty()) {
+            sensor_msgs::ImagePtr imageMsgMasked = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_copy).toImageMsg();
+            maskedImagePublisher.publish(imageMsgMasked);
+        }
     }
 
 public:
@@ -227,16 +233,23 @@ protected:
         cv::Mat image_copy = image.clone();
         image_copy_descriptor_bottom = image.clone();
 
-        auv_common::OptionalPoint2D msg_bottom_cam;
+        auv_common::DistancesToMatEdges msg_bottom_cam;
 
         if (!image.empty()) {
             detector.detectContours(image, image_copy, contours, true);
 
-            sensor_msgs::ImagePtr imageMsgMasked = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_copy).toImageMsg();
-            maskedImagePublisher.publish(imageMsgMasked);
+            if (!image_copy.empty()) {
+                sensor_msgs::ImagePtr imageMsgMasked = cv_bridge::CvImage(std_msgs::Header(), "mono8", image_copy).toImageMsg();
+                maskedImagePublisher.publish(imageMsgMasked);
+            }
         }
 
         MatDescriptorBottomCamera bottom_image = detector_bottomCamera.detect(image_copy, image_copy);
+
+        msg_bottom_cam.hasHorizontalLine = false;
+        msg_bottom_cam.hasVerticalLine = false;
+        msg_bottom_cam.distanceToHorizontalLine = -1;
+        msg_bottom_cam.distanceToVerticalLine = -1;
 
         //cv::Mat drawing = cv::Mat::zeros(image.size(), CV_8UC3); /// Black
 
@@ -272,8 +285,8 @@ protected:
 
                 std::cerr<<bottom_image.getIntersectionWithHorizontal(image, bottom_image.getHorizontalLines()[i])<<" Intersection Y"<<std::endl;
 
-                msg_bottom_cam.hasPoint = true;
-                msg_bottom_cam.y = bottom_image.getIntersectionWithHorizontal(image, bottom_image.getHorizontalLines()[i]);
+                msg_bottom_cam.hasHorizontalLine = true;
+                msg_bottom_cam.distanceToHorizontalLine = bottom_image.getIntersectionWithHorizontal(image, bottom_image.getHorizontalLines()[i]);
             }
         }
         //drawing = cv::Mat::zeros(image.size(), CV_8UC3); /// Black
@@ -310,7 +323,8 @@ protected:
 
                 std::cerr<<bottom_image.getIntersectionWithVertical(image, bottom_image.getVerticalLines()[i])<<" Intersection X"<<std::endl;
 
-                msg_bottom_cam.x = bottom_image.getIntersectionWithVertical(image, bottom_image.getVerticalLines()[i]);
+                msg_bottom_cam.hasVerticalLine = true;
+                msg_bottom_cam.distanceToVerticalLine = bottom_image.getIntersectionWithVertical(image, bottom_image.getVerticalLines()[i]);
             }
 
             //cv::namedWindow("Lines Expanded");
@@ -321,8 +335,10 @@ protected:
 
         matBottomCamPublisher.publish(msg_bottom_cam);
 
-        sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_bottom).toImageMsg();
-        imagePublisher.publish(imageMsg);
+        if (!image_copy_descriptor_bottom.empty()) {
+            sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_bottom).toImageMsg();
+            imagePublisher.publish(imageMsg);
+        }
     }
 
 public:
@@ -340,7 +356,7 @@ public:
          * This lets the master tell any nodes listening on DRUMS_MAT_PUBLISH_TOPIC_BOTTOM
          * that we are going to publish data on that topic.
          */
-        matBottomCamPublisher = nodeHandle.advertise<auv_common::OptionalPoint2D>(DRUMS_MAT_PUBLISH_TOPIC_BOTTOM, 100);
+        matBottomCamPublisher = nodeHandle.advertise<auv_common::DistancesToMatEdges>(DRUMS_MAT_PUBLISH_TOPIC_BOTTOM, 100);
         if (windowsEnabled)
             cv::namedWindow(OPENCV_WINDOW_BOTTOM_CAM_MAT, CV_WINDOW_AUTOSIZE);
 
@@ -376,11 +392,14 @@ protected:
 
         cv::Mat image_copy_descriptor_Drums = image.clone();
 
+        auv_common::DrumsCoordinates msg_bottom_cam_drums;
+
         if (image_with_Drums.hasDrumCenter()) {
             if ((image_with_Drums.hasBlueDrumCenter()) && (image_with_Drums.hasRedDrumCenter())) {
                 std::vector<cv::Vec3f> RedDrums = image_with_Drums.getAllRedDrums();
                 std::vector<cv::Vec3f> BlueDrums = image_with_Drums.getAllBlueDrums();
 
+                bool stupidFlag = true;
                 for (int i = 0; i < RedDrums.size(); i++) {
                     cv::Point2f RedDrumCenter = image_with_Drums.getRedDrumCenter(i);
                     if ((RedDrumCenter.x != 0) && (RedDrumCenter.y != 0)) {
@@ -393,9 +412,20 @@ protected:
 
                         RedDrumCenter = convertToCentralCoordinates(RedDrumCenter, image.cols, image.rows);
                         std::cerr<<RedDrumCenter<<"RED"<<std::endl;
+                        msg_bottom_cam_drums.hasRedDrum = true;
+                        if (stupidFlag) {
+                            stupidFlag = false;
+                            msg_bottom_cam_drums.RedDrum1x = RedDrumCenter.x;
+                            msg_bottom_cam_drums.RedDrum1y = RedDrumCenter.y;
+                        }
+                        else {
+                            msg_bottom_cam_drums.RedDrum2x = RedDrumCenter.x;
+                            msg_bottom_cam_drums.RedDrum2y = RedDrumCenter.y;
+                        }
                     }
                 }
 
+                stupidFlag = true;
                 for (int i = 0; i < BlueDrums.size(); i++) {
                     cv::Point2f BlueDrumCenter = image_with_Drums.getBlueDrumCenter(i);
 
@@ -410,13 +440,25 @@ protected:
                         BlueDrumCenter = convertToCentralCoordinates(BlueDrumCenter, image.cols, image.rows);
 
                         std::cerr<<BlueDrumCenter<<"BlUE"<<std::endl;
+                        msg_bottom_cam_drums.hasBlueDrum = true;
+                        if (stupidFlag) {
+                            stupidFlag = false;
+                            msg_bottom_cam_drums.BlueDrum1x = BlueDrumCenter.x;
+                            msg_bottom_cam_drums.BlueDrum1y = BlueDrumCenter.y;
+                        }
+                        else {
+                            msg_bottom_cam_drums.BlueDrum2x = BlueDrumCenter.x;
+                            msg_bottom_cam_drums.BlueDrum2y = BlueDrumCenter.y;
+                        }
                     }
                 }
+
             }
             else {
                 if (image_with_Drums.hasBlueDrumCenter()) {
                     std::vector<cv::Vec3f> BlueDrums = image_with_Drums.getAllBlueDrums();
 
+                    bool stupidFlag = true;
                     for (int i = 0; i < BlueDrums.size(); i++) {
                         cv::Point2f BlueDrumCenter = image_with_Drums.getBlueDrumCenter(i);
 
@@ -431,12 +473,24 @@ protected:
                             BlueDrumCenter = convertToCentralCoordinates(BlueDrumCenter, image.cols, image.rows);
 
                             std::cerr << BlueDrumCenter << "BlUE" << std::endl;
+
+                            msg_bottom_cam_drums.hasBlueDrum = true;
+                            if (stupidFlag) {
+                                stupidFlag = false;
+                                msg_bottom_cam_drums.BlueDrum1x = BlueDrumCenter.x;
+                                msg_bottom_cam_drums.BlueDrum1y = BlueDrumCenter.y;
+                            }
+                            else {
+                                msg_bottom_cam_drums.BlueDrum2x = BlueDrumCenter.x;
+                                msg_bottom_cam_drums.BlueDrum2y = BlueDrumCenter.y;
+                            }
                         }
                     }
                 }
                 if (image_with_Drums.hasRedDrumCenter()) {
                     std::vector<cv::Vec3f> RedDrums = image_with_Drums.getAllRedDrums();
 
+                    bool stupidFlag = true;
                     for (int i = 0; i < RedDrums.size(); i++) {
                         cv::Point2f RedDrumCenter = image_with_Drums.getRedDrumCenter(i);
 
@@ -453,11 +507,16 @@ protected:
 
                             auv_common::OptionalPoint2D msg_bottom_cam;
 
-                            msg_bottom_cam.hasPoint = true;
-                            msg_bottom_cam.x = RedDrumCenter.x;
-                            msg_bottom_cam.y = RedDrumCenter.y;
-                            drumPublisher.publish(msg_bottom_cam);
-
+                            msg_bottom_cam_drums.hasRedDrum = true;
+                            if (stupidFlag) {
+                                stupidFlag = false;
+                                msg_bottom_cam_drums.RedDrum1x = RedDrumCenter.x;
+                                msg_bottom_cam_drums.RedDrum1y = RedDrumCenter.y;
+                            }
+                            else {
+                                msg_bottom_cam_drums.RedDrum2x = RedDrumCenter.x;
+                                msg_bottom_cam_drums.RedDrum2y = RedDrumCenter.y;
+                            }
                         }
                     }
                 }
@@ -470,40 +529,57 @@ protected:
 
         else {
             //std::cerr<<"NO Drums"<<std::endl;
+            msg_bottom_cam_drums.hasRedDrum = false;
+            msg_bottom_cam_drums.hasBlueDrum = false;
 
-            auv_common::OptionalPoint2D msg_bottom_cam;
+            msg_bottom_cam_drums.RedDrum1x = -1;
+            msg_bottom_cam_drums.RedDrum1y = -1;
+            msg_bottom_cam_drums.RedDrum2x = -1;
+            msg_bottom_cam_drums.RedDrum2y = -1;
 
-            msg_bottom_cam.hasPoint = false;
-            msg_bottom_cam.x = 0;
-            msg_bottom_cam.y = 0;
-            drumPublisher.publish(msg_bottom_cam);
-            ///STUFF
+            msg_bottom_cam_drums.BlueDrum1x = -1;
+            msg_bottom_cam_drums.BlueDrum1y = -1;
+            msg_bottom_cam_drums.BlueDrum2x = -1;
+            msg_bottom_cam_drums.BlueDrum2y = -1;
+
         }
+        drumPublisher.publish(msg_bottom_cam_drums);
+
         if (windowsEnabled) {
             if (!image_copy_descriptor_Drums.empty()) cv::imshow(OPENCV_WINDOW_DRUM, image_copy_descriptor_Drums);
             if (!image_copy_descriptor_bottom.empty()) cv::imshow(OPENCV_WINDOW_BOTTOM_CAM_MAT, image_copy_descriptor_bottom);
             cv::waitKey(3);
         }
 
-        sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_bottom).toImageMsg();
-        imagePublisher.publish(imageMsg);
+        if (!image_copy_descriptor_bottom.empty()) {
+            sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_bottom).toImageMsg();
+            imagePublisher.publish(imageMsg);
+        }
 
-        sensor_msgs::ImagePtr imageMsgAfterMorphology = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfImageAfterMorphology()).toImageMsg();
-        imagePublisherAfterMorphology.publish(imageMsgAfterMorphology);
+        if (!drum_detector.getreconfImageAfterMorphology().empty()) {
+            sensor_msgs::ImagePtr imageMsgAfterMorphology = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfImageAfterMorphology()).toImageMsg();
+            imagePublisherAfterMorphology.publish(imageMsgAfterMorphology);
+        }
 
-        sensor_msgs::ImagePtr imageMsgAfterMask = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfImageAfterMask()).toImageMsg();
-        imagePublisherAfterMask.publish(imageMsgAfterMask);
+        if (!drum_detector.getreconfImageAfterMask().empty()) {
+            sensor_msgs::ImagePtr imageMsgAfterMask = cv_bridge::CvImage(std_msgs::Header(), "mono8", drum_detector.getreconfImageAfterMask()).toImageMsg();
+            imagePublisherAfterMask.publish(imageMsgAfterMask);
+        }
 
-        sensor_msgs::ImagePtr imageMsgAfterColorEnhancement = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfImageAfterColorEnhancement()).toImageMsg();
-        imagePublisherAfterColorEnhancement.publish(imageMsgAfterColorEnhancement);
+        if (!drum_detector.getreconfImageAfterColorEnhancement().empty()) {
+            sensor_msgs::ImagePtr imageMsgAfterColorEnhancement = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfImageAfterColorEnhancement()).toImageMsg();
+            imagePublisherAfterColorEnhancement.publish(imageMsgAfterColorEnhancement);
+        }
 
-        sensor_msgs::ImagePtr imageMsgImage_red = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfmaskedImage_red()).toImageMsg();
-        imagePublisherImage_red.publish(imageMsgImage_red);
+        if (!drum_detector.getreconfmaskedImage_red().empty()) {
+            sensor_msgs::ImagePtr imageMsgImage_red = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfmaskedImage_red()).toImageMsg();
+            imagePublisherImage_red.publish(imageMsgImage_red);
+        }
 
-        sensor_msgs::ImagePtr imageMsgImage_blue = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfmaskedImage_blue()).toImageMsg();
-        imagePublisherImage_blue.publish(imageMsgImage_blue);
-
-
+        if (!drum_detector.getreconfmaskedImage_blue().empty()) {
+            sensor_msgs::ImagePtr imageMsgImage_blue = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfmaskedImage_blue()).toImageMsg();
+            imagePublisherImage_blue.publish(imageMsgImage_blue);
+        }
     }
 
 public:
@@ -526,7 +602,7 @@ public:
          * that we are going to publish data on that topic.
          */
 
-        drumPublisher = nodeHandle.advertise<auv_common::OptionalPoint2D>(DRUMS_DRUM_PUBLISH_TOPIC, 100);
+        drumPublisher = nodeHandle.advertise<auv_common::DrumsCoordinates>(DRUMS_DRUM_PUBLISH_TOPIC, 100);
         if (windowsEnabled)
             cv::namedWindow(OPENCV_WINDOW_DRUM, CV_WINDOW_AUTOSIZE);
     }

@@ -1,0 +1,10 @@
+bool hasRedDrum
+bool hasBlueDrum
+float64 RedDrum1x
+float64 RedDrum1y
+float64 RedDrum2x
+float64 RedDrum2y
+float64 BlueDrum1x
+float64 BlueDrum1y
+float64 BlueDrum2x
+float64 BlueDrum2y

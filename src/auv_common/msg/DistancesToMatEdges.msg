@@ -1,0 +1,4 @@
+bool hasHorizontalLine
+bool hasVerticalLine
+float64 distanceToHorizontalLine
+float64 distanceToVerticalLine

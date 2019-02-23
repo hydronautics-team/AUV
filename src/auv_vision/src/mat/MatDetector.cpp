@@ -413,7 +413,7 @@ bool MatDetectorFrontCamera::getMatContour(std::vector<std::vector<cv::Point>>& 
 
     /// Show in a window
     //if (!drawing.empty()) cv::imshow("After Contour detection", drawing);
-    imageAfterContourDetection = drawing;
+    //imageAfterContourDetection = drawing;
 
     // TODO add max possible contour area
     int largest_contour_index = -1;
@@ -444,6 +444,7 @@ bool MatDetectorFrontCamera::getMatContour(std::vector<std::vector<cv::Point>>& 
     cv::drawContours(drawing, contours, largest_contour_index, color, 1, 8, std::vector<cv::Vec4i>(), 0); /// Draw the largest contour using previously stored index
 
     //if (!drawing.empty()) {cv::namedWindow("Biggest Contour"); cv::imshow("Biggest Contour", drawing);}
+    imageAfterContourDetection = drawing;
 
     //std::cout<<largest_contour_index<<" - Biggest contour index"<<std::endl;
     //std::cout<<global_contours.size()<<" - Counters amount"<<std::endl;
@@ -480,7 +481,7 @@ bool MatDetectorFrontCamera::getMatContour(std::vector<std::vector<cv::Point>>& 
 
     //std::cout<<largest_area<<" - Largest Area"<<std::endl;
 
-    if ((!contours.empty()) && (largest_area > 1000)) {return true;} else {return false;}
+    if ((!contours.empty()) && (largest_area > 200)) {return true;} else {return false;}
 }
 
 /// Sorting function (sorts elements from small to big in one array's row)
