@@ -24,12 +24,6 @@ geometry_msgs::Twist RealTwistFactory::createDirectionTwist(Direction direction,
         case Direction::LEFT:
             return createLinearTwist(0.0f, 0.0f, -velocity);
 
-        case Direction::UP:
-            return createLinearTwist(0.0f, velocity, 0.0f);
-
-        case Direction::DOWN:
-            return createLinearTwist(0.0f, -velocity, 0.0f);
-
         case Direction::ROLL_CW:
             return createAngularTwist(velocity, 0.0f, 0.0f);
 

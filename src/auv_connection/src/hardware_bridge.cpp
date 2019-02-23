@@ -105,7 +105,7 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
   	request.pitch	= static_cast<int16_t> (velocityRequest.twist.angular.z);
 
   	request.march	= static_cast<int16_t> (velocityRequest.twist.linear.x);
-  	request.depth	= static_cast<int16_t> (velocityRequest.twist.linear.y);
+  	//request.depth	= static_cast<int16_t> (velocityRequest.twist.linear.y);
   	request.lag	    = static_cast<int16_t> (velocityRequest.twist.linear.z);
 
   	set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
@@ -118,11 +118,20 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
     return true;
 }
 
-
-/* TODO: Implement */
 bool depth_callback(auv_common::DepthCmd::Request& depthRequest,
                        auv_common::DepthCmd::Response& depthResponse)
 {
+    request.depth	= -(static_cast<int16_t> (depthRequest.depth));
+
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
+
+    ROS_INFO("Received: %d", depthRequest.depth);
+
+    isReady = true;
+
+    depthResponse.success.data = true;
+
     return true;
 }
 
@@ -156,7 +165,7 @@ int main(int argc, char **argv)
 
     // ROS services
     ros::ServiceServer velocity_srv = n.advertiseService("velocity_service", movement_callback);
-    //ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
+    ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
     // **************
 
     while (ros::ok())

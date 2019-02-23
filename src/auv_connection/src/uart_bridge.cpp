@@ -118,7 +118,7 @@ int main(int argc, char **argv)
      if(!isOpened) {
       if(port.openPort(file)) {
         if(!port.configurePort(57600, 8, PARITY_NONE, 1)) {
-          ROS_INFO("Cannot configure port: ", file);
+          //ROS_INFO("Cannot configure port: ", file);
           break;
         }
         else {
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
         }
       }
       else {
-        ROS_INFO("Cannot open port: ", file);
+        //ROS_INFO("Cannot open port: ", file);
         ros::spinOnce();
         continue;
       }
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     // If topic is sent us something
     if(isTopicUpdated) {
       if(!sendData(port)) {
-	    	ROS_INFO("Unable to send msg to STM32");
+	    	//ROS_INFO("Unable to send msg to STM32");
       }
 
       if(receiveData(port)) {

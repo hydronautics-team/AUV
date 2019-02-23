@@ -30,14 +30,6 @@ geometry_msgs::Twist MoveActionServerBase::createTwistFromGoal(const auv_common:
             direction = Direction::LEFT;
             break;
 
-        case auv_common::MoveGoal::DIRECTION_UP:
-            direction = Direction::UP;
-            break;
-
-        case auv_common::MoveGoal::DIRECTION_DOWN:
-            direction = Direction::DOWN;
-            break;
-
         case auv_common::MoveGoal::ROTATE_ROLL_CW:
             direction = Direction::ROLL_CW;
             break;

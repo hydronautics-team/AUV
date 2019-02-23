@@ -3,7 +3,7 @@
 import rospy
 import smach
 import smach_ros
-from auv_common.msg import MoveGoal, MoveAction
+from auv_common.msg import DiveGoal, DiveAction
 
 
 class SimpleInitState(smach.State):
@@ -19,11 +19,7 @@ class SimpleInitState(smach.State):
 
 
 def create_diving_state(depth):
-    diveMove = MoveGoal()
-    diveMove.direction = MoveGoal.DIRECTION_DOWN
-    diveMove.value = (depth * 1000.0) / 3000.0
-    diveMove.velocityLevel = MoveGoal.VELOCITY_LEVEL_2
-    diveMove.holdIfInfinityValue = False
-
-    return smach_ros.SimpleActionState('move_by_time', MoveAction, goal=diveMove)
+    dive = DiveGoal()
+    dive.depth = depth
+    return smach_ros.SimpleActionState('dive', DiveAction, goal=dive)
 

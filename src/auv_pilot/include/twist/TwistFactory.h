@@ -9,8 +9,6 @@ typedef enum {
     BACKWARDS,
     RIGHT,
     LEFT,
-    UP,
-    DOWN,
     ROLL_CW,
     ROLL_CCW,
     PITCH_CW,
