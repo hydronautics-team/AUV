@@ -121,7 +121,7 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
 bool depth_callback(auv_common::DepthCmd::Request& depthRequest,
                        auv_common::DepthCmd::Response& depthResponse)
 {
-    request.depth	= -(static_cast<int16_t> (depthRequest.depth));
+    request.depth	= -(static_cast<int16_t> (depthRequest.depth * 100)); // For low-level stabilization purposes
 
     set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
     set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);

@@ -29,7 +29,7 @@ def main():
 
         smach.StateMachine.add('INIT', init_states.SimpleInitState(10), transitions={'OK': 'DIVE'})
         # Depth in millimeters
-        smach.StateMachine.add('DIVE', init_states.create_diving_state(1000), transitions={'succeeded':'FORWARD_1', 'preempted':'ABORTED', 'aborted':'ABORTED'})
+        smach.StateMachine.add('DIVE', init_states.create_diving_state(100), transitions={'succeeded':'FORWARD_1', 'preempted':'ABORTED', 'aborted':'ABORTED'})
 
         smach.StateMachine.add('FORWARD_1',
                                 smach_ros.SimpleActionState(

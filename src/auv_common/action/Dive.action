@@ -1,5 +1,5 @@
 # Goal
-uint32 depth # Depth in millimeters
+uint32 depth # Depth in centimetres
 ---
 # Result
 uint32 totalDepth
