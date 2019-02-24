@@ -1,23 +1,39 @@
 # Goal
+
+# Linear and angular directions
 uint8 DIRECTION_FORWARD=1
 uint8 DIRECTION_BACKWARDS=2
 uint8 DIRECTION_RIGHT=3
 uint8 DIRECTION_LEFT=4
+uint8 DIRECTION_UP=5
+uint8 DIRECTION_DOWN=6
 
-uint8 ROTATE_ROLL_CW=5
-uint8 ROTATE_ROLL_CCW=6
-uint8 ROTATE_PITCH_CW=7
-uint8 ROTATE_PITCH_CCW=8
-uint8 ROTATE_YAW_CW=9
-uint8 ROTATE_YAW_CCW=10
+uint8 ROTATE_ROLL_CW=7
+uint8 ROTATE_ROLL_CCW=8
+uint8 ROTATE_PITCH_CW=9
+uint8 ROTATE_PITCH_CCW=10
+uint8 ROTATE_YAW_CW=11
+uint8 ROTATE_YAW_CCW=12
 
-uint8 STOP=11
+uint8 STOP=13
+
+# Speed levels (frow slowest to fastest)
+uint8 VELOCITY_LEVEL_1=14
+uint8 VELOCITY_LEVEL_2=15
+uint8 VELOCITY_LEVEL_3=16
+uint8 VELOCITY_LEVEL_4=17
+uint8 VELOCITY_CUSTOM=18
+
+uint8 VALUE_INFINITY=0
 
 uint8 direction
-uint32 value # Number of units (time, number of tiles) to move till. 0 means inifinite move mode.
+uint8 velocityLevel
+uint8 velocityValue # Used only if velocityLevel is set to SPEED_CUSTOM
+uint32 value # Non-negative number of units (time, number of tiles) to move till. 0 means inifinite move mode.
+bool holdIfInfinityValue # Blocks action if value is set to infinity
 ---
 # Result
-uint32 totalValue # Number of passed units
+uint32 totalValue # Non-negative number of passed units
 ---
 # Feedback
-uint32 currentValue # Number of currently passed units
+uint32 currentValue # Non-negative number of currently passed units

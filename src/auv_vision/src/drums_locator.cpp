@@ -15,13 +15,9 @@
 #include <dynamic_reconfigure/server.h>
 #include <auv_vision/DrumsLocatorConfig.h>
 
-// Gazebo:
-static const std::string CAMERA_FRONT_TOPIC = "stereo/camera/left/image_raw";
-static const std::string CAMERA_BOTTOM_TOPIC = "ROV_model_URDF/camera_bottom/image_raw";
 
-// Real:
-//static const std::string CAMERA_BOTTOM_TOPIC = "/cam_bottom/image_raw";
-//static const std::string CAMERA_FRONT_TOPIC = "/cam_front_1/image_raw";
+static const std::string CAMERA_BOTTOM_TOPIC = "/cam_bottom/image_raw";
+static const std::string CAMERA_FRONT_TOPIC = "/cam_front_1/image_raw";
 
 static const std::string DRUMS_MAT_PUBLISH_TOPIC_BOTTOM = "/drums/mat/cam_bottom";
 

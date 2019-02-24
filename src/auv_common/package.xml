@@ -5,7 +5,7 @@
   <version>0.0.1</version>
   <description>The auv_common package that contains messages, services and actions</description>
 
-  <maintainer email="rentgeny@mail.ru">Timur Akhtyamov is real gangsta</maintainer>
+  <maintainer email="rentgeny@mail.ru">Timur Akhtyamov</maintainer>
 
   <license>MIT</license>
 
@@ -15,6 +15,7 @@
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
 
   <build_depend>message_generation</build_depend>
   <build_depend>actionlib_msgs</build_depend>
