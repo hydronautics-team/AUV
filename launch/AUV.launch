@@ -1,10 +1,12 @@
 <launch>
 
     <!-- TODO: Decompose -->
-    <!-- TODO: Remove simulation velocities -->
 
-    <!-- Enables missions accomplishment -->
-    <arg name="missions" default="true" />
+    <!-- Sets mode: qualification, missions, demo or none -->
+    <arg name="mode" default="none" />
+
+    <!-- Disables connection with STM32 -->
+    <arg name="connectionDisabled" default="false" />
 
     <!-- Enables video streaming through network -->
     <arg name="stream" default="false" />
@@ -20,10 +22,6 @@
 
     <!-- Root path for all output videos and images. MUST NOT END WITH SLASH!!!!!! -->
     <arg name="storage" />
-
-    <group if="$(arg missions)">
-        <node pkg="auv_pilot" name="main_fsm" type="main_fsm.py" output="screen" />
-    </group>
 
     <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
         <remap from="/cam_front_1/image_raw" to="/stereo/camera/right/image_raw" if="$(arg simulation)" />
@@ -48,16 +46,17 @@
         <param name="velocityLevel4" value="13000.0" />
     </node>
         
-    <group unless="$(arg simulation)">
-        <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
-        <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
-    </group>
-
     <group if="$(arg simulation)">
         <node pkg="auv_connection" name="gazebo_bridge" type="gazebo_bridge" output="screen" />
     </group>
 
     <group unless="$(arg simulation)">
+
+        <group unless="$(arg connectionDisabled)">
+            <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
+            <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
+        </group>
+
         <!-- First front camera -->
         <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
             <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />
@@ -70,19 +69,6 @@
             <param name="io_method" value="mmap"/>
         </node>
 
-        <!-- Second front camera (temporary removed)
-        <node name="cam_front_2" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
-            <param name="video_device" value="/dev/v4l/by-id/usb-WQH_USB_Camera_20170821-video-index0" />
-            <param name="image_width" value="640" />
-            <param name="image_height" value="480" />
-            <param name="pixel_format" value="yuyv" />
-            <param name="framerate" value="30" />
-            <param name="camera_frame_id" value="cam_front_2" />
-            <param name="camera_name" value="cam_front_2" />
-            <param name="io_method" value="mmap"/>
-        </node>
-        -->
-
         <!-- Bottom camera -->
         <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
             <param name="video_device" value="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._H264_USB_Camera_SN0001-video-index0" />
@@ -94,34 +80,27 @@
             <param name="camera_name" value="cam_bottom" />
             <param name="io_method" value="mmap"/>
         </node>
-    </group>
 
-    <group if="$(arg record)">
-        <!-- First front camera recorder -->
-        <!-- FPS in recorders are mostly empiric values! -->
-        <node name="front_recorder_1" pkg="auv_vision" type="video_recorder" output="screen">
-            <remap from="image" to="/cam_front_1/image_raw"/>
-            <param name="fps" value="30" />
-            <param name="codec" value="H264" />
-            <param name="filename" value="$(arg storage)/front-1.avi" />
-        </node>
+        <!--TODO: Allow to record in simulation mode -->
+        <group if="$(arg record)">
+            <!-- First front camera recorder -->
+            <!-- FPS in recorders are mostly empiric values! -->
+            <node name="front_recorder_1" pkg="auv_vision" type="video_recorder" output="screen">
+                <remap from="image" to="/cam_front_1/image_raw"/>
+                <param name="fps" value="30" />
+                <param name="codec" value="H264" />
+                <param name="filename" value="$(arg storage)/front-1.avi" />
+            </node>
+            
+            <!-- Bottom camera recorder -->
+            <node name="bottom_recorder" pkg="auv_vision" type="video_recorder" output="screen">
+                <remap from="image" to="/cam_bottom/image_raw"/>
+                <param name="fps" value="30" />
+                <param name="codec" value="H264" />
+                <param name="filename" value="$(arg storage)/bottom.avi" />
+            </node>
+        </group>
 
-        <!-- Second front camera recorder (temporary disabled)
-        <node name="front_recorder_2" pkg="auv_vision" type="video_recorder" output="screen">
-            <remap from="image" to="/cam_front_2/image_raw"/>
-            <param name="fps" value="30" />
-            <param name="codec" value="H264" />
-            <param name="filename" value="$(arg storage)/front-2.avi" />
-        </node>
-        -->
-
-        <!-- Bottom camera recorder -->
-        <node name="bottom_recorder" pkg="auv_vision" type="video_recorder" output="screen">
-            <remap from="image" to="/cam_bottom/image_raw"/>
-            <param name="fps" value="30" />
-            <param name="codec" value="H264" />
-            <param name="filename" value="$(arg storage)/bottom.avi" />
-        </node>
     </group>
 
     <group if="$(arg stream)">
@@ -132,5 +111,11 @@
         </node>
     </group>
 
+    <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
+        <param name="mode" value="$(arg mode)" />
+        <param name="launch_delay" value="60" />
+        <param name="dive_delay" value="20" />
+        <param name="initial_depth" value="100" />
+    </node>
 
 </launch>

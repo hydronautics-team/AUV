@@ -15,8 +15,8 @@ ros::Publisher velocityPublisher;
 bool movementCallback(auv_common::VelocityCmd::Request& velocityRequest,
                        auv_common::VelocityCmd::Response& velocityResponse);
 
-bool depthCallback(auv_common::VelocityCmd::Request& depthRequest,
-                      auv_common::VelocityCmd::Response& depthResponse);
+bool depthCallback(auv_common::DepthCmd::Request& depthRequest,
+                      auv_common::DepthCmd::Response& depthResponse);
 
 
 int main(int argc, char **argv)
@@ -47,8 +47,8 @@ bool movementCallback(auv_common::VelocityCmd::Request& velocityRequest,
     return true;
 }
 
-bool depthCallback(auv_common::VelocityCmd::Request& depthRequest,
-                   auv_common::VelocityCmd::Response& depthResponse) {
+bool depthCallback(auv_common::DepthCmd::Request& depthRequest,
+                   auv_common::DepthCmd::Response& depthResponse) {
     /* Currently not supported in simulation */
     depthResponse.success.data = true;
     return true;

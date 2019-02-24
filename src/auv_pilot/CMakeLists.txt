@@ -183,7 +183,7 @@ add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
-   scripts/main_fsm.py
+   scripts/top_level_fsm.py
    scripts/demo.py
    init/init_states.py
    missions/gate_mission.py
