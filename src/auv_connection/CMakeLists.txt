@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  auv_common
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,7 +109,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_connection
 #  CATKIN_DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs
-  DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs
+  DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs auv_common
 )
 
 ###########
@@ -156,17 +157,20 @@ add_executable(hardware_bridge
         src/hardware_bridge.cpp
         include/messages.h
 		src/messages.cpp)
-target_link_libraries(hardware_bridge ${catkin_LIBRARIES}
-        ${OpenCV_LIBS})
-#add_dependencies(hardware_bridge geometry_msgs)
+target_link_libraries(hardware_bridge ${catkin_LIBRARIES})
+add_dependencies(hardware_bridge auv_common_generate_messages_cpp)
 
 add_executable(uart_bridge
         src/uart_bridge.cpp
         include/serial.h
 		src/serial.cpp)
-target_link_libraries(uart_bridge ${catkin_LIBRARIES}
-        ${OpenCV_LIBS})
-#add_dependencies(hardware_bridge geometry_msgs)
+target_link_libraries(uart_bridge ${catkin_LIBRARIES})
+add_dependencies(hardware_bridge auv_common_generate_messages_cpp)
+
+add_executable(gazebo_bridge
+		src/gazebo_bridge.cpp)
+target_link_libraries(gazebo_bridge ${catkin_LIBRARIES})
+add_dependencies(gazebo_bridge auv_common_generate_messages_cpp)
 
 #############
 ## Install ##

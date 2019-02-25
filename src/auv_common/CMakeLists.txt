@@ -68,6 +68,7 @@ add_action_files(
   FILES
   Move.action
   Centering.action
+  Dive.action
 )
 
 ## Generate added messages and services with any dependencies listed here

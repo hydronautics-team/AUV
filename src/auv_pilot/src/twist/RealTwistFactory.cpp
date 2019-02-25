@@ -2,51 +2,47 @@
 #include "../../include/twist/RealTwistFactory.h"
 
 
-RealTwistFactory::RealTwistFactory(float defaultVelocity) : TwistFactory(defaultVelocity) {}
+RealTwistFactory::RealTwistFactory(float velocityLevel1Value, float velocityLevel2Value, float velocityLevel3Value,
+        float velocityLevel4Value) : TwistFactory(velocityLevel1Value, velocityLevel2Value, velocityLevel3Value,
+                velocityLevel4Value) {}
 
 
 RealTwistFactory::RealTwistFactory(TwistFactory &other) : TwistFactory(other) {}
 
 
-/* TODO: Fix all direction */
-geometry_msgs::Twist RealTwistFactory::createDirectionTwist(int direction, float velocity) {
+geometry_msgs::Twist RealTwistFactory::createDirectionTwist(Direction direction, float velocity) {
     switch (direction) {
-        case auv_common::MoveGoal::DIRECTION_FORWARD:
+        case Direction::FORWARD:
             return createLinearTwist(velocity, 0.0f, 0.0f);
 
-        case auv_common::MoveGoal::DIRECTION_BACKWARDS:
+        case Direction::BACKWARDS:
             return createLinearTwist(-velocity, 0.0f, 0.0f);
 
-        case auv_common::MoveGoal::DIRECTION_RIGHT:
+        case Direction::RIGHT:
             return createLinearTwist(0.0f, 0.0f, velocity);
 
-        case auv_common::MoveGoal::DIRECTION_LEFT:
+        case Direction::LEFT:
             return createLinearTwist(0.0f, 0.0f, -velocity);
 
-        case auv_common::MoveGoal::ROTATE_ROLL_CW:
+        case Direction::ROLL_CW:
             return createAngularTwist(velocity, 0.0f, 0.0f);
 
-        case auv_common::MoveGoal::ROTATE_ROLL_CCW:
+        case Direction::ROLL_CCW:
             return createAngularTwist(-velocity, 0.0f, 0.0f);
 
-        case auv_common::MoveGoal::ROTATE_PITCH_CW:
+        case Direction::PITCH_CW:
             return createAngularTwist(0.0f, 0.0f, velocity);
 
-        case auv_common::MoveGoal::ROTATE_PITCH_CCW:
+        case Direction::PITCH_CCW:
             return createAngularTwist(0.0f, 0.0f, -velocity);
 
-        case auv_common::MoveGoal::ROTATE_YAW_CW:
+        case Direction::YAW_CW:
             return createAngularTwist(0.0f, velocity, 0.0f);
 
-        case auv_common::MoveGoal::ROTATE_YAW_CCW:
+        case Direction::YAW_CCW:
             return createAngularTwist(0.0f, -velocity, 0.0f);
 
-        default:
+        case Direction::STOP:
             return createLinearTwist(0.0f, 0.0f, 0.0f);
     }
-}
-
-
-geometry_msgs::Twist RealTwistFactory::createDirectionTwist(int direction) {
-    return createDirectionTwist(direction, defaultVelocity);
 }

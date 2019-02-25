@@ -11,12 +11,11 @@ class RealTwistFactory : public TwistFactory {
 
 public:
 
-    RealTwistFactory(float defaultVelocity);
-    RealTwistFactory(TwistFactory& other);
+    RealTwistFactory(float velocityLevel1Value, float velocityLevel2Value, float velocityLevel3Value, float velocityLevel4Value);
+    explicit RealTwistFactory(TwistFactory& other);
     ~RealTwistFactory() = default;
 
-    geometry_msgs::Twist createDirectionTwist(int direction, float velocity);
-    geometry_msgs::Twist createDirectionTwist(int direction);
+    geometry_msgs::Twist createDirectionTwist(Direction direction, float velocity) override;
 
 };
 

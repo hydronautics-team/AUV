@@ -19,16 +19,19 @@ def create_gate_fsm():
     def centerGate(userData, gateMessage):
         return not (gateMessage.hasPoint and abs(gateMessage.x) < 10)
 
-    sm = smach.StateMachine(outcomes=['OK', 'FAILED'])
+    sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
 
     with sm:
 
         sideMoveGoal = MoveGoal()
         sideMoveGoal.direction = MoveGoal.DIRECTION_LEFT
         sideMoveGoal.value = 0
+        sideMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_2
+        sideMoveGoal.holdIfInfinityValue = False
 
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
+        forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         forwardMoveGoal.value = 10000
 
         smach.StateMachine.add('SIDE_MOVE',
@@ -36,26 +39,26 @@ def create_gate_fsm():
                                     'move_by_time',
                                     MoveAction,
                                     goal=sideMoveGoal),
-                                {'succeeded':'GATE_MONITOR', 'preempted':'FAILED', 'aborted':'FAILED'})
+                                {'succeeded':'GATE_MONITOR', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
         smach.StateMachine.add('GATE_MONITOR', 
                                 smach_ros.MonitorState(
                                     '/gate',
                                     OptionalPoint2D,
                                     centerGate),
-                                {'valid':'GATE_MONITOR', 'invalid':'FORWARD_MOVE', 'preempted':'FAILED'})
+                                {'valid':'GATE_MONITOR', 'invalid':'FORWARD_MOVE', 'preempted':'GATE_FAILED'})
 
         smach.StateMachine.add('FORWARD_MOVE',
                                 smach_ros.SimpleActionState(
                                     'move_by_time',
                                     MoveAction,
                                     goal=forwardMoveGoal),
-                                {'succeeded':'OK', 'preempted':'FAILED', 'aborted':'FAILED'})
+                                {'succeeded':'GATE_OK', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
     
     return sm
 
-
+'''
 def create_new_gate_fsm():
 
     gate_count = 0
@@ -104,3 +107,4 @@ def create_new_gate_fsm():
                                 {'succeeded':'OK', 'preempted':'FAILED', 'aborted':'FAILED'})
 
     return sm
+    '''

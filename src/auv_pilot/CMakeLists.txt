@@ -147,7 +147,14 @@ add_executable(pilot
         include/MoveActionServerBase.h
         src/MoveActionServerBase.cpp
         include/MoveCenteringServer.h
-        src/MoveCenteringServer.cpp include/twist/TwistFactory.h src/twist/TwistFactory.cpp include/twist/SimulationTwistFactory.h src/twist/SimulationTwistFactory.cpp include/twist/RealTwistFactory.h src/twist/RealTwistFactory.cpp)
+        src/MoveCenteringServer.cpp 
+        include/twist/TwistFactory.h
+        src/twist/TwistFactory.cpp 
+        include/twist/SimulationTwistFactory.h 
+        src/twist/SimulationTwistFactory.cpp 
+        include/twist/RealTwistFactory.h 
+        src/twist/RealTwistFactory.cpp
+        include/DiveActionServer.h src/DiveActionServer.cpp)
 target_link_libraries(pilot ${catkin_LIBRARIES})
 add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 
@@ -176,7 +183,7 @@ add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
-   scripts/main_fsm.py
+   scripts/top_level_fsm.py
    scripts/demo.py
    init/init_states.py
    missions/gate_mission.py

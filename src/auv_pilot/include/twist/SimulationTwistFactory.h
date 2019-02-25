@@ -11,12 +11,11 @@ class SimulationTwistFactory : public TwistFactory {
 
 public:
 
-    SimulationTwistFactory(float defaultVelocity);
-    SimulationTwistFactory(TwistFactory& other);
+    SimulationTwistFactory();
+    explicit SimulationTwistFactory(TwistFactory& other);
     ~SimulationTwistFactory() = default;
 
-    geometry_msgs::Twist createDirectionTwist(int direction, float velocity);
-    geometry_msgs::Twist createDirectionTwist(int direction);
+    geometry_msgs::Twist createDirectionTwist(Direction direction, float velocity) override;
 
 };
 

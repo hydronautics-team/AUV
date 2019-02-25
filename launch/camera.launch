@@ -1,0 +1,45 @@
+<launch>
+
+        <!-- First front camera -->
+        <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
+            <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />
+            <param name="image_width" value="640" />
+            <param name="image_height" value="480" />
+            <param name="pixel_format" value="yuyv" />
+            <param name="framerate" value="30" />
+            <param name="camera_frame_id" value="cam_front_1" />
+            <param name="camera_name" value="cam_front_1" />
+            <param name="io_method" value="mmap"/>
+        </node>
+
+        <!-- Second front camera (temporary removed)
+        <node name="cam_front_2" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
+            <param name="video_device" value="/dev/v4l/by-id/usb-WQH_USB_Camera_20170821-video-index0" />
+            <param name="image_width" value="640" />
+            <param name="image_height" value="480" />
+            <param name="pixel_format" value="yuyv" />
+            <param name="framerate" value="30" />
+            <param name="camera_frame_id" value="cam_front_2" />
+            <param name="camera_name" value="cam_front_2" />
+            <param name="io_method" value="mmap"/>
+        </node>
+        -->
+
+        <!-- Bottom camera -->
+        <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
+            <param name="video_device" value="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._H264_USB_Camera_SN0001-video-index0" />
+            <param name="image_width" value="640" />
+            <param name="image_height" value="480" />
+            <param name="pixel_format" value="yuyv" />
+            <param name="framerate" value="30" />
+            <param name="camera_frame_id" value="cam_bottom" />
+            <param name="camera_name" value="cam_bottom" />
+            <param name="io_method" value="mmap"/>
+        </node>
+
+        <node name="video_server" pkg="web_video_server" type="web_video_server" output="screen" >
+            <param name="server_threads" value="4" />
+            <param name="ros_threads" value="10" />
+        </node>
+
+</launch>

@@ -12,7 +12,7 @@ class MoveByTimeServer : MoveActionServerBase {
 
 protected:
 
-    void goalCallback(const auv_common::MoveGoalConstPtr &goal);
+    void goalCallback(const auv_common::MoveGoalConstPtr &goal) override;
 
 public:
 

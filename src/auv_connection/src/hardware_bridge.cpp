@@ -11,12 +11,22 @@
 #include "geometry_msgs/Twist.h"
 #include "sensor_msgs/Imu.h"
 
+#include <auv_common/VelocityCmd.h>
+#include <auv_common/DepthCmd.h>
+
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "serial.h"
 #include "messages.h"
+
+#define SHORE_STABILIZE_DEPTH_BIT 		0
+#define SHORE_STABILIZE_ROLL_BIT 		1
+#define SHORE_STABILIZE_PITCH_BIT 		2
+#define SHORE_STABILIZE_YAW_BIT 		3
+#define SHORE_STABILIZE_IMU_BIT 		4
+#define SHORE_STABILIZE_SAVE_BIT		5
 
 // High level -> Hardware bridge
 geometry_msgs::Twist movement;
@@ -35,6 +45,23 @@ bool isReady = false;
 
 RequestMessage request;
 ResponseMessage response;
+
+bool pick_bit(uint8_t &input, uint8_t bit)
+{
+    return static_cast<bool>((input << (8 - bit)) >> 8);
+}
+
+
+void set_bit(uint8_t &byte, uint8_t bit, bool state)
+{
+    uint8_t value = 1;
+    if(state) {
+        byte = byte | (value << bit);
+    }
+    else {
+        byte = byte & ~(value << bit);
+    }
+}
 
 /** @brief Make byte array to publish for protocol_node
   *
@@ -70,17 +97,42 @@ void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
   *
   * @param[in]  &input String to parse.
   */
-void movement_callback(const geometry_msgs::Twist::ConstPtr &input)
+bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
+        auv_common::VelocityCmd::Response& velocityResponse)
 {
-  	request.roll	= static_cast<int16_t> (input->angular.x);
-  	request.yaw		= static_cast<int16_t> (input->angular.y);
-  	request.pitch	= static_cast<int16_t> (input->angular.z);
+  	request.roll	= static_cast<int16_t> (velocityRequest.twist.angular.x);
+  	request.yaw		= static_cast<int16_t> (velocityRequest.twist.angular.y);
+  	request.pitch	= static_cast<int16_t> (velocityRequest.twist.angular.z);
 
-  	request.march	= static_cast<int16_t> (input->linear.x);
-  	request.depth	= static_cast<int16_t> (input->linear.y);
-  	request.lag	    = static_cast<int16_t> (input->linear.z); 
+  	request.march	= static_cast<int16_t> (velocityRequest.twist.linear.x);
+  	//request.depth	= static_cast<int16_t> (velocityRequest.twist.linear.y);
+  	request.lag	    = static_cast<int16_t> (velocityRequest.twist.linear.z);
+
+  	set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
+  	set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
 
   	isReady = true;
+
+  	velocityResponse.success.data = true;
+
+    return true;
+}
+
+bool depth_callback(auv_common::DepthCmd::Request& depthRequest,
+                       auv_common::DepthCmd::Response& depthResponse)
+{
+    request.depth	= -(static_cast<int16_t> (depthRequest.depth * 100)); // For low-level stabilization purposes
+
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
+
+    ROS_INFO("Received: %d", depthRequest.depth);
+
+    isReady = true;
+
+    depthResponse.success.data = true;
+
+    return true;
 }
 
 int main(int argc, char **argv)
@@ -109,7 +161,11 @@ int main(int argc, char **argv)
 
     // ROS subscribers
     ros::Subscriber inputMessage_sub 	= n.subscribe("/hard_bridge/uart", 1000, inputMessage_callback);
-    ros::Subscriber movement_sub 		= n.subscribe("/pilot/velocity", 1000, movement_callback);
+    // **************
+
+    // ROS services
+    ros::ServiceServer velocity_srv = n.advertiseService("velocity_service", movement_callback);
+    ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
     // **************
 
     while (ros::ok())
