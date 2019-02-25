@@ -187,6 +187,7 @@ install(PROGRAMS
    scripts/demo.py
    init/init_states.py
    missions/gate_mission.py
+   missions/drums_mission.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
