@@ -4,10 +4,11 @@
 
 
 DiveActionServer::DiveActionServer(const std::string &actionName, const std::string &depthService,
-        const std::string& depthTopic, unsigned int depthRange) :
+        const std::string& depthTopic, unsigned int depthRange, float diveTime) :
         depthService(depthService),
         depthTopic(depthTopic),
         depthRange(depthRange),
+        diveTime(diveTime),
         actionServer(nodeHandle, actionName, boost::bind(&DiveActionServer::goalCallback, this, _1), false) {
     actionServer.start();
 }
@@ -20,7 +21,7 @@ void DiveActionServer::goalCallback(const auv_common::DiveGoalConstPtr &goal) {
     cmd.request.depth = goal->depth;
     ros::service::call(depthService, cmd); // TODO: Check response
 
-    ros::Rate sleepRate(1.0 / 5.0); // Sleep for 5 sec
+    ros::Rate sleepRate(1.0f / diveTime); // Sleep for 5 sec
     sleepRate.sleep();
 
     /*

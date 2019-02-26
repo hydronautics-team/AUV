@@ -59,8 +59,11 @@ int main(int argc, char **argv)
         twistFactory = new SimulationTwistFactory();
     }
 
+    float diveTime;
+    nodeHandle.param("diveTime", diveTime, 5.0f);
+
     MoveByTimeServer moveByTimeServer(MOVE_BY_TIME_ACTION, VELOCITY_SERVICE, *twistFactory);
-    DiveActionServer diveService(DIVE_ACTION, DEPTH_SERVICE, DEPTH_TOPIC, DEPTH_RANGE);
+    DiveActionServer diveService(DIVE_ACTION, DEPTH_SERVICE, DEPTH_TOPIC, DEPTH_RANGE, diveTime);
     //MoveByTileServer moveByTileServer(MOVE_BY_TILE_ACTION, VELOCITY_SERVICE, *twistFactory);
     //MoveCenteringServer moveCenteringServer(MOVE_CENTERING, VELOCITY_SERVICE, *twistFactory);
     ros::spin();
