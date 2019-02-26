@@ -20,6 +20,11 @@ void DiveActionServer::goalCallback(const auv_common::DiveGoalConstPtr &goal) {
     cmd.request.depth = goal->depth;
     ros::service::call(depthService, cmd); // TODO: Check response
 
+    ros::Rate sleepRate(1.0 / 5.0); // Sleep for 5 sec
+    sleepRate.sleep();
+
+    /*
+     * TODO: Fix feedback
     bool depthInRange = false;
     while (!depthInRange) {
         std_msgs::UInt32 depthMessage = *ros::topic::waitForMessage<std_msgs::UInt32>(depthTopic, nodeHandle);
@@ -27,6 +32,7 @@ void DiveActionServer::goalCallback(const auv_common::DiveGoalConstPtr &goal) {
         if (std::abs(desiredDepth - currentDepth) < depthRange)
             depthInRange = true;
     }
+     */
 
     actionServer.setSucceeded();
 }
