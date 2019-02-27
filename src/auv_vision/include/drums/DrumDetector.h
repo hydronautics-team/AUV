@@ -18,7 +18,7 @@ private:
     float lower_red_1_H = 0;
     float higher_red_1_H = 70;
     float lower_red_2_H = 160;
-    float higher_red_2_H =180;
+    float higher_red_2_H = 180;
 
     float lower_red_1_S = 0;
     float higher_red_1_S = 173;
@@ -47,6 +47,8 @@ public:
 
     cv::Mat getreconfImageAfterMorphology();
     cv::Mat getreconfImageAfterMask();
+    cv::Mat getreconfImageAfterMaskRED();
+    cv::Mat getreconfImageAfterMaskBLUE();
     cv::Mat getreconfImageAfterColorEnhancement();
     cv::Mat getreconfmaskedImage_red();
     cv::Mat getreconfmaskedImage_blue();

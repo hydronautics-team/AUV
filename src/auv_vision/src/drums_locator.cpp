@@ -374,7 +374,7 @@ private:
 
     ros::Publisher drumPublisher;
 
-    image_transport::Publisher imagePublisher, imagePublisherAfterMorphology, imagePublisherAfterMask, imagePublisherAfterColorEnhancement, imagePublisherImage_red, imagePublisherImage_blue;
+    image_transport::Publisher imagePublisher, imagePublisherAfterMorphology, imagePublisherAfterMask, imagePublisherAfterMaskRED, imagePublisherAfterMaskBLUE, imagePublisherAfterColorEnhancement, imagePublisherImage_red, imagePublisherImage_blue;
 
     bool windowsEnabled;
 
@@ -562,6 +562,16 @@ protected:
             imagePublisherAfterMask.publish(imageMsgAfterMask);
         }
 
+        if (!drum_detector.getreconfImageAfterMaskRED().empty()) {
+            sensor_msgs::ImagePtr imageMsgAfterMaskRED = cv_bridge::CvImage(std_msgs::Header(), "mono8", drum_detector.getreconfImageAfterMaskRED()).toImageMsg();
+            imagePublisherAfterMaskRED.publish(imageMsgAfterMaskRED);
+        }
+
+        if (!drum_detector.getreconfImageAfterMaskBLUE().empty()) {
+            sensor_msgs::ImagePtr imageMsgAfterMaskBLUE = cv_bridge::CvImage(std_msgs::Header(), "mono8", drum_detector.getreconfImageAfterMaskBLUE()).toImageMsg();
+            imagePublisherAfterMaskBLUE.publish(imageMsgAfterMaskBLUE);
+        }
+
         if (!drum_detector.getreconfImageAfterColorEnhancement().empty()) {
             sensor_msgs::ImagePtr imageMsgAfterColorEnhancement = cv_bridge::CvImage(std_msgs::Header(), "mono8", drum_detector.getreconfImageAfterColorEnhancement()).toImageMsg();
             imagePublisherAfterColorEnhancement.publish(imageMsgAfterColorEnhancement);
@@ -587,6 +597,8 @@ public:
 
         imagePublisherAfterMorphology = it.advertise("/CamDrums/imageAfterMorphology", 100);
         imagePublisherAfterMask = it.advertise("/CamDrums/imageAfterMask", 100);
+        imagePublisherAfterMaskRED = it.advertise("/CamDrums/imageAfterMaskRED", 100);
+        imagePublisherAfterMaskBLUE = it.advertise("/CamDrums/imageAfterMaskBLUE", 100);
         imagePublisherAfterColorEnhancement = it.advertise("/CamDrums/imageAfterColorEnhancement", 100);
         imagePublisherImage_red = it.advertise("/CamDrums/Image_red", 100);
         imagePublisherImage_blue = it.advertise("/CamDrums/Image_blue", 100);

@@ -47,7 +47,7 @@ void DrumDetector::meanShift(const cv::Mat &src, cv::Mat &dst) {
 }
 
 /// Global Mat variables for rqt_reconfigure (sorry)
-cv::Mat reconfImageAfterMorphology, reconfImageAfterMask, reconfImageAfterColorEnhancement, reconfmaskedImage_red, reconfmaskedImage_blue;
+cv::Mat reconfImageAfterMorphology, reconfImageAfterMask, reconfImageAfterMaskRED, reconfImageAfterMaskBLUE, reconfImageAfterColorEnhancement, reconfmaskedImage_red, reconfmaskedImage_blue;
 
 void DrumDetector::extractValueChannel(const cv::Mat &src, cv::Mat &dst) {
     cv::Mat hsv;
@@ -150,6 +150,8 @@ std::vector<cv::Vec3f> DrumDetector::findCircles(const cv::Mat& src, cv::Mat& ds
     cv::GaussianBlur(mask, mask, cv::Size(0, 0), 2);
     //cv::imshow("Mask", mask);
     reconfImageAfterMask = mask;
+    reconfImageAfterMaskRED = mask1 | mask2;
+    reconfImageAfterMaskBLUE = mask3;
 
 
     cv::bitwise_and(hsv, hsv, src_copy, mask = mask);
@@ -282,6 +284,7 @@ bool DrumDetector::isRed(const cv::Mat& src, const cv::Vec3f circle) {
     cv::Scalar lower_red_2(lower_red_2_H, lower_red_2_S, lower_red_2_V); /// Mean - var for low
     cv::Scalar higher_red_2(higher_red_2_H, higher_red_2_S, higher_red_2_V); /// Mean + var for high
 
+    //std::cerr<<lower_red_1_H<<" "<<higher_red_1_H<<" "<<lower_red_2_H<<" "<<higher_red_2_H<<" "<<lower_red_2_S<<" "<<higher_red_2_S<<std::endl;
 
     /**
     mean, var (RED):
@@ -329,7 +332,7 @@ bool DrumDetector::isRed(const cv::Mat& src, const cv::Vec3f circle) {
     /// Check color
     if (((lower_red_1[0] <= m[0]) && (m[0] <= higher_red_1[0]) && (lower_red_1[1] <= m[1]) && (m[1] <= higher_red_1[1]) && (lower_red_1[2] <= m[2]) && (m[2] <= higher_red_1[2])) ||
         ((lower_red_2[0] <= m[0]) && (m[0] <= higher_red_2[0]) && (lower_red_2[1] <= m[1]) && (m[1] <= higher_red_2[1]) && (lower_red_2[2] <= m[2]) && (m[2] <= higher_red_2[2])))
-    return true;
+        return true;
     else return false;
 
 }
@@ -463,6 +466,12 @@ cv::Mat DrumDetector::getreconfImageAfterMorphology(){
 }
 cv::Mat DrumDetector::getreconfImageAfterMask() {
     return reconfImageAfterMask;
+}
+cv::Mat DrumDetector::getreconfImageAfterMaskRED() {
+    return reconfImageAfterMaskRED;
+}
+cv::Mat DrumDetector::getreconfImageAfterMaskBLUE() {
+    return reconfImageAfterMaskBLUE;
 }
 cv::Mat DrumDetector::getreconfImageAfterColorEnhancement() {
     return reconfImageAfterColorEnhancement;
