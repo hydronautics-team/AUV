@@ -8,27 +8,26 @@ class DrumDetector {
 
 private:
 
-    float lower_blue_H = 80;
+    float lower_blue_H = 100;
     float higher_blue_H = 180;
-    float lower_blue_S = 160;
+    float lower_blue_S = 35;
     float higher_blue_S = 255;
-    float lower_blue_V = 0;
+    float lower_blue_V = 50;
     float higher_blue_V = 255;
 
-
     float lower_red_1_H = 0;
-    float higher_red_1_H = 40;
-    float lower_red_2_H = 110;
+    float higher_red_1_H = 70;
+    float lower_red_2_H = 160;
     float higher_red_2_H =180;
 
     float lower_red_1_S = 0;
-    float higher_red_1_S = 255;
-    float lower_red_2_S = 0;
+    float higher_red_1_S = 173;
+    float lower_red_2_S = 62;
     float higher_red_2_S = 255;
 
-    float lower_red_1_V = 0;
-    float higher_red_1_V = 255;
-    float lower_red_2_V = 0;
+    float lower_red_1_V = 50;
+    float higher_red_1_V = 137;
+    float lower_red_2_V = 60;
     float higher_red_2_V = 255;
 
     float min_dist = 400;

@@ -14,6 +14,7 @@ from auv_common.msg import MoveGoal, MoveAction
 
 def create_drums_fsm():
 
+    '''
     mode = rospy.get_param('~drum_mission_direction_mode', 'none').upper()
 
     rospy.loginfo(mode)
@@ -51,11 +52,11 @@ def create_drums_fsm():
             else:
                 return 'NO_MAT_DETECTED'
 
-
+    '''
     sm = smach.StateMachine(outcomes=['DRUMS_OK', 'DRUMS_FAILED'])
 
     with sm:
-
+        '''
         leftMoveGoal = MoveGoal()
         leftMoveGoal.direction = MoveGoal.DIRECTION_LEFT
         leftMoveGoal.value = 800
@@ -113,6 +114,7 @@ def create_drums_fsm():
         smach.StateMachine.add('MAT_BOTTOM_CAM_NAVIGATION', mat_bottom_cam_navigation.create_mat_bottom_cam_navigation_fsm(),
                                transitions={'BLUE_DRUM_DETECTED': 'DRUMS_NAVIGATION', 'RED_DRUM_DETECTED': 'DRUMS_NAVIGATION', 'MAT_BOTTOM_CAM_NAVIGATION_FAILED': 'DRUMS_FAILED'})
 
+        '''
         smach.StateMachine.add('DRUMS_NAVIGATION', drums_navigation.create_drums_navigation_fsm(),
                                transitions={'DRUMS_NAVIGATION_OK': 'DRUMS_OK', 'DRUMS_NAVIGATION_FAILED': 'DRUMS_FAILED'})
 
