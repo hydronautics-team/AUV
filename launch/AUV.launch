@@ -48,7 +48,7 @@
         <param name="simulation" value="$(arg simulation)" />
         <param name="velocityLevel1" value="3000.0" />
         <param name="velocityLevel2" value="7000.0" />
-        <param name="velocityLevel3" value="1000.0" />
+        <param name="velocityLevel3" value="10000.0" />
         <param name="velocityLevel4" value="13000.0" />
         <param name="diveTime" value="5.0" />
     </node>
