@@ -12,6 +12,8 @@ from auv_common.msg import MoveGoal, MoveAction
 # TODO: Try to implement through extending smach.StateMachine class
 def create_drums_navigation_fsm():
 
+    def color_check(userData, drumMessage):
+        return not drumMessage.hasRedDrum
 
     class lag_direction_control(smach.State):
         def __init__(self):
@@ -106,6 +108,14 @@ def create_drums_navigation_fsm():
         backwardsMoveGoal.value = 800
         backwardsMoveGoal.holdIfInfinityValue = False
 
+
+        # DEBUG!!!
+        smach.StateMachine.add('COLOR_CHECK',
+                               smach_ros.MonitorState(
+                                   '/drums/drum',
+                                   DrumsCoordinates,
+                                   color_check),
+                               {'invalid':'DRUM_CENTERING', 'valid':'COLOR_CHECK', 'preempted':'DRUMS_NAVIGATION_FAILED'})
 
         # Create the sub SMACH state machine
         sm_sub = smach.StateMachine(outcomes=['CENTERED', 'FAILED'])
