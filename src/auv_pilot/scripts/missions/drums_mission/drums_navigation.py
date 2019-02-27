@@ -27,12 +27,14 @@ def create_drums_navigation_fsm():
                 self.lagMoveNeeded = True
                 if drumMessage.RedDrum1x > 0:
                     self.rightMove = True
+                    self.leftMove = False
                 else:
                     self.leftMove = True
+                    self.rightMove = False
+            else:
+                self.lagMoveNeeded = False
 
         def execute(self, userdata):
-            print (self.lagMoveNeeded)
-            print (self.rightMove)
             if self.lagMoveNeeded:
                 if self.rightMove:
                     return 'NeedRightMove'
@@ -56,8 +58,13 @@ def create_drums_navigation_fsm():
                 self.marchMoveNeeded = True
                 if drumMessage.RedDrum1y > 0:
                     self.forwardMove = True
+                    self.backwardMove = False
                 else:
                     self.backwardMove = True
+                    self.forwardMove = False
+            else:
+                self.marchMoveNeeded = False
+
 
         def execute(self, userdata):
             if self.marchMoveNeeded:
