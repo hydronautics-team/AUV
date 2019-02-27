@@ -160,7 +160,7 @@ std::vector<cv::Vec3f> DrumDetector::findCircles(const cv::Mat& src, cv::Mat& ds
     //cv::namedWindow("After color enhancement");
     cv::cvtColor(src_copy, src_copy, CV_HSV2BGR);
     //cv::imshow("After color enhancement", src_copy);
-    reconfImageAfterColorEnhancement = src_copy;
+    //reconfImageAfterColorEnhancement = src_copy;
 
     cv::Mat gray;
 
@@ -179,6 +179,8 @@ std::vector<cv::Vec3f> DrumDetector::findCircles(const cv::Mat& src, cv::Mat& ds
             max_radius = 0: Maximum radius to be detected. If unknown, put zero as default
      */
     //cv::HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, gray.rows/2, 100, 60, 0, 0);
+
+    cv::Canny(src_copy, reconfImageAfterColorEnhancement, 1, 1*3, 3);
 
     cv::HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, min_dist, param_1, param_2, 0, 0);
 

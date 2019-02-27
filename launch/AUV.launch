@@ -3,7 +3,13 @@
     <!-- TODO: Decompose -->
 
     <!-- Sets mode: qualification, missions, demo or none -->
-    <arg name="mode" default="none" />
+    <arg name="mode" default="missions" />
+
+    <!-- Sets mode for drums mission: left, right, middle or none -->
+    <arg name="drum_mission_direction_mode" default="left" />
+
+    <!-- Sets distance to horizontal mat edge for drums mission -->
+    <arg name="drum_mission_horizontal_edge_distance" default="-100" />
 
     <!-- Disables connection with STM32 -->
     <arg name="connectionDisabled" default="false" />
@@ -14,7 +20,7 @@
     <!-- Enables simulation mode (for simple simulator) -->
     <arg name="simulation" default="false" />
 
-    <!-- Enables GUI windows for debugging visison nodes -->
+    <!-- Enables GUI windows for debugging vision nodes -->
     <arg name="debugVision" default="false" />
 
     <!-- Enables video recording. Use 'storage' parameter to specify recorded video location. -->
@@ -119,9 +125,12 @@
 
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
         <param name="mode" value="$(arg mode)" />
+        <param name="drum_mission_direction_mode" value="$(arg drum_mission_direction_mode)" />
+        <param name="drum_mission_horizontal_edge_distance" value="$(arg drum_mission_horizontal_edge_distance)" />
         <param name="launch_delay" value="60" />
         <param name="dive_delay" value="20" />
         <param name="initial_depth" value="100" />
     </node>
+
 
 </launch>

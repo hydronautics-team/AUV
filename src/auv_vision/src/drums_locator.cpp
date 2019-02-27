@@ -563,7 +563,7 @@ protected:
         }
 
         if (!drum_detector.getreconfImageAfterColorEnhancement().empty()) {
-            sensor_msgs::ImagePtr imageMsgAfterColorEnhancement = cv_bridge::CvImage(std_msgs::Header(), "bgr8", drum_detector.getreconfImageAfterColorEnhancement()).toImageMsg();
+            sensor_msgs::ImagePtr imageMsgAfterColorEnhancement = cv_bridge::CvImage(std_msgs::Header(), "mono8", drum_detector.getreconfImageAfterColorEnhancement()).toImageMsg();
             imagePublisherAfterColorEnhancement.publish(imageMsgAfterColorEnhancement);
         }
 

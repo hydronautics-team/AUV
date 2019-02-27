@@ -10,10 +10,7 @@ from auv_common.msg import MoveGoal, MoveAction
 
 
 # TODO: Try to implement through extending smach.StateMachine class
-def create_drums_fsm():
-
-    def color_check(userData, drumMessage):
-        return not drumMessage.hasRedDrum
+def create_drums_navigation_fsm():
 
 
     class lag_direction_control(smach.State):
@@ -26,12 +23,12 @@ def create_drums_fsm():
             self.leftMove = False
 
         def callback(self, drumMessage):
-            if abs(drumMessage.RedDrum1x) > 10:
+            if abs(drumMessage.RedDrum1x) > 40:
                 self.lagMoveNeeded = True
-            if drumMessage.RedDrum1x > 0:
-                self.rightMove = True
-            else:
-                self.leftMove = True
+                if drumMessage.RedDrum1x > 0:
+                    self.rightMove = True
+                else:
+                    self.leftMove = True
 
         def execute(self, userdata):
             print (self.lagMoveNeeded)
@@ -55,12 +52,12 @@ def create_drums_fsm():
             self.backwardMove = False
 
         def callback(self, drumMessage):
-            if abs(drumMessage.RedDrum1y) > 10:
+            if abs(drumMessage.RedDrum1y) > 40:
                 self.marchMoveNeeded = True
-            if drumMessage.RedDrum1y > 0:
-                self.forwardMove = True
-            else:
-                self.backwardMove = True
+                if drumMessage.RedDrum1y > 0:
+                    self.forwardMove = True
+                else:
+                    self.backwardMove = True
 
         def execute(self, userdata):
             if self.marchMoveNeeded:
@@ -73,19 +70,19 @@ def create_drums_fsm():
 
 
 
-    sm = smach.StateMachine(outcomes=['DRUMS_OK', 'DRUMS_FAILED'])
+    sm = smach.StateMachine(outcomes=['DRUMS_NAVIGATION_OK', 'DRUMS_NAVIGATION_FAILED'])
 
     with sm:
 
         leftMoveGoal = MoveGoal()
         leftMoveGoal.direction = MoveGoal.DIRECTION_LEFT
-        leftMoveGoal.value = 10
+        leftMoveGoal.value = 800
         leftMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         leftMoveGoal.holdIfInfinityValue = False
 
         rightMoveGoal = MoveGoal()
         rightMoveGoal.direction = MoveGoal.DIRECTION_RIGHT
-        rightMoveGoal.value = 10
+        rightMoveGoal.value = 800
         rightMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         rightMoveGoal.holdIfInfinityValue = False
 
@@ -93,30 +90,22 @@ def create_drums_fsm():
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
         forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        forwardMoveGoal.value = 10
+        forwardMoveGoal.value = 800
         forwardMoveGoal.holdIfInfinityValue = False
 
         backwardsMoveGoal = MoveGoal()
         backwardsMoveGoal.direction = MoveGoal.DIRECTION_BACKWARDS
         backwardsMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        backwardsMoveGoal.value = 10
+        backwardsMoveGoal.value = 800
         backwardsMoveGoal.holdIfInfinityValue = False
 
-        # TODO add return to blue drum searching if no blue drum detected (e. g. 'invalid':'SIDE_MOVE')
-        # MonitorState outcome switches from valid to invalid
-        smach.StateMachine.add('COLOR_CHECK',
-                               smach_ros.MonitorState(
-                                   '/drums/drum',
-                                   DrumsCoordinates,
-                                   color_check),
-                               {'invalid':'BLUE_DRUM', 'valid':'COLOR_CHECK', 'preempted':'DRUMS_FAILED'})
 
         # Create the sub SMACH state machine
-        sm_sub_blue = smach.StateMachine(outcomes=['CENTERED_BLUE', 'FAILED'])
+        sm_sub = smach.StateMachine(outcomes=['CENTERED', 'FAILED'])
 
-        with sm_sub_blue:
-            smach.StateMachine.add('BLUE_DRUM_NAVIGATION_LAG', lag_direction_control(),
-                                   transitions={'X_PositionIsOK':'BLUE_DRUM_NAVIGATION_MARCH',
+        with sm_sub:
+            smach.StateMachine.add('DRUM_NAVIGATION_LAG', lag_direction_control(),
+                                   transitions={'X_PositionIsOK':'DRUM_NAVIGATION_MARCH',
                                                 'NeedLeftMove':'LEFT_MOVE',
                                                 'NeedRightMove':'RIGHT_MOVE',
                                                 'FAILED':'FAILED'})
@@ -126,20 +115,20 @@ def create_drums_fsm():
                                        'move_by_time',
                                        MoveAction,
                                        goal=leftMoveGoal),
-                                   {'succeeded':'BLUE_DRUM_NAVIGATION_LAG', 'preempted':'FAILED', 'aborted':'FAILED'})
+                                   {'succeeded':'DRUM_NAVIGATION_LAG', 'preempted':'FAILED', 'aborted':'FAILED'})
 
             smach.StateMachine.add('RIGHT_MOVE',
                                    smach_ros.SimpleActionState(
                                        'move_by_time',
                                        MoveAction,
                                        goal=rightMoveGoal),
-                                   {'succeeded':'BLUE_DRUM_NAVIGATION_LAG', 'preempted':'FAILED', 'aborted':'FAILED'})
+                                   {'succeeded':'DRUM_NAVIGATION_LAG', 'preempted':'FAILED', 'aborted':'FAILED'})
 
 
 
 
-            smach.StateMachine.add('BLUE_DRUM_NAVIGATION_MARCH', march_direction_control(),
-                                   transitions={'Y_PositionIsOK':'CENTERED_BLUE',
+            smach.StateMachine.add('DRUM_NAVIGATION_MARCH', march_direction_control(),
+                                   transitions={'Y_PositionIsOK':'CENTERED',
                                                 'NeedForwardMove':'FORWARD_MOVE',
                                                 'NeedBackwardMove':'BACKWARDS_MOVE',
                                                 'FAILED':'FAILED'})
@@ -149,19 +138,18 @@ def create_drums_fsm():
                                        'move_by_time',
                                        MoveAction,
                                        goal=forwardMoveGoal),
-                                   {'succeeded':'BLUE_DRUM_NAVIGATION_MARCH', 'preempted':'FAILED', 'aborted':'FAILED'})
+                                   {'succeeded':'DRUM_NAVIGATION_MARCH', 'preempted':'FAILED', 'aborted':'FAILED'})
 
             smach.StateMachine.add('BACKWARDS_MOVE',
                                    smach_ros.SimpleActionState(
                                        'move_by_time',
                                        MoveAction,
                                        goal=backwardsMoveGoal),
-                                   {'succeeded':'BLUE_DRUM_NAVIGATION_MARCH', 'preempted':'FAILED', 'aborted':'FAILED'})
+                                   {'succeeded':'DRUM_NAVIGATION_MARCH', 'preempted':'FAILED', 'aborted':'FAILED'})
 
 
-        smach.StateMachine.add('BLUE_DRUM', sm_sub_blue,
-                                transitions={'CENTERED_BLUE':'DRUMS_OK',
-                                             'FAILED':'DRUMS_FAILED'})
-
+        smach.StateMachine.add('DRUM_CENTERING', sm_sub,
+                                transitions={'CENTERED':'DRUMS_NAVIGATION_OK',
+                                             'FAILED':'DRUMS_NAVIGATION_FAILED'})
 
     return sm

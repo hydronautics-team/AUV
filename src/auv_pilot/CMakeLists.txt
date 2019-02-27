@@ -187,7 +187,10 @@ install(PROGRAMS
    scripts/demo.py
    init/init_states.py
    missions/gate_mission.py
-   missions/drums_mission.py
+   missions/drums_mission/drums_mission_fsm.py
+   missions/drums_mission/drums_navigation.py
+   missions/drums_mission/mat_bottom_cam_navigation.py
+   missions/drums_mission/mat_front_cam_navigation.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

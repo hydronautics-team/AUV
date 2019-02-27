@@ -15,7 +15,6 @@ def create_gate_fsm():
     def exploreGate(userData, gateMessage):
         return not gateMessage.hasPoint
 
-
     def centerGate(userData, gateMessage):
         return not (gateMessage.hasPoint and abs(gateMessage.x) < 10)
 
