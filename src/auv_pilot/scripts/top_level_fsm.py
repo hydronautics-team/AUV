@@ -3,6 +3,7 @@
 import rospy
 import smach
 import smach_ros
+from common import common_states
 from qualification import qualification_fsm
 from missions import missions_fsm
 from demo import demo_fsm
@@ -31,14 +32,17 @@ def main():
     with sm:
         
         if mode == 'QUALIFICATION':
+            smach.StateMachine.add('RESET', common_states.IMUResetState(), transitions={'OK': 'QUALIFICATION'})
             smach.StateMachine.add('QUALIFICATION', qualification_fsm.create_qualification_fsm(launch_delay, dive_delay, initial_depth), 
                 transitions={'QUALIFICATION_OK': 'SUCCEEDED', 'QUALIFICATION_FAILED': 'FAILED'})
 
         elif mode == 'MISSIONS':
+            smach.StateMachine.add('RESET', common_states.IMUResetState(), transitions={'OK': 'MISSIONS'})
             smach.StateMachine.add('MISSIONS', missions_fsm.create_missions_fsm(launch_delay, dive_delay, initial_depth), 
                 transitions={'MISSIONS_OK': 'SUCCEEDED', 'MISSIONS_FAILED': 'FAILED'})
 
         elif mode == 'DEMO':
+            smach.StateMachine.add('RESET', common_states.IMUResetState(), transitions={'OK': 'DEMO'})
             smach.StateMachine.add('DEMO', demo_fsm.create_demo_fsm(), transitions={'DEMO_OK': 'SUCCEEDED', 'DEMO_FAILED': 'FAILED'})
         
     server = smach_ros.IntrospectionServer('top_level_fsm', sm, '/fsm/top_level_fsm')
