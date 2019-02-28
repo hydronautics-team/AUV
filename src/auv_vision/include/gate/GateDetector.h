@@ -1,39 +1,63 @@
 #ifndef AUV_VISION_GATEDETECTOR_H
 #define AUV_VISION_GATEDETECTOR_H
 
+#include <opencv2/ximgproc.hpp>
 #include "GateDescriptor.h"
 
-#define CUDA_ENABLED 0
 
 class GateDetector {
 
 private:
 
     float verticalSlope = 10.0f;
-    float verticalLengthRelation = 0.1f;
-    float mergingLineDistance = 22.0f;
-    float angleQualityThreshold = 5.0f;
-    float totalQualityThreshold = 1.5f;
+    float horizontalSlope = 10.0f;
+    float lengthRelation = 0.15f;
+    float mergingLineDistanceHorizontal = 8.0f;
+    float mergingLineDistanceVertical = 5.0f;
 
-    void defaultPreprocess(const cv::Mat& src, cv::Mat& dst);
+    float overlapThreshold = 3.0f;
+    float distXThreshold = 17.0f;
+    float distYThreshold = 17.0f;
+    float sidesRelationThreshold = 0.7f;
+    float angleDiffThreshold = 7.0f;
+    float areaFrameRelationThreshold = 0.05f;
 
-    void detectVerticalLines(const cv::Mat& image, std::vector<cv::Vec4f>& lines);
 
-    float getLineSlope(const cv::Vec4f& line);
+    /** FLD settings */
+    int length_threshold = 10;
+    float distance_threshold = 15.0f;
+    double canny_th1 = 10.0;
+    double canny_th2 = 10.0;
+    int canny_aperture_size = 7;
+    bool do_merge = false;
+
+    cv::Ptr<cv::ximgproc::FastLineDetector> fld =
+            cv::ximgproc::createFastLineDetector(length_threshold,
+                                                 distance_threshold, canny_th1, canny_th2, canny_aperture_size, do_merge);
+
+    void detectLines(const cv::Mat& image, std::vector<cv::Vec4f>& lines);
+
+    void filterVerticalAndHorizontal(const std::vector<cv::Vec4f>& lines,
+                                     std::vector<cv::Vec4f>& vertical, std::vector<cv::Vec4f>& horizontal);
+
+    float getLineSlopeVertical(const cv::Vec4f& line);
+
+    float getLineSlopeHorizontal(const cv::Vec4f& line);
 
     float getLength(const cv::Vec4f& line);
 
-    float getDistance(float x1, float y1, float x2, float y2);
+    bool isAbleToVerticalMerge(const cv::Vec4f &line1, const cv::Vec4f &line2);
 
-    cv::Point2f getProjection(const cv::Vec4f& line, const cv::Point2f& point);
+    void mergeVerticalLines(const std::vector<cv::Vec4f> &lines, std::vector<cv::Vec4f> &mergedLines);
 
-    void meanShift(const cv::Mat& src, cv::Mat& dst);
+    void mergeY(const std::vector<cv::Vec4f> &lines, std::vector<cv::Vec4f> &mergedLines);
 
-    void extractValueChannel(const cv::Mat& src, cv::Mat& dst);
+    cv::Vec4f createVerticalLine(const std::vector<cv::Vec4f> &lines);
 
-    void morphology(const cv::Mat& src, cv::Mat& dst);
+    GateDescriptor findBestByQuality(const std::vector<cv::Vec4f>& verticalLines,
+                                     const std::vector<cv::Vec4f>& horizontalLines, long frameArea);
 
-    float getAngle(float x1, float y1, float x2, float y2, float x3, float y3);
+    void updateFLD();
 
 public:
 
@@ -42,27 +66,39 @@ public:
 
     GateDetector& operator=(const GateDetector& other) = default;
 
-    GateDescriptor detect(const cv::Mat& src, bool withPreprocess);
-
-    float getVerticalSlope() const;
+    GateDescriptor detect(const cv::Mat& src);
 
     void setVerticalSlope(float verticalSlope);
 
-    float getVerticalLengthRelation() const;
+    void setHorizontalSlope(float horizontalSlope);
 
-    void setVerticalLengthRelation(float verticalLengthRelation);
+    void setLengthRelation(float lengthRelation);
 
-    float getMergingLineDistance() const;
+    void setMergingLineDistanceHorizontal(float mergingLineDistanceHorizontal);
 
-    void setMergingLineDistance(float mergingLineDistance);
+    void setMergingLineDistanceVertical(float mergingLineDistanceVertical);
 
-    float getAngleQualityThreshold() const;
+    void setOverlapThreshold(float overlapThreshold);
 
-    void setAngleQualityThreshold(float angleQualityThreshold);
+    void setDistXThreshold(float distXThreshold);
 
-    float getTotalQualityThreshold() const;
+    void setDistYThreshold(float distYThreshold);
 
-    void setTotalQualityThreshold(float totalQualityThreshold);
+    void setSidesRelationThreshold(float sidesRelationThreshold);
+
+    void setAngleDiffThreshold(float angleDiffThreshold);
+
+    void setAreaFrameRelationThreshold(float areaFrameRelationThreshold);
+
+    void setLength_threshold(int length_threshold);
+
+    void setDistance_threshold(float distance_threshold);
+
+    void setCanny_th1(double canny_th1);
+
+    void setCanny_th2(double canny_th2);
+
+    void setCanny_aperture_size(int canny_aperture_size);
 
 };
 

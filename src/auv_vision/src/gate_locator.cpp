@@ -23,14 +23,25 @@ static const std::string GATE_LOCATOR_NODE_NAME = "gate_locator";
 GateDetector detector;
 
 void reconfigure(auv_vision::GateLocatorConfig& config, uint32_t level) {
-    detector.setVerticalSlope(config.vertical_slope);
-    detector.setVerticalLengthRelation(config.vertical_length_relation);
-    detector.setMergingLineDistance(config.merging_line_distance);
-    detector.setAngleQualityThreshold(config.angle_quality_threshold);
-    detector.setTotalQualityThreshold(config.total_quality_threshold);
+    detector.setVerticalSlope(config.verticalSlope);
+    detector.setHorizontalSlope(config.horizontalSlope);
+    detector.setLengthRelation(config.lengthRelation);
+    detector.setMergingLineDistanceHorizontal(config.mergingLineDistanceHorizontal);
+    detector.setMergingLineDistanceVertical(config.mergingLineDistanceVertical);
+    detector.setOverlapThreshold(config.overlapThreshold);
+    detector.setDistXThreshold(config.distXThreshold);
+    detector.setDistYThreshold(config.distYThreshold);
+    detector.setSidesRelationThreshold(config.sidesRelationThreshold);
+    detector.setAngleDiffThreshold(config.angleDiffThreshold);
+    detector.setAreaFrameRelationThreshold(config.areaFrameRelationThreshold);
+    detector.setLength_threshold(config.fld_length_threshold);
+    detector.setDistance_threshold(config.fld_distance_threshold);
+    detector.setCanny_th1(config.fld_canny_threshold_1);
+    detector.setCanny_th2(config.fld_canny_threshold_2);
+    if (config.fld_canny_aperture == 3.0 || config.fld_canny_aperture == 5.0 || config.fld_canny_aperture == 7.0)
+        detector.setCanny_aperture_size(config.fld_canny_aperture);
+
 }
-
-
 
 class GatePublisher : public AbstractImageConverter {
 
@@ -49,7 +60,7 @@ protected:
     void process(const cv_bridge::CvImagePtr &cv_ptr) {
         cv::Mat image = cv_ptr->image;
 
-        GateDescriptor gate = detector.detect(image, true);
+        GateDescriptor gate = detector.detect(image);
 
         auv_common::OptionalPoint2D msg;
 
