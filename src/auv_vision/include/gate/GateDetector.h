@@ -2,7 +2,12 @@
 #define AUV_VISION_GATEDETECTOR_H
 
 #include <opencv2/ximgproc.hpp>
+#include <ros/ros.h>
 #include "GateDescriptor.h"
+
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
 
 
 class GateDetector {
@@ -35,6 +40,9 @@ private:
             cv::ximgproc::createFastLineDetector(length_threshold,
                                                  distance_threshold, canny_th1, canny_th2, canny_aperture_size, do_merge);
 
+    image_transport::Publisher imagePublisher;
+
+
     void detectLines(const cv::Mat& image, std::vector<cv::Vec4f>& lines);
 
     void filterVerticalAndHorizontal(const std::vector<cv::Vec4f>& lines,
@@ -63,6 +71,8 @@ public:
 
     GateDetector() = default;
     ~GateDetector() = default;
+
+    void setPublisher(const ros::NodeHandle& nh);
 
     GateDetector& operator=(const GateDetector& other) = default;
 

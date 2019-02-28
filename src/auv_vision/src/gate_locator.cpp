@@ -132,6 +132,9 @@ int main(int argc, char **argv)
     ros::init(argc, argv, GATE_LOCATOR_NODE_NAME);
 
     ros::NodeHandle nodeHandle(GATE_LOCATOR_NODE_NAME);
+
+    detector.setPublisher(nodeHandle);
+
     bool windowsEnabled;
     nodeHandle.param(ENABLE_WINDOWS_PARAM, windowsEnabled, false);
 

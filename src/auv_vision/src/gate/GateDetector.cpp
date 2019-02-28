@@ -9,10 +9,21 @@
 #include "../../include/util/ImgprocPipeline.h"
 
 
+void GateDetector::setPublisher(const ros::NodeHandle& nh) {
+    image_transport::ImageTransport it(nh);
+    imagePublisher = it.advertise("/gate/lines", 100);
+}
+
 void GateDetector::detectLines(const cv::Mat &image, std::vector<cv::Vec4f> &lines) {
 
     std::vector<cv::Vec4f> detectedLines;
     fld->detect(image, detectedLines);
+
+    cv::Mat canvas;
+    image.copyTo(canvas);
+    fld->drawSegments(canvas, detectedLines);
+    sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", canvas).toImageMsg();
+    imagePublisher.publish(imageMsg);
 
     // Sort verticies in lines: top vertix is first
     for (int i = 0; i < detectedLines.size(); i++) {
