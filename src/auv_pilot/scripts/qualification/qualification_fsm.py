@@ -21,14 +21,20 @@ def create_qualification_fsm(launch_delay, dive_delay, initial_depth):
 
 
         smach.StateMachine.add('LAUNCH_DELAY', common_states.WaitState(launch_delay), transitions={'OK': 'DIVE_DELAY'})
+
         smach.StateMachine.add('DIVE_DELAY', common_states.WaitState(dive_delay), transitions={'OK': 'DIVE'})
+
         smach.StateMachine.add('DIVE', common_states.create_diving_state(initial_depth), transitions={
             'succeeded':'FORWARD_MOVE', 'preempted':'QUALIFICATION_FAILED', 'aborted':'QUALIFICATION_FAILED'})
+
         smach.StateMachine.add('FORWARD_MOVE',
                                 smach_ros.SimpleActionState(
                                     'move_by_time',
                                     MoveAction,
                                     goal=forwardMoveGoal),
-                                {'succeeded':'QUALIFICATION_OK', 'preempted':'QUALIFICATION_FAILED', 'aborted':'QUALIFICATION_FAILED'})
+                                {'succeeded':'ASCENT', 'preempted':'QUALIFICATION_FAILED', 'aborted':'QUALIFICATION_FAILED'})
+
+        smach.StateMachine.add('ASCENT', common_states.create_diving_state(0), transitions={
+            'succeeded':'QUALIFICATION_OK', 'preempted':'QUALIFICATION_FAILED', 'aborted':'QUALIFICATION_FAILED'})
 
     return sm
