@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   auv_common
+	serial
 )
 
 ## System dependencies are found with CMake's conventions
@@ -109,7 +110,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_connection
 #  CATKIN_DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs
-  DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs auv_common
+  DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs auv_common serial
 )
 
 ###########
@@ -171,6 +172,11 @@ add_executable(gazebo_bridge
 		src/gazebo_bridge.cpp)
 target_link_libraries(gazebo_bridge ${catkin_LIBRARIES})
 add_dependencies(gazebo_bridge auv_common_generate_messages_cpp)
+
+add_executable(uart_bridge_ros
+		src/uart_bridge_ros.cpp)
+target_link_libraries(uart_bridge_ros ${catkin_LIBRARIES})
+add_dependencies(uart_bridge_ros auv_common_generate_messages_cpp)
 
 #############
 ## Install ##
