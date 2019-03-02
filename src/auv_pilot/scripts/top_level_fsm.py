@@ -32,12 +32,12 @@ def main():
     with sm:
         
         if mode == 'QUALIFICATION':
-            smach.StateMachine.add('RESET', common_states.IMUResetState(), transitions={'OK': 'QUALIFICATION'})
+            #smach.StateMachine.add('RESET', common_states.IMUResetState(), transitions={'OK': 'QUALIFICATION'})
             smach.StateMachine.add('QUALIFICATION', qualification_fsm.create_qualification_fsm(launch_delay, dive_delay, initial_depth), 
                 transitions={'QUALIFICATION_OK': 'SUCCEEDED', 'QUALIFICATION_FAILED': 'FAILED'})
 
         elif mode == 'MISSIONS':
-            smach.StateMachine.add('RESET', common_states.IMUResetState(), transitions={'OK': 'MISSIONS'})
+            #smach.StateMachine.add('RESET', common_states.IMUResetState(), transitions={'OK': 'MISSIONS'})
             smach.StateMachine.add('MISSIONS', missions_fsm.create_missions_fsm(launch_delay, dive_delay, initial_depth), 
                 transitions={'MISSIONS_OK': 'SUCCEEDED', 'MISSIONS_FAILED': 'FAILED'})
 

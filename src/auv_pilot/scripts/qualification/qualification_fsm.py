@@ -15,8 +15,8 @@ def create_qualification_fsm(launch_delay, dive_delay, initial_depth):
 
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
-        forwardMoveGoal.value = 10000 # 10,000 msec = 10 sec
-        forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_4 # Maximal velocity
+        forwardMoveGoal.value = 30000 # 10,000 msec = 10 sec
+        forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1 # Maximal velocity
         forwardMoveGoal.holdIfInfinityValue = False
 
 

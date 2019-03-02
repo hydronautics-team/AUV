@@ -46,7 +46,7 @@
 
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
         <param name="simulation" value="$(arg simulation)" />
-        <param name="velocityLevel1" value="3000.0" />
+        <param name="velocityLevel1" value="10000.0" />
         <param name="velocityLevel2" value="7000.0" />
         <param name="velocityLevel3" value="10000.0" />
         <param name="velocityLevel4" value="13000.0" />
@@ -82,18 +82,6 @@
             <param name="io_method" value="mmap"/>
         </node>
 
-        <!-- Bottom camera -->
-        <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
-            <param name="video_device" value="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._H264_USB_Camera_SN0001-video-index0" />
-            <param name="image_width" value="640" />
-            <param name="image_height" value="480" />
-            <param name="pixel_format" value="yuyv" />
-            <param name="framerate" value="30" />
-            <param name="camera_frame_id" value="cam_bottom" />
-            <param name="camera_name" value="cam_bottom" />
-            <param name="io_method" value="mmap"/>
-        </node>
-
         <!--TODO: Allow to record in simulation mode -->
         <group if="$(arg record)">
             <!-- First front camera recorder -->
@@ -126,9 +114,9 @@
 
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
         <param name="mode" value="$(arg mode)" />
-        <param name="launch_delay" value="60" />
-        <param name="dive_delay" value="20" />
-        <param name="initial_depth" value="100" />
+        <param name="launch_delay" value="5" />
+        <param name="dive_delay" value="5" />
+        <param name="initial_depth" value="150" />
     </node>
 
 </launch>
