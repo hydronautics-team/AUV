@@ -62,7 +62,6 @@ std_msgs::UInt8MultiArray msg_out;
 const uint64_t receiveDeadtime = 100;
 bool isTopicUpdated = false;
 
-
 /// Returns the number of ticks since an undefined time (usually system startup).
 static uint64_t GetTickCountMs()
 {
@@ -107,10 +106,8 @@ bool sendData(serial::Serial& port)
 
 bool receiveData(serial::Serial& port)
 {
-  uint64_t lasttick = GetTickCountMs();
-  while(port.available() < ResponseMessage::length) {
-      if(GetTickCountMs() - lasttick > receiveDeadtime)
-        return false;
+  if(port.available() < ResponseMessage::length) {
+     return false;
   }
 
   std::vector<uint8_t> answer;
@@ -220,6 +217,8 @@ int main(int argc, char **argv)
   // ROS subscribers
   ros::Subscriber inputMessage_sub 	= nodeHandle.subscribe("/hard_bridge/parcel", 1000, inputMessage_callback);
   // **************
+  
+  ros::Rate readDelay(100);
 
   // Initialasing serial port
   serial::Serial port;
@@ -245,6 +244,8 @@ int main(int argc, char **argv)
 
       if(!sendData(port))
           ROS_ERROR("Unable to send msg to STM32");
+
+      readDelay.sleep();
 
       if(receiveData(port))
 	     outputMessage_pub.publish(msg_in);
