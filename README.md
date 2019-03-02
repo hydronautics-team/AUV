@@ -5,7 +5,7 @@ For full information, see our [Wiki](https://github.com/hidronautics/AUV/wiki).
 ## Building and launching
 Install dependencies:
 ```bash
-sudo apt-get install ros-kinetic-rosbridge-server ros-kinetic-web-video-server ros-kinetic-image-view ros-kinetic-actionlib ros-kinetic-smach ros-kinetic-smach-viewer
+sudo apt-get install ros-kinetic-rosbridge-server ros-kinetic-web-video-server ros-kinetic-image-view ros-kinetic-actionlib ros-kinetic-serial ros-kinetic-smach ros-kinetic-smach-viewer
 ```
 Initialize and update git submodules used in project:
 ```bash
