@@ -9,7 +9,7 @@ function show_help()
 {
     printf "\n\nSimple AUV managment script. Usage:\n"
 
-    printf "./auv-admin.sh run <mode> [--sim] [--stream]\n"
+    printf "./auv-admin.sh run <mode> [--sim] [--stream] [--nocon]\n"
     printf "Runs nodes. Parameters and arguments:\n"
     printf "    mode - Application mode. Available modes: qualification, missions, demo, none.\n"
     printf "    --sim - Optional argument, enables simulation mode.\n"
