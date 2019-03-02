@@ -9,11 +9,12 @@ function show_help()
 {
     printf "\n\nSimple AUV managment script. Usage:\n"
 
-    printf "./auv-admin.sh run <mode> [--sim] [--stream]\n"
+    printf "./auv-admin.sh run <mode> [--sim] [--stream] [--nocon]\n"
     printf "Runs nodes. Parameters and arguments:\n"
     printf "    mode - Application mode. Available modes: qualification, missions, demo, none.\n"
     printf "    --sim - Optional argument, enables simulation mode.\n"
-    printf "    --stream - Optional argument, enables video stream from cameras."
+    printf "    --stream - Optional argument, enables video stream from cameras.\n"
+    printf "    --nocon - Optional argument, disables connection with hardware interfaces.\n"
     printf "\n\n"
 }
 
@@ -24,7 +25,7 @@ STATE_OPT_ARG=3 # parsing optional arg
 CURRENT_STATE=$STATE_BEGIN
 NEXT_STATE=$STATE_BEGIN
 
-LAUNCH_COMMAND="roslaunch launch/AUV.launch"
+LAUNCH_COMMAND=" "
 
 while [ "$1" != "" ]; do
 
@@ -43,7 +44,7 @@ while [ "$1" != "" ]; do
                     ;;
 
                 * )
-                    echo "Unknown command"
+                    echo "Unknown command. See help."
                     exit
                     ;;
             esac
@@ -70,7 +71,7 @@ while [ "$1" != "" ]; do
                     NEXT_STATE=${STATE_OPT_ARG}
                     ;;
                 * )
-                    echo "Unknown mode"
+                    echo "Unknown mode. See help."
                     exit
                     ;;
              esac
@@ -88,8 +89,12 @@ while [ "$1" != "" ]; do
                     LAUNCH_COMMAND="$LAUNCH_COMMAND stream:=true"
                     NEXT_STATE=${STATE_OPT_ARG}
                     ;;
+                 "--nocon" )
+                    LAUNCH_COMMAND="$LAUNCH_COMMAND connectionDisabled:=true"
+                    NEXT_STATE=${STATE_OPT_ARG}
+                    ;;
                  * )
-                    echo "Unknown argument $1"
+                    echo "Unknown argument $1. See help."
                     exit
                     ;;
              esac
@@ -107,4 +112,5 @@ then
     exit
 fi
 
-$($LAUNCH_COMMAND)
+echo $LAUNCH_COMMAND
+roslaunch launch/AUV.launch $LAUNCH_COMMAND
