@@ -60,10 +60,16 @@
     <group unless="$(arg simulation)">
 
         <group unless="$(arg connectionDisabled)">
-            <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
-            <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
+            <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" respawn="true" >
+                <param name="device" value="/dev/ttyS0" />
+                <param name="baudrate" value="57600" />
+                <param name="dataBytes" value="8" />
+                <param name="parity" value="none" />
+                <param name="stopBits" value="1" />
+            </node>
+            <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" respawn="true" />
         </group>
-
+        
         <!-- First front camera -->
         <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
             <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />

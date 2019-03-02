@@ -162,11 +162,9 @@ target_link_libraries(hardware_bridge ${catkin_LIBRARIES})
 add_dependencies(hardware_bridge auv_common_generate_messages_cpp)
 
 add_executable(uart_bridge
-        src/uart_bridge.cpp
-        include/serial.h
-		src/serial.cpp)
+        src/uart_bridge.cpp)
 target_link_libraries(uart_bridge ${catkin_LIBRARIES})
-add_dependencies(hardware_bridge auv_common_generate_messages_cpp)
+add_dependencies(uart_bridge auv_common_generate_messages_cpp)
 
 add_executable(gazebo_bridge
 		src/gazebo_bridge.cpp)

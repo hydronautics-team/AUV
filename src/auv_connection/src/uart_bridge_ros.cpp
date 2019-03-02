@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 
+// TODO: Remove this node
+
 static const std::string UART_BRIDGE_NODE_NAME = "uart_bridge_ros";
 
 static const std::string PARAM_DEVICE = "device";
@@ -23,7 +25,7 @@ static const std::string PARITY_EVEN = "even";
 static const std::string PARITY_ODD = "odd";
 
 
-static const std::string DEFAULT_DEVICE = "/dev/ttyUSB0";
+static const std::string DEFAULT_DEVICE = "/dev/ttyUSB0"; // TODO: Change to /dev/ttyS0
 
 static const int DEFAULT_BAUDRATE = 57600;
 
@@ -35,6 +37,27 @@ static const int DEFAULT_STOP_BITS = 1;
 
 
 static const int DEFAULT_SERIAL_TIMEOUT = 1000;
+
+
+/**
+ * Closes port if it is closed, initialized it
+ * with given parameter and DOES NOT OPEN IT.
+ */
+void initPort(serial::Serial& port, std::string device,
+        int baudrate, int timeout, serial::bytesize_t dataBytes, serial::parity_t parity, serial::stopbits_t stopBits) {
+
+    if (port.isOpen())
+        port.close();
+
+    port.setPort(device);
+    serial::Timeout serialTimeout = serial::Timeout::simpleTimeout(timeout);
+    port.setTimeout(serialTimeout);
+    port.setBaudrate(baudrate);
+    port.setBytesize(dataBytes);
+    port.setParity(parity);
+    port.setStopbits(stopBits);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -98,10 +121,14 @@ int main(int argc, char **argv)
             return 0;
     }
 
+
+
     ROS_INFO("UART settings: Device: %s, Baudrate: %d, Data bytes: %d, Parity: %s, Stop bits: %d",
             device.c_str(), baudrate, dataBytes, parityStr.c_str(), stopBitsInt);
-    serial::Serial port(device, baudrate, serial::Timeout::simpleTimeout(DEFAULT_SERIAL_TIMEOUT),
-            dataBytes, parity, stopBits);
+
+    serial::Serial port;
+    initPort(port, device, baudrate, DEFAULT_SERIAL_TIMEOUT, dataBytes, parity, stopBits);
+    port.open();
     if (!port.isOpen()) {
         ROS_ERROR("Unable to open port, shutting down node");
         return 0;
