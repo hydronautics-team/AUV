@@ -22,11 +22,11 @@
 #include "serial.h"
 #include "messages.h"
 
-#define SHORE_STABILIZE_DEPTH_BIT 		0
-#define SHORE_STABILIZE_ROLL_BIT 		2
-#define SHORE_STABILIZE_PITCH_BIT 		3
-#define SHORE_STABILIZE_YAW_BIT 		1
-#define SHORE_STABILIZE_IMU_BIT 		4
+#define SHORE_STABILIZE_DEPTH_BIT       0
+#define SHORE_STABILIZE_ROLL_BIT        1
+#define SHORE_STABILIZE_PITCH_BIT       2
+#define SHORE_STABILIZE_YAW_BIT         3
+#define SHORE_STABILIZE_IMU_BIT         4
 #define SHORE_STABILIZE_SAVE_BIT		5
 
 // High level -> Hardware bridge
