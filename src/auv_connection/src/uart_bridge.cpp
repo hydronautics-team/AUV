@@ -242,15 +242,18 @@ int main(int argc, char **argv)
     // If topic is sent us something
     if(isTopicUpdated) {
 
-      if(!sendData(port))
+      if(!sendData(port)) {
           ROS_ERROR("Unable to send msg to STM32");
+      }
 
       readDelay.sleep();
 
-      if(receiveData(port))
-	     outputMessage_pub.publish(msg_in);
-      else
+      if(receiveData(port)) {
+	     outputMessage_pub.publish(msg_out);
+      }
+      else {
          ROS_ERROR("Unable to receive msg from STM32");
+      }
 
       isTopicUpdated = false;
     }

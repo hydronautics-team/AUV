@@ -91,7 +91,18 @@ void parseInputMessage()
   */
 void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
 {
-
+    /*
+    std::vector<uint8_t> received_vector;
+    for(int i=0; i<ResponseMessage::length; i++) {
+        received_vector.push_back(msg->data[i]);
+        ROS_INFO("BYTE %d || %x",i,received_vector[i]);
+    }
+    bool ok = response.parseVector(received_vector);
+    if (ok)
+        ROS_INFO_STREAM("Depth: " << response.depth);
+    else
+        ROS_ERROR("Wrong checksum");
+        */
 }
 
 /** @brief Parse string bitwise correctly into ResponseMessage and check 16bit checksum.

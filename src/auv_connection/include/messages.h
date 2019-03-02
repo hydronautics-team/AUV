@@ -59,9 +59,9 @@ void pushToVector(std::vector<uint8_t> &vector, float var, bool revert = false);
 
 void popFromVector(std::vector<uint8_t> &container, int8_t &output);
 void popFromVector(std::vector<uint8_t> &container, uint8_t &output);
-void popFromVector(std::vector<uint8_t> &container, int16_t &output, bool revert = false);
-void popFromVector(std::vector<uint8_t> &container, uint16_t &output, bool revert = false);
-void popFromVector(std::vector<uint8_t> &container, float &output, bool revert = false);
+void popFromVector(std::vector<uint8_t> &container, int16_t &output, bool revert = true);
+void popFromVector(std::vector<uint8_t> &container, uint16_t &output, bool revert = true);
+void popFromVector(std::vector<uint8_t> &container, float &output, bool revert = true);
 
 uint16_t getChecksum16b(std::vector<uint8_t> &msg);
 
@@ -128,35 +128,27 @@ struct ResponseMessage
 {
     ResponseMessage();
 
-    /// Length in bytes of the response message protocol
-    const static uint8_t length = 72;
+    const static uint8_t length = 70;
 
-    int16_t roll;
-    int16_t pitch;
-    int16_t yaw;
+    float roll;
+    float pitch;
+    float yaw;
 
-    int16_t rollSpeed;
-    int16_t pitchSpeed;
-    int16_t yawSpeed;
+    float rollSpeed;
+    float pitchSpeed;
+    float yawSpeed;
 
-    uint16_t pressure;
-
-    uint8_t wf_type;
-    uint8_t wf_tickrate;
-    uint8_t wf_voltage;
-    float wf_x;
-    float wf_y;
+    float depth;
+    float in_pressure;
 
     uint8_t dev_state;
     int16_t leak_data;
-    int16_t in_pressure;
 
     uint16_t vma_current[VmaAmount];
-    int8_t vma_velocity[VmaAmount];
     uint16_t dev_current[DevAmount];
 
     uint16_t vma_errors;
-    uint8_t dev_errors;
+    uint16_t dev_errors;
     uint8_t pc_errors;
 
     uint16_t checksum;
