@@ -9,6 +9,13 @@ CenteringServer::CenteringServer(const std::string& actionName, const std::strin
     actionServer.start();
 }
 
+void CenteringServer::move(const Direction &direction) {
+    geometry_msgs::Twist twist = twistFactory->createDirectionTwist(direction, VelocityLevel::LEVEL_1);
+    auv_common::VelocityCmd velocityCmd;
+    velocityCmd.request.twist = twist;
+    ros::service::call(velocityService, velocityCmd);
+}
+
 void CenteringServer::goalCallback(const auv_common::CenteringGoalConstPtr &goal) {
 
     std::string topic = goal->targetSource;
@@ -17,10 +24,10 @@ void CenteringServer::goalCallback(const auv_common::CenteringGoalConstPtr &goal
     auv_common::OptionalPoint2D firstPoint = *ros::topic::waitForMessage<auv_common::OptionalPoint2D>(topic, nodeHandle);
     if (!firstPoint.hasPoint) {
         switch (goal->initialDirection) {
-            case Direction::LEFT:
+            case auv_common::CenteringGoal::LEFT:
                 direction = Direction::LEFT;
                 break;
-            case Direction::RIGHT:
+            case auv_common::CenteringGoal::RIGHT:
                 direction = Direction::RIGHT;
                 break;
             default:
@@ -35,13 +42,18 @@ void CenteringServer::goalCallback(const auv_common::CenteringGoalConstPtr &goal
         direction = firstPoint.x > 0 ? Direction::RIGHT : Direction::LEFT;
     }
 
-    bool inRange = false;
-    while (!inRange) {
-
-
-
+    while (true) {
+        move(direction);
+        auv_common::OptionalPoint2D point = *ros::topic::waitForMessage<auv_common::OptionalPoint2D>(topic, nodeHandle);
+        if (point.hasPoint) {
+            if (std::abs(firstPoint.x) < goal->limits) {
+                move(Direction::STOP);
+                break;
+            } else {
+                direction = firstPoint.x > 0 ? Direction::RIGHT : Direction::LEFT;
+            }
+        }
     }
 
-    /** Temporary stub */
     actionServer.setSucceeded();
 }

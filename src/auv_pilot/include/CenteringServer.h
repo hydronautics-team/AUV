@@ -23,9 +23,11 @@ private:
     std::string velocityService;
 
     ros::NodeHandle nodeHandle;
-    actionlib::SimpleActionServer<auv_common::MoveAction> actionServer;
+    actionlib::SimpleActionServer<auv_common::CenteringAction> actionServer;
 
     TwistFactory* twistFactory;
+
+    void move(const Direction &direction);
 
     void goalCallback(const auv_common::CenteringGoalConstPtr &goal);
 
