@@ -11,6 +11,7 @@ CenteringServer::CenteringServer(const std::string& actionName, const std::strin
 
 void CenteringServer::move(const Direction &direction) {
     geometry_msgs::Twist twist = twistFactory->createDirectionTwist(direction, VelocityLevel::LEVEL_1);
+    twist.linear.x = twist.linear.z;
     auv_common::VelocityCmd velocityCmd;
     velocityCmd.request.twist = twist;
     ros::service::call(velocityService, velocityCmd);

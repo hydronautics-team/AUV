@@ -78,7 +78,7 @@ def create_new_gate_fsm():
         global gate_count
         if gateMessage.isPresent:
             gate_count += 1
-            if gate_count > 2:
+            if gate_count > 10:
                 gate_count = 0
                 return False
         else:
@@ -122,14 +122,7 @@ def create_new_gate_fsm():
                                    '/gate',
                                    Gate,
                                    exploreGate),
-                               {'valid':'STOP', 'invalid':'STOP', 'preempted':'GATE_FAILED'})
-
-        smach.StateMachine.add('STOP',
-                               smach_ros.SimpleActionState(
-                                   'move_by_time',
-                                   MoveAction,
-                                   goal=stopGoal),
-                               {'succeeded':'CENTERING', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
+                               {'valid':'GATE_MONITOR', 'invalid':'CENTERING', 'preempted':'GATE_FAILED'})
 
         smach.StateMachine.add('CENTERING',
                                 smach_ros.SimpleActionState(
