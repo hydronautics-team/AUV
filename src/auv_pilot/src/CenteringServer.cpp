@@ -1,5 +1,5 @@
 #include "CenteringServer.h"
-#include <auv_common/OptionalPoint2D.h>
+#include <auv_common/Gate.h>
 
 CenteringServer::CenteringServer(const std::string& actionName, const std::string& velocityService,
         const TwistFactory& twistFactory) :
@@ -20,40 +20,27 @@ void CenteringServer::goalCallback(const auv_common::CenteringGoalConstPtr &goal
 
     std::string topic = goal->targetSource;
 
-    Direction direction;
-    auv_common::OptionalPoint2D firstPoint = *ros::topic::waitForMessage<auv_common::OptionalPoint2D>(topic, nodeHandle);
-    if (!firstPoint.hasPoint) {
-        switch (goal->initialDirection) {
-            case auv_common::CenteringGoal::LEFT:
-                direction = Direction::LEFT;
-                break;
-            case auv_common::CenteringGoal::RIGHT:
-                direction = Direction::RIGHT;
-                break;
-            default:
-                actionServer.setAborted();
-                return;
-        }
-    } else {
-        if (std::abs(firstPoint.x) < goal->limits) {
-            actionServer.setSucceeded();
-            return;
-        }
-        direction = firstPoint.x > 0 ? Direction::RIGHT : Direction::LEFT;
-    }
+    bool inRange = false;
+    boost::function<void (const auv_common::Gate::ConstPtr&)> callback =
+            [&inRange, this] (const auv_common::Gate::ConstPtr& gateMsg) {
 
-    while (true) {
-        move(direction);
-        auv_common::OptionalPoint2D point = *ros::topic::waitForMessage<auv_common::OptionalPoint2D>(topic, nodeHandle);
-        if (point.hasPoint) {
-            if (std::abs(firstPoint.x) < goal->limits) {
-                move(Direction::STOP);
-                break;
-            } else {
-                direction = firstPoint.x > 0 ? Direction::RIGHT : Direction::LEFT;
-            }
-        }
-    }
+                if (inRange || !(gateMsg->isPresent))
+                    return;
+
+                double limit = (gateMsg->xTR - gateMsg->xTL) / 4.0;
+                ROS_INFO("Center: %f, Limit: %f", gateMsg->xCenter, limit);
+                if (std::abs(gateMsg->xCenter) < limit) {
+                    this->move(Direction::STOP);
+                    inRange = true;
+                } else {
+                    Direction direction = gateMsg->xCenter > 0 ? Direction::RIGHT : Direction::LEFT;
+                    this->move(direction);
+                }
+            };
+
+    ros::Subscriber sub = nodeHandle.subscribe("/gate", 1, callback);
+    while (!inRange) { }
+    sub.shutdown();
 
     actionServer.setSucceeded();
 }

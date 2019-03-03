@@ -8,6 +8,7 @@
 #include <auv_vision/GateLocatorConfig.h>
 #include "common/AbstractImageConverter.h"
 #include "auv_common/OptionalPoint2D.h"
+#include "auv_common/Gate.h"
 
 static const std::string OPENCV_WINDOW = "Image window";
 
@@ -62,26 +63,42 @@ protected:
 
         GateDescriptor gate = detector.detect(image);
 
-        auv_common::OptionalPoint2D msg;
+        auv_common::Gate msg;
 
         if (gate.hasGate()) {
             cv::Point2f center = convertToCentralCoordinates(gate.getCenter(), image.cols, image.rows);
+            std::vector<cv::Point2f> corners = gate.getCorners();
 
-            msg.hasPoint = true;
-            msg.x = center.x;
-            msg.y = center.y;
+            msg.isPresent = true;
+            msg.xCenter = center.x;
+            msg.yCenter = center.y;
+            msg.xTL = corners[0].x;
+            msg.yTL = corners[0].y;
+            msg.xTR = corners[1].x;
+            msg.yTR = corners[1].y;
+            msg.xBR = corners[2].x;
+            msg.yBR = corners[2].y;
+            msg.xBL = corners[3].x;
+            msg.yBL = corners[3].y;
             gatePublisher.publish(msg);
 
-            std::vector<cv::Point2f> corners = gate.getCorners();
             cv::circle(image, corners[0], 10, CV_RGB(0, 255, 0));
             cv::circle(image, corners[1], 10, CV_RGB(0, 255, 0));
             cv::circle(image, corners[2], 10, CV_RGB(0, 255, 0));
             cv::circle(image, corners[3], 10, CV_RGB(0, 255, 0));
             cv::circle(image, gate.getCenter(), 10, CV_RGB(0, 0, 255));
         } else {
-            msg.hasPoint = false;
-            msg.x = 0;
-            msg.y = 0;
+            msg.isPresent = false;
+            msg.xCenter = 0.0f;
+            msg.yCenter = 0.0f;
+            msg.xTL = 0.0f;
+            msg.yTL = 0.0f;
+            msg.xTR = 0.0f;
+            msg.yTR = 0.0f;
+            msg.xBR = 0.0f;
+            msg.yBR = 0.0f;
+            msg.xBL = 0.0f;
+            msg.yBL = 0.0f;
             gatePublisher.publish(msg);
         }
 
@@ -106,7 +123,7 @@ public:
         image_transport::ImageTransport it(nodeHandle);
         imagePublisher = it.advertise("/gate/image", 100);
 
-        gatePublisher = nodeHandle.advertise<auv_common::OptionalPoint2D>(GATE_PUBLISH_TOPIC, 100);
+        gatePublisher = nodeHandle.advertise<auv_common::Gate>(GATE_PUBLISH_TOPIC, 100);
         if (windowsEnabled)
             cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
     }

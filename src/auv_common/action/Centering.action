@@ -1,6 +1,7 @@
 # Goal
 uint8 LEFT=1
 uint8 RIGHT=2
+uint8 NONE=3
 
 uint8 DEFAULT_LIMITS=10
 

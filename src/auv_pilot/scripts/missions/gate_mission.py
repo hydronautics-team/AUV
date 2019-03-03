@@ -6,7 +6,7 @@ import smach_ros
 import actionlib
 import actionlib_msgs
 from auv_common.msg import OptionalPoint2D
-from auv_common.msg import MoveGoal, MoveAction
+from auv_common.msg import MoveGoal, MoveAction, CenteringAction, CenteringGoal
 
 
 # TODO: Try to implement through extending smach.StateMachine class
@@ -70,11 +70,12 @@ def create_gate_fsm():
     
     return sm
 
-'''
+
 def create_new_gate_fsm():
 
     gate_count = 0
     def exploreGate(userData, gateMessage):
+        global gate_count
         if gateMessage.hasPoint:
             gate_count += 1
             if gate_count > 10:
@@ -84,39 +85,21 @@ def create_new_gate_fsm():
             gate_count = 0
             return True
 
-    sm = smach.StateMachine(outcomes=['OK', 'FAILED'])
+    sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
 
     with sm:
 
-        rotateGoal = MoveGoal()
-        rotateGoal.direction = MoveGoal.ROTATE_YAW_CW
-        rotateGoal.value = 0
+        centeringGoal = CenteringGoal()
+        centeringGoal.targetSource = '/gate'
+        centeringGoal.initialDirection = CenteringGoal.NONE
 
-        stopGoal = MoveGoal()
-        stopGoal.direction = MoveGoal.STOP
-        stopGoal.value = 0
-
-
-        smach.StateMachine.add('ROTATE',
+        smach.StateMachine.add('CENTERING',
                                 smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=rotateGoal),
-                                {'succeeded':'GATE_MONITOR', 'preempted':'FAILED', 'aborted':'FAILED'})
+                                    'centering',
+                                    CenteringAction,
+                                    goal=centeringGoal),
+                                {'succeeded':'GATE_OK', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
-        smach.StateMachine.add('GATE_MONITOR', 
-                                smach_ros.MonitorState(
-                                    '/gate',
-                                    OptionalPoint2D,
-                                    exploreGate),
-                                {'valid':'GATE_MONITOR', 'invalid':'STOP', 'preempted':'FAILED'})
-
-        smach.StateMachine.add('STOP',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=stopGoal),
-                                {'succeeded':'OK', 'preempted':'FAILED', 'aborted':'FAILED'})
 
     return sm
-    '''
+    
