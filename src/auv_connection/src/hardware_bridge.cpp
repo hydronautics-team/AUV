@@ -14,6 +14,8 @@
 #include <auv_common/VelocityCmd.h>
 #include <auv_common/DepthCmd.h>
 #include <auv_common/ResetCmd.h>
+#include <auv_common/DropperCmd.h>
+#include <auv_common/LifterCmd.h>
 
 #include <sstream>
 #include <string>
@@ -175,6 +177,20 @@ bool reset_callback(auv_common::ResetCmd::Request& resetRequest,
     return true;
 }
 
+bool dropper_callback(auv_common::DropperCmd::Request& dropperRequest,
+                    auv_common::DropperCmd::Response& dropperResponse) {
+
+    // TODO: Implement
+    return true;
+}
+
+bool lifter_callback(auv_common::LifterCmd::Request& lifterRequest,
+                      auv_common::LifterCmd::Response& lifterResponse) {
+
+    // TODO: Implement
+    return true;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "hardware_bridge");
@@ -207,6 +223,8 @@ int main(int argc, char **argv)
     ros::ServiceServer velocity_srv = n.advertiseService("velocity_service", movement_callback);
     ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
     ros::ServiceServer reset_srv = n.advertiseService("reset_service", reset_callback);
+    ros::ServiceServer dropper_srv = n.advertiseService("dropper_service", dropper_callback);
+    ros::ServiceServer lifter_srv = n.advertiseService("lifter_service", lifter_callback);
     // **************
 
     while (ros::ok())
