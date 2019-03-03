@@ -25,7 +25,7 @@ def create_mat_bottom_cam_navigation_fsm():
             self.forwardMove = False
             self.backwardMove = False
             self.edgeDetectionFailure = False
-            self.delta = 15 # Tolerance parameter
+            self.delta = 22 # Tolerance parameter
             self.initFlag = True # To initialize CONDITION data
 
         def callback(self, matMessage):

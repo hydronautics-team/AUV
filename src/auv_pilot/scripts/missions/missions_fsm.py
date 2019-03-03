@@ -12,7 +12,7 @@ def create_missions_fsm(launch_delay, dive_delay, initial_depth):
     sm = smach.StateMachine(outcomes=['MISSIONS_OK', 'MISSIONS_FAILED'])
 
     with sm:
-        smach.StateMachine.add('LAUNCH_DELAY', common_states.WaitState(launch_delay), transitions={'OK': 'DRUMS_MISSION'})
+        smach.StateMachine.add('LAUNCH_DELAY', common_states.WaitState(launch_delay), transitions={'OK': 'DIVE_DELAY'})
         smach.StateMachine.add('DIVE_DELAY', common_states.WaitState(dive_delay), transitions={'OK': 'DIVE'})
         smach.StateMachine.add('DIVE', common_states.create_diving_state(initial_depth), transitions={
             'succeeded':'DRUMS_MISSION', 'preempted':'MISSIONS_FAILED', 'aborted':'MISSIONS_FAILED'})

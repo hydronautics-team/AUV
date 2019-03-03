@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   auv_common
-	serial
+  serial
 )
 
 ## System dependencies are found with CMake's conventions
