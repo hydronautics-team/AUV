@@ -50,6 +50,7 @@ public:
     cv::Mat getimageAfterContourDetection();
     cv::Mat getLinesImage();
 
+
     void detectContours(const cv::Mat& src, cv::Mat& dst, std::vector<std::vector<cv::Point>>& contours, bool withPreprocess);
 
     MatDetector() = default;
@@ -108,6 +109,8 @@ public:
 
     float setMaxAngleCriteria() const;
     void setMaxAngleCriteria(float max_angle_criteria);
+
+    cv::Mat getimageWithAllLines();
 
     MatDetectorBottomCamera() = default;
     ~MatDetectorBottomCamera() = default;

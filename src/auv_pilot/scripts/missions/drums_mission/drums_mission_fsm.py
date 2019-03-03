@@ -55,6 +55,7 @@ def create_drums_fsm():
     sm = smach.StateMachine(outcomes=['DRUMS_OK', 'DRUMS_FAILED'])
 
     with sm:
+
         '''
         leftMoveGoal = MoveGoal()
         leftMoveGoal.direction = MoveGoal.DIRECTION_LEFT
@@ -107,6 +108,7 @@ def create_drums_fsm():
 
         smach.StateMachine.add('MAT_FRONT_CAM_NAVIGATION', mat_front_cam_navigation.create_mat_front_cam_navigation_fsm(),
                                transitions={'HORIZONTAL_EDGE_DETECTED': 'MAT_BOTTOM_CAM_NAVIGATION', 'MAT_FRONT_CAM_NAVIGATION_FAILED': 'DRUMS_FAILED'})
+
         '''
         smach.StateMachine.add('MAT_BOTTOM_CAM_NAVIGATION', mat_bottom_cam_navigation.create_mat_bottom_cam_navigation_fsm(),
                                transitions={'BLUE_DRUM_DETECTED': 'DRUMS_NAVIGATION', 'RED_DRUM_DETECTED': 'DRUMS_NAVIGATION', 'MAT_BOTTOM_CAM_NAVIGATION_FAILED': 'DRUMS_FAILED'})
