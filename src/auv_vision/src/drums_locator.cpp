@@ -223,7 +223,7 @@ private:
 
     ros::Publisher matBottomCamPublisher;
 
-    image_transport::Publisher imagePublisher, maskedImagePublisher;
+    image_transport::Publisher imagePublisher, maskedImagePublisher, allLinesImagePublisher;
 
     bool windowsEnabled;
 
@@ -342,6 +342,11 @@ protected:
             sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image_copy_descriptor_bottom).toImageMsg();
             imagePublisher.publish(imageMsg);
         }
+
+        if (!detector_bottomCamera.getimageWithAllLines().empty()) {
+            sensor_msgs::ImagePtr imageMsgAllLines = cv_bridge::CvImage(std_msgs::Header(), "bgr8", detector_bottomCamera.getimageWithAllLines()).toImageMsg();
+            allLinesImagePublisher.publish(imageMsgAllLines);
+        }
     }
 
 public:
@@ -352,6 +357,7 @@ public:
         image_transport::ImageTransport it(nodeHandle);
         imagePublisher = it.advertise("/bottomCamMat/image", 100);
         maskedImagePublisher = it.advertise("/bottomCamMat/image_masked", 100);
+        allLinesImagePublisher = it.advertise("/bottomCamMat/image_all_lines", 100);
 
         /**
          * Tell the master that we are going to be publishing a message

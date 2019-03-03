@@ -389,7 +389,7 @@ float MatDetectorBottomCamera::getDistance(float x1, float y1, float x2, float y
 }
 
 /// Global for reconfigure
-cv::Mat imageAfterContourDetection;
+cv::Mat imageAfterContourDetection, imageWithAllLines;
 
 bool MatDetectorFrontCamera::getMatContour(std::vector<std::vector<cv::Point>>& contours, const cv::Mat& image) {
 
@@ -724,8 +724,13 @@ std::vector<std::vector<float>> MatDetectorBottomCamera::drawAndSortLines(cv::Ma
     //if (!drawing.empty()) cv::imshow("All lines after Hough transform", drawing);
     //if (!drawing.empty()) cv::imshow("All lines after FastLineDetector", drawing);
 
+    imageWithAllLines = drawing;
     //image = drawing;
     return (angle);
+}
+
+cv::Mat MatDetectorBottomCamera::getimageWithAllLines() {
+    return imageWithAllLines;
 }
 
 std::vector<cv::Vec4f> MatDetectorBottomCamera::findHorizontalLines(const cv::Mat& image, std::vector<std::vector<float>>& angle, std::vector<cv::Vec4f>& lines) {
