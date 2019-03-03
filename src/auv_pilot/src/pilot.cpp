@@ -31,6 +31,10 @@ static const std::string DIVE_ACTION = "dive";
 
 static const std::string DEPTH_SERVICE = "depth_service";
 
+static const std::string DEPTH_TOPIC = "/perception/depth";
+
+static unsigned int DEPTH_RANGE = 10; // 10 cm
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, PILOT_NODE_NAME);
@@ -55,8 +59,11 @@ int main(int argc, char **argv)
         twistFactory = new SimulationTwistFactory();
     }
 
+    float diveTime;
+    nodeHandle.param("diveTime", diveTime, 5.0f);
+
     MoveByTimeServer moveByTimeServer(MOVE_BY_TIME_ACTION, VELOCITY_SERVICE, *twistFactory);
-    DiveActionServer diveService(DIVE_ACTION, DEPTH_SERVICE);
+    DiveActionServer diveService(DIVE_ACTION, DEPTH_SERVICE, DEPTH_TOPIC, DEPTH_RANGE, diveTime);
     //MoveByTileServer moveByTileServer(MOVE_BY_TILE_ACTION, VELOCITY_SERVICE, *twistFactory);
     //MoveCenteringServer moveCenteringServer(MOVE_CENTERING, VELOCITY_SERVICE, *twistFactory);
     ros::spin();

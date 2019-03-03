@@ -4,316 +4,380 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
 
-/**
-#if CUDA_ENABLED == 0
-#include <opencv2/cudaarithm.hpp>
-#include <opencv2/cudaimgproc.hpp>
-#endif
-*/
-
 #include "../../include/gate/GateDetector.h"
 #include "../../include/gate/GateDescriptor.h"
 #include "../../include/util/ImgprocPipeline.h"
 
 
-void GateDetector::defaultPreprocess(const cv::Mat &src, cv::Mat &dst) {
-    // TODO Define which pre-processing methods should be in common scope
-    dst = createPipeline(src, false)
-            //.apply(std::bind(&GateDetector::meanShift, this, std::placeholders::_1, std::placeholders::_2), "MeanShift")
-            .apply(std::bind(&GateDetector::extractValueChannel, this, std::placeholders::_1, std::placeholders::_2), "Value channel")
-            .apply(std::bind(&GateDetector::morphology, this, std::placeholders::_1, std::placeholders::_2), "Closing")
-            .getImage();
+void GateDetector::setPublisher(const ros::NodeHandle& nh) {
+    image_transport::ImageTransport it(nh);
+    imagePublisher = it.advertise("/gate/lines", 100);
 }
 
-void GateDetector::meanShift(const cv::Mat &src, cv::Mat &dst) {
+void GateDetector::detectLines(const cv::Mat &image, std::vector<cv::Vec4f> &lines) {
 
-    // TODO Fix problems with CUDA dependencies
-    cv::pyrMeanShiftFiltering(src, dst, 30, 5);
-/**
-#if CUDA_ENABLED == 0
-    cv::pyrMeanShiftFiltering(src, dst, 30, 5);
-#else
-    cv::cuda::GpuMat gpuSrc, gpuDest;
-    gpuSrc.upload(src);
-    cv::cuda::cvtColor(gpuSrc, gpuSrc, CV_BGR2BGRA);
-    cv::cuda::meanShiftFiltering(gpuSrc, gpuDest, 30, 5);
-    gpuDest.download(dst);
-#endif
-*/
+    std::vector<cv::Vec4f> detectedLines;
+    fld->detect(image, detectedLines);
 
-}
+    cv::Mat canvas;
+    image.copyTo(canvas);
+    fld->drawSegments(canvas, detectedLines);
+    sensor_msgs::ImagePtr imageMsg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", canvas).toImageMsg();
+    imagePublisher.publish(imageMsg);
 
-void GateDetector::extractValueChannel(const cv::Mat &src, cv::Mat &dst) {
-    cv::Mat hsv;
-    cv::cvtColor(src, hsv, CV_BGR2HSV);
-    std::vector<cv::Mat> hsvChannels;
-    cv::split(hsv, hsvChannels);
-    dst = hsvChannels[2];
-}
-
-void GateDetector::morphology(const cv::Mat &src, cv::Mat &dst) {
-    int size = 1;
-    cv::Mat element = cv::getStructuringElement(CV_SHAPE_RECT, cv::Size(2*size+1, 2*size+1));
-    cv::morphologyEx(src, dst, cv::MORPH_CLOSE, element);
-}
-
-void GateDetector::detectVerticalLines(const cv::Mat &image, std::vector<cv::Vec4f> &lines) {
-
-    cv::Ptr<cv::LineSegmentDetector> detector = cv::createLineSegmentDetector(cv::LSD_REFINE_STD);
-    std::vector<cv::Vec4f> allLines;
-    detector->detect(image, allLines);
-
-    double maxLength = 0;
-    std::vector<cv::Vec4f> filteredLines;
-    for (int i = 0; i < allLines.size(); i++) {
-        if (getLineSlope(allLines[i]) < verticalSlope) {
-            filteredLines.push_back(allLines[i]);
-            double length = getLength(allLines[i]);
-            if (length > maxLength)
-                maxLength = length;
-        }
-    }
-
-    for (int i = 0; i < filteredLines.size(); i++) {
-        double length = getLength(filteredLines[i]);
-        if (length >= verticalLengthRelation * maxLength)
-            lines.push_back(filteredLines[i]);
+    // Sort verticies in lines: top vertix is first
+    for (int i = 0; i < detectedLines.size(); i++) {
+        if (detectedLines[i][1] < detectedLines[i][3])
+            lines.push_back(detectedLines[i]);
+        else
+            lines.emplace_back(detectedLines[i][2], detectedLines[i][3], detectedLines[i][0], detectedLines[i][1]);
     }
 }
 
-float GateDetector::getLineSlope(const cv::Vec4f &line) {
+float GateDetector::getLineSlopeVertical(const cv::Vec4f &line) {
     if (line[1] == line[3])
-        return INFINITY;
+        return 90.0f;
+    if (line[0] == line[2])
+        return 0.0f;
     float tan = std::abs(line[0] - line[2]) / std::abs(line[1] - line[3]);
     float arctan = std::atan(tan);
     float res = arctan * 180.0f / CV_PI;
     return res;
 }
 
+float GateDetector::getLineSlopeHorizontal(const cv::Vec4f &line) {
+    if (line[0] == line[2])
+        return 0.0f;
+    if (line[1] == line[3])
+        return 90.0f;
+    float tan = std::abs(line[1] - line[3]) / std::abs(line[0] - line[2]);
+    float arctan = std::atan(tan);
+    float res = arctan * 180.0f / CV_PI;
+    return res;
+}
+
+void GateDetector::filterVerticalAndHorizontal(const std::vector<cv::Vec4f> &lines, std::vector<cv::Vec4f> &vertical,
+                                           std::vector<cv::Vec4f> &horizontal) {
+
+    std::vector<cv::Vec4f> filteredVerticalLines;
+    std::vector<cv::Vec4f> filteredHorizontalLines;
+    double maxLengthVertical = 0;
+    double maxLengthHorizontal = 0;
+
+
+    for (int i = 0; i < lines.size(); i++) {
+        if (getLineSlopeVertical(lines[i]) < verticalSlope) {
+            filteredVerticalLines.push_back(lines[i]);
+            double length = getLength(lines[i]);
+            if (length > maxLengthVertical)
+                maxLengthVertical = length;
+        }
+
+        else if (getLineSlopeHorizontal(lines[i]) < horizontalSlope) {
+            filteredHorizontalLines.push_back(lines[i]);
+            double length = getLength(lines[i]);
+            if (length > maxLengthHorizontal)
+                maxLengthHorizontal = length;
+        }
+    }
+
+    for (int i = 0; i < filteredVerticalLines.size(); i++) {
+        double length = getLength(filteredVerticalLines[i]);
+        if (length >= lengthRelation * maxLengthVertical)
+            vertical.push_back(filteredVerticalLines[i]);
+    }
+
+    for (int i = 0; i < filteredHorizontalLines.size(); i++) {
+        double length = getLength(filteredHorizontalLines[i]);
+        if (length >= lengthRelation * maxLengthVertical)
+            horizontal.push_back(filteredHorizontalLines[i]);
+    }
+}
+
 float GateDetector::getLength(const cv::Vec4f &line) {
-    return std::sqrt((line[2]-line[0])*(line[2]-line[0]) + (line[3]-line[1])*(line[3]-line[1]));
+    return std::sqrt((line[2] - line[0]) * (line[2] - line[0]) + (line[3] - line[1]) * (line[3] - line[1]));
 }
 
-float GateDetector::getDistance(float x1, float y1, float x2, float y2) {
-    return std::sqrt((x1 - x2)*(x1 - x2) - (y1 - y2)*(y1 - y2));
-}
+GateDescriptor GateDetector::detect(const cv::Mat &src) {
 
-cv::Point2f GateDetector::getProjection(const cv::Vec4f &line, const cv::Point2f &point) {
-    cv::Vec2f vec1 = { line[2] - line[0], line[3] - line[1] };
-    cv::Vec2f vec2 = { point.x - line[0], point.y - line[1] };
-
-    float vec1Squared = vec1[0]*vec1[0] + vec1[1]*vec1[1];
-    float dot = vec1[0]*vec2[0] + vec1[1]*vec2[1];
-    cv::Vec2f projection = { vec1[0] * (dot / vec1Squared), vec1[1] * (dot / vec1Squared) };
-
-    return cv::Point2f(line[0] + projection[0], line[1] + projection[1]);
-}
-
-GateDescriptor GateDetector::detect(const cv::Mat &src, bool withPreprocess) {
-
+    // Step 1: Convert BGR image to Grayscale
     cv::Mat image;
-    if (withPreprocess)
-        defaultPreprocess(src, image);
-    else
-        image = src;
+    cv::cvtColor(src, image, CV_BGR2GRAY);
 
-    // Step 1: find all vertical lines on image
-    std::vector<cv::Vec4f> verticalLines;
-    detectVerticalLines(image, verticalLines);
-    if (verticalLines.empty())
+    // Step 2: Find all lines
+    std::vector<cv::Vec4f> allLines;
+    detectLines(image, allLines);
+    if (allLines.size() < 3)
         return GateDescriptor::noGates();
 
-    // Step 2: gather all ending points from detected lines
-    std::vector<cv::Point2f> allPoints;
-    for (int i = 0; i < verticalLines.size(); i++) {
-        allPoints.emplace_back(verticalLines[i][0], verticalLines[i][1]);
-        allPoints.emplace_back(verticalLines[i][2], verticalLines[i][3]);
-    }
+    // Step 3: Filter vertical lines
+    std::vector<cv::Vec4f> verticalLines, horizontalLines;
+    filterVerticalAndHorizontal(allLines, verticalLines, horizontalLines);
 
-    // Step 3: sort points by X value
-    std::sort(allPoints.begin(), allPoints.end(),
-              [](const cv::Point2f& a, const cv::Point2f& b) -> bool { return a.x > b.x; });
+    // Step 4: Merge vertical lines
+    std::vector<cv::Vec4f> mergedVertical;
+    mergeVerticalLines(verticalLines, mergedVertical);
 
-    // Step 4: gather points that lie on one vertical line - it is equals to merging original detected lines
-    cv::Point2f currentPoint = allPoints[0];
-    std::vector<std::vector<cv::Point2f>> pointLines;
-    std::vector<cv::Point2f> currentPointLine;
-    currentPointLine.push_back(currentPoint);
-    for (int i = 1; i < allPoints.size(); i++) {
 
-        if (std::abs(allPoints[i].x - currentPoint.x) > mergingLineDistance) {
-            pointLines.push_back(currentPointLine);
-            currentPointLine.clear();
+    return findBestByQuality(mergedVertical, horizontalLines, src.rows * src.cols);
+}
+
+
+void GateDetector::mergeVerticalLines(const std::vector<cv::Vec4f> &lines, std::vector<cv::Vec4f> &mergedLines) {
+
+    std::vector<cv::Vec4f> allLines = lines;
+    std::sort(allLines.begin(), allLines.end(),
+              [](const cv::Vec4f& a, const cv::Vec4f& b) -> bool {
+                  if (a[2] != b[2])
+                      return a[2] > b[2];
+                  return a[1] < b[1];
+              });
+
+    cv::Vec4f currentLine = allLines[0];
+    std::vector<cv::Vec4f> group;
+    group.push_back(currentLine);
+    for (int i = 1; i < allLines.size(); i++) {
+        cv::Vec4f nextLine = allLines[i];
+        if (std::min(std::abs(currentLine[0] - nextLine[0]), std::abs(currentLine[2] - nextLine[2])) <= mergingLineDistanceHorizontal) {
+            group.push_back(nextLine);
+        } else {
+            std::vector<cv::Vec4f> linesToMerge;
+            mergeY(group, linesToMerge);
+            mergedLines.insert(mergedLines.end(), linesToMerge.begin(), linesToMerge.end());
+            group.clear();
+            group.push_back(nextLine);
         }
-        currentPointLine.push_back(allPoints[i]);
 
-        currentPoint = allPoints[i];
+        currentLine = nextLine;
+
     }
-    pointLines.emplace_back(currentPointLine);
-    currentPointLine.clear();
-
-    std::vector<cv::Vec4f> mergedLines;
-    for (int i = 0; i < pointLines.size(); i++) {
-        // TODO: Use line fitting
-        auto edges  = std::minmax_element(pointLines[i].begin(), pointLines[i].end(),
-                                          [](const cv::Point2f& a, const cv::Point2f& b) {
-                                              return a.y > b.y;
-                                          });
-
-        mergedLines.push_back({(*(edges.first)).x, (*(edges.first)).y, (*(edges.second)).x, (*(edges.second)).y});
+    if (!group.empty()) {
+        std::vector<cv::Vec4f> linesToMerge;
+        mergeY(group, linesToMerge);
+        mergedLines.insert(mergedLines.end(), linesToMerge.begin(), linesToMerge.end());
     }
+}
+
+bool GateDetector::isAbleToVerticalMerge(const cv::Vec4f &line1, const cv::Vec4f &line2) {
 
 
-    // Step 5: Acquire quality metrics for each pair of lines
-    float bestQuality = INFINITY;
-    cv::Vec4f bestLine1, bestLine2;
-    bool passedThreshold = false;
-
-    for (int i = 0; i < mergedLines.size(); i++) {
-        for (int j = 0; j < mergedLines.size(); j++) {
-            if (i == j)
-                continue;
-
-            cv::Vec4f line1 = mergedLines[i];
-            cv::Vec4f line2 = mergedLines[j];
-
-            // 1. How angles of polygon close to PI/2
-            float angleDiff1 = std::abs(CV_PI / 2 - getAngle(line1[2], line1[3], line1[0], line1[1], line2[2], line2[3]));
-            float angleDiff2 = std::abs(CV_PI / 2 - getAngle(line1[0], line1[1], line1[2], line1[3], line2[0], line2[1]));
-            float angleDiff3 = std::abs(CV_PI / 2 - getAngle(line2[2], line2[3], line2[0], line2[1], line1[2], line1[3]));
-            float angleDiff4 = std::abs(CV_PI / 2 - getAngle(line2[0], line2[1], line2[2], line2[3], line1[0], line1[1]));
-
-            float angleQuality = std::max({angleDiff1, angleDiff2, angleDiff3, angleDiff4});
-
-            if (angleQuality > angleQualityThreshold)
-                continue;
-
-            // 2. How equal vertical and horizontal sides
-            float verticalRelation = getLength(line2) / getLength(line1);
-            if (verticalRelation > 1.0f)
-                verticalRelation = 1.0f / verticalRelation;
-            float horizontalRelation = getDistance(line1[0], line1[1], line2[0], line2[1]) /
-                                       getDistance(line1[2], line1[3], line2[2], line2[3]);
-            if (horizontalRelation > 1.0f)
-                horizontalRelation = 1.0f / horizontalRelation;
-
-            float verticalRelationQuality = 1.0f - verticalRelation;
-            float horizontalRelationQuality = 1.0f - horizontalRelation;
-
-            // 3. How area of polygon differs from area of its bounding rectangle
-            std::vector<cv::Point2f> contour, hull;
-            contour.emplace_back(line1[0], line1[1]);
-            contour.emplace_back(line1[2], line1[3]);
-            contour.emplace_back(line2[0], line2[1]);
-            contour.emplace_back(line2[2], line2[3]);
-            cv::convexHull(contour, hull);
-            cv::Rect boundingRect = cv::boundingRect(contour);
-
-            float contourArea = cv::contourArea(hull);
-            float rectArea = boundingRect.area();
-            float squareRelation = contourArea / rectArea;
-            if (squareRelation > 1.0f)
-                squareRelation = 1.0f /squareRelation;
-
-            float squareQuality = 1.0f -squareRelation;
-
-            // 4. How equal horizontal and vertical sides
-            float sideRelation1 = getLength(line1) / getLength(cv::Vec4f(line1[2], line1[3], line2[2], line2[3]));
-            if (sideRelation1 > 1.0f)
-                sideRelation1 = 1.0f / sideRelation1;
-            float sideRelation2 = getLength(line1) / getLength(cv::Vec4f(line1[0], line1[1], line2[0], line2[1]));
-            if (sideRelation2 > 1.0f)
-                sideRelation2 = 1.0f / sideRelation2;
-            float sideRelation3 = getLength(line2) / getLength(cv::Vec4f(line2[2], line2[3], line1[2], line1[3]));
-            if (sideRelation3 > 1.0f)
-                sideRelation3 = 1.0f / sideRelation3;
-            float sideRelation4 = getLength(line2) / getLength(cv::Vec4f(line2[0], line2[1], line1[0], line1[1]));
-            if (sideRelation4 > 1.0f)
-                sideRelation4 = 1.0f / sideRelation4;
-
-            float sidesQuality = 1.0f - std::min({sideRelation1, sideRelation2, sideRelation3, sideRelation4});
-
-            float totalQuality = verticalRelationQuality + horizontalRelationQuality + squareQuality + sidesQuality + angleQuality;
-            if (totalQuality > totalQualityThreshold)
-                continue;
-
-            passedThreshold = true;
-            if (totalQuality < bestQuality) {
-                bestQuality = totalQuality;
-                bestLine1 = line1;
-                bestLine2 = line2;
-            }
-        }
-    }
-
-    if (!passedThreshold)
-        return GateDescriptor::noGates();
-
-
-    // Step 6: Form gate from lines with best quality metrics
-    cv::Vec4f leftLine, rightLine;
-    if (bestLine1[2] < bestLine2[2]) {
-        leftLine = bestLine1;
-        rightLine = bestLine2;
+    cv::Vec4f high, low;
+    if (line1[1] < line2[1]) {
+        high = line1;
+        low = line2;
     } else {
-        leftLine = bestLine2;
-        rightLine = bestLine1;
+        high = line2;
+        low = line1;
     }
 
-    cv::Point2f topLeft = cv::Point2f(leftLine[2], leftLine[3]);
-    cv::Point2f topRight = cv::Point2f(rightLine[2], rightLine[3]);
-    cv::Point2f bottomLeft = cv::Point2f(leftLine[0], leftLine[1]);
-    cv::Point2f bottomRight = cv::Point2f(rightLine[0], rightLine[1]);
+    if (low[1] < high[3])
+        return true;
+
+    return low[1] - high[3] < mergingLineDistanceVertical;
+}
+
+void GateDetector::mergeY(const std::vector<cv::Vec4f> &lines, std::vector<cv::Vec4f> &mergedLines) {
+
+    std::vector<cv::Vec4f> allLines = lines;
+    std::sort(allLines.begin(), allLines.end(),
+              [](const cv::Vec4f& a, const cv::Vec4f& b) -> bool {
+                  return a[1] > b[1];
+              });
+
+    cv::Vec4f currentLine = allLines[0];
+    std::vector<cv::Vec4f> currentGroup;
+    currentGroup.push_back(currentLine);
+    for (int j = 1; j < allLines.size(); j++) {
+        cv::Vec4f next = allLines[j];
+        if (isAbleToVerticalMerge(currentLine, next)) {
+            currentGroup.push_back(next);
+        } else {
+            mergedLines.push_back(createVerticalLine(currentGroup));
+            currentGroup.clear();
+            currentGroup.push_back(next);
+        }
+        currentLine= next;
+    }
+    if (!currentGroup.empty()) {
+        mergedLines.push_back(createVerticalLine(currentGroup));
+    }
+}
+
+cv::Vec4f GateDetector::createVerticalLine(const std::vector<cv::Vec4f> &lines) {
+    float minY = INFINITY;
+    float maxY = 0.0f;
+    float minX = INFINITY;
+    float maxX = 0.0f;
+
+    for (int i = 0; i < lines.size(); i++) {
+        if (lines[i][0] < minX)
+            minX = lines[i][0];
+        if (lines[i][0] > maxX)
+            maxX = lines[i][0];
+
+        if (lines[i][1] < minY)
+            minY = lines[i][1];
+        if (lines[i][3] > maxY)
+            maxY = lines[i][3];
+
+        if (lines[i][2] < minX)
+            minX = lines[i][2];
+        if (lines[i][2] > maxX)
+            maxX = lines[i][2];
+    }
+
+    float x = (minX + maxX) / 2.0f;
+
+    return cv::Vec4f(x, minY, x, maxY);
+}
+
+
+GateDescriptor GateDetector::findBestByQuality(const std::vector<cv::Vec4f> &verticalLines,
+                                           const std::vector<cv::Vec4f> &horizontalLines,
+                                           long frameArea) {
+
+    std::vector<std::pair<cv::Vec4f, cv::Vec4f>> candidates;
+
+    for (int i = 0; i < verticalLines.size(); i++) {
+        cv::Vec4f vertical = verticalLines[i];
+        for (int j = 0; j < horizontalLines.size(); j++) {
+            cv::Vec4f horizontal = horizontalLines[j];
+            if (horizontal[0] > horizontal[2])
+                horizontal = cv::Vec4f(horizontal[2], horizontal[3], horizontal[0], horizontal[1]);
+
+
+            float overlap = std::max(horizontal[1], horizontal[3]) - vertical[1];
+            if ((overlap > 0.0f) && (overlap > overlapThreshold))
+                continue;
+
+            float distX = std::min(std::abs(vertical[0] - horizontal[0]),
+                                   std::abs(vertical[0] - horizontal[2]));
+            if (distX > distXThreshold)
+                continue;
+
+            float distY = std::min(std::abs(vertical[1] - horizontal[1]),
+                                   std::abs(vertical[1] - horizontal[3]));
+            if (distY > distYThreshold)
+                continue;
+
+            float sideRelation = 0.0f;
+            if (getLength(vertical) > getLength(horizontal))
+                sideRelation = getLength(horizontal) / getLength(vertical);
+            else
+                sideRelation = getLength(vertical) / getLength(horizontal);
+            if (sideRelation < sidesRelationThreshold)
+                continue;
+
+            float coordVertX = vertical[0] - vertical[2];
+            float coordVertY = vertical[3] - vertical[1];
+            float coordHorX = horizontal[2] - horizontal[0];
+            float coordHorY = horizontal[3] - horizontal[1];
+            float cosine = (coordVertX * coordHorX + coordVertY * coordHorY) / (getLength(horizontal) * getLength(vertical));
+            float angleDiff = std::abs(90.0f - (std::acos(cosine) * 180.0f / CV_PI));
+            if (angleDiff > angleDiffThreshold)
+                continue;
+
+            float area = getLength(vertical) * getLength(horizontal);
+            if (area / (float)frameArea < areaFrameRelationThreshold)
+                continue;
+
+            candidates.emplace_back(vertical, horizontal);
+        }
+    }
+
+    if (candidates.empty())
+        return GateDescriptor::noGates();
+
+    float maxArea = 0.0f;
+    std::pair<cv::Vec4f, cv::Vec4f> winner;
+    for (int i = 0; i < candidates.size(); i++) {
+        float area = getLength(candidates[i].first) * getLength(candidates[i].second);
+        if (area > maxArea) {
+            maxArea = area;
+            winner = candidates[i];
+        }
+    }
+
+    cv::Point2f topLeft = cv::Point2f(winner.second[0], winner.second[1]);
+    cv::Point2f topRight = cv::Point2f(winner.second[2], winner.second[3]);
+    cv::Point2f bottomLeft = cv::Point2f(winner.second[0], winner.first[3]);
+    cv::Point2f bottomRight = cv::Point2f(winner.second[2], winner.first[3]);
 
     return GateDescriptor::create({topLeft, topRight, bottomRight, bottomLeft});
 }
 
-float GateDetector::getAngle(float x1, float y1, float x2, float y2, float x3, float y3) {
-    float dx21 = x2-x1;
-    float dx31 = x3-x1;
-    float dy21 = y2-y1;
-    float dy31 = y3-y1;
-    float m12 = sqrt( dx21*dx21 + dy21*dy21 );
-    float m13 = sqrt( dx31*dx31 + dy31*dy31 );
-    return acos( (dx21*dx31 + dy21*dy31) / (m12 * m13) );
-}
-
-float GateDetector::getVerticalSlope() const {
-    return verticalSlope;
-}
 
 void GateDetector::setVerticalSlope(float verticalSlope) {
-    GateDetector::verticalSlope = verticalSlope;
+    this->verticalSlope = verticalSlope;
 }
 
-float GateDetector::getVerticalLengthRelation() const {
-    return verticalLengthRelation;
+void GateDetector::setHorizontalSlope(float horizontalSlope) {
+    this->horizontalSlope = horizontalSlope;
 }
 
-void GateDetector::setVerticalLengthRelation(float verticalLengthRelation) {
-    GateDetector::verticalLengthRelation = verticalLengthRelation;
+void GateDetector::setLengthRelation(float lengthRelation) {
+    this->lengthRelation = lengthRelation;
 }
 
-float GateDetector::getMergingLineDistance() const {
-    return mergingLineDistance;
+void GateDetector::setMergingLineDistanceHorizontal(float mergingLineDistanceHorizontal) {
+    this->mergingLineDistanceHorizontal = mergingLineDistanceHorizontal;
 }
 
-void GateDetector::setMergingLineDistance(float mergingLineDistance) {
-    GateDetector::mergingLineDistance = mergingLineDistance;
+void GateDetector::setMergingLineDistanceVertical(float mergingLineDistanceVertical) {
+    this->mergingLineDistanceVertical = mergingLineDistanceVertical;
 }
 
-float GateDetector::getAngleQualityThreshold() const {
-    return angleQualityThreshold;
+void GateDetector::setOverlapThreshold(float overlapThreshold) {
+    this->overlapThreshold = overlapThreshold;
 }
 
-void GateDetector::setAngleQualityThreshold(float angleQualityThreshold) {
-    GateDetector::angleQualityThreshold = angleQualityThreshold;
+void GateDetector::setDistXThreshold(float distXThreshold) {
+    this->distXThreshold = distXThreshold;
 }
 
-float GateDetector::getTotalQualityThreshold() const {
-    return totalQualityThreshold;
+void GateDetector::setDistYThreshold(float distYThreshold) {
+    this->distYThreshold = distYThreshold;
 }
 
-void GateDetector::setTotalQualityThreshold(float totalQualityThreshold) {
-    GateDetector::totalQualityThreshold = totalQualityThreshold;
+void GateDetector::setSidesRelationThreshold(float sidesRelationThreshold) {
+    this->sidesRelationThreshold = sidesRelationThreshold;
+}
+
+void GateDetector::setAngleDiffThreshold(float angleDiffThreshold) {
+    this->angleDiffThreshold = angleDiffThreshold;
+}
+
+void GateDetector::setAreaFrameRelationThreshold(float areaFrameRelationThreshold) {
+    this->areaFrameRelationThreshold = areaFrameRelationThreshold;
+}
+
+void GateDetector::setLength_threshold(int length_threshold) {
+    this->length_threshold = length_threshold;
+    updateFLD();
+}
+
+void GateDetector::setDistance_threshold(float distance_threshold) {
+    this->distance_threshold = distance_threshold;
+    updateFLD();
+}
+
+void GateDetector::setCanny_th1(double canny_th1) {
+    this->canny_th1 = canny_th1;
+    updateFLD();
+}
+
+void GateDetector::setCanny_th2(double canny_th2) {
+    this->canny_th2 = canny_th2;
+    updateFLD();
+}
+
+void GateDetector::setCanny_aperture_size(int canny_aperture_size) {
+     this->canny_aperture_size = canny_aperture_size;
+    updateFLD();
+}
+
+void GateDetector::updateFLD() {
+    fld =
+            cv::ximgproc::createFastLineDetector(length_threshold,
+                                                 distance_threshold, canny_th1, canny_th2, canny_aperture_size, do_merge);
 }

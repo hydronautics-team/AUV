@@ -17,7 +17,7 @@ def create_missions_fsm(launch_delay, dive_delay, initial_depth):
         smach.StateMachine.add('DIVE', common_states.create_diving_state(initial_depth), transitions={
             'succeeded':'DRUMS_MISSION', 'preempted':'MISSIONS_FAILED', 'aborted':'MISSIONS_FAILED'})
         #smach.StateMachine.add('GATE_MISSION', gate_mission.create_gate_fsm(), transitions={'GATE_OK': 'DRUMS_MISSION', 'GATE_FAILED': 'MISSIONS_FAILED'})
-        smach.StateMachine.add('DRUMS_MISSION', drums_mission_fsm.create_drums_fsm(), transitions={'DRUMS_OK': 'LAUNCH_DELAY', 'DRUMS_FAILED': 'MISSIONS_FAILED'})
+        smach.StateMachine.add('DRUMS_MISSION', drums_mission_fsm.create_drums_fsm(), transitions={'DRUMS_OK': 'MISSIONS_OK', 'DRUMS_FAILED': 'MISSIONS_FAILED'})
         #??smach.StateMachine.add('DIVE', common_states.create_diving_state(initial_depth), transitions={
             #'succeeded':'DRUMS_MISSION', 'preempted':'MISSIONS_FAILED', 'aborted':'MISSIONS_FAILED'})
         #smach.StateMachine.add('BALL_DROP', common_states.create_diving_state(initial_depth), transitions={

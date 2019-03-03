@@ -3,6 +3,7 @@
 import rospy
 import smach
 import smach_ros
+from auv_common.srv import *
 from auv_common.msg import DiveGoal, DiveAction
 
 # TODO: Create more common states
@@ -18,6 +19,17 @@ class WaitState(smach.State):
             return 'OK'
         rate = rospy.Rate(1.0 / self.delay)
         rate.sleep()
+        return 'OK'
+
+
+class IMUResetState(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['OK'])
+
+    def execute(self, userdata):
+        reset_service = rospy.ServiceProxy("reset_service", ResetCmd)
+        response = reset_service()
+        rospy.sleep(0.5)
         return 'OK'
 
 

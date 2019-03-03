@@ -55,10 +55,11 @@
 
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
         <param name="simulation" value="$(arg simulation)" />
-        <param name="velocityLevel1" value="3000.0" />
+        <param name="velocityLevel1" value="10000.0" />
         <param name="velocityLevel2" value="7000.0" />
-        <param name="velocityLevel3" value="1000.0" />
+        <param name="velocityLevel3" value="10000.0" />
         <param name="velocityLevel4" value="13000.0" />
+        <param name="diveTime" value="5.0" />
     </node>
         
     <group if="$(arg simulation)">
@@ -68,10 +69,16 @@
     <group unless="$(arg simulation)">
 
         <group unless="$(arg connectionDisabled)">
-            <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" />
-            <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" />
+            <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" respawn="true" >
+                <param name="device" value="/dev/ttyS0" />
+                <param name="baudrate" value="57600" />
+                <param name="dataBytes" value="8" />
+                <param name="parity" value="none" />
+                <param name="stopBits" value="1" />
+            </node>
+            <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" respawn="true" />
         </group>
-
+        
         <!-- First front camera -->
         <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
             <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />
@@ -179,9 +186,9 @@
         <param name="mode" value="$(arg mode)" />
         <param name="drum_mission_direction_mode" value="$(arg drum_mission_direction_mode)" />
         <param name="drum_mission_horizontal_edge_distance" value="$(arg drum_mission_horizontal_edge_distance)" />
-        <param name="launch_delay" value="60" />
-        <param name="dive_delay" value="20" />
-        <param name="initial_depth" value="100" />
+        <param name="launch_delay" value="5" />
+        <param name="dive_delay" value="5" />
+        <param name="initial_depth" value="150" />
     </node>
 
 

@@ -13,6 +13,7 @@
 
 #include <auv_common/VelocityCmd.h>
 #include <auv_common/DepthCmd.h>
+#include <auv_common/ResetCmd.h>
 
 #include <sstream>
 #include <string>
@@ -21,11 +22,11 @@
 #include "serial.h"
 #include "messages.h"
 
-#define SHORE_STABILIZE_DEPTH_BIT 		0
-#define SHORE_STABILIZE_ROLL_BIT 		1
-#define SHORE_STABILIZE_PITCH_BIT 		2
-#define SHORE_STABILIZE_YAW_BIT 		3
-#define SHORE_STABILIZE_IMU_BIT 		4
+#define SHORE_STABILIZE_DEPTH_BIT       0
+#define SHORE_STABILIZE_ROLL_BIT        1
+#define SHORE_STABILIZE_PITCH_BIT       2
+#define SHORE_STABILIZE_YAW_BIT         3
+#define SHORE_STABILIZE_IMU_BIT         4
 #define SHORE_STABILIZE_SAVE_BIT		5
 
 // High level -> Hardware bridge
@@ -90,7 +91,18 @@ void parseInputMessage()
   */
 void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
 {
-
+    /*
+    std::vector<uint8_t> received_vector;
+    for(int i=0; i<ResponseMessage::length; i++) {
+        received_vector.push_back(msg->data[i]);
+        ROS_INFO("BYTE %d || %x",i,received_vector[i]);
+    }
+    bool ok = response.parseVector(received_vector);
+    if (ok)
+        ROS_INFO_STREAM("Depth: " << response.depth);
+    else
+        ROS_ERROR("Wrong checksum");
+        */
 }
 
 /** @brief Parse string bitwise correctly into ResponseMessage and check 16bit checksum.
@@ -111,7 +123,9 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
   	set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
   	set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
 
-  	isReady = true;
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, false);
+
+    isReady = true;
 
   	velocityResponse.success.data = true;
 
@@ -121,16 +135,42 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
 bool depth_callback(auv_common::DepthCmd::Request& depthRequest,
                        auv_common::DepthCmd::Response& depthResponse)
 {
-    request.depth	= -(static_cast<int16_t> (depthRequest.depth * 100)); // For low-level stabilization purposes
+    request.depth	= (static_cast<int16_t> (depthRequest.depth * 10)); // For low-level stabilization purposes
 
     set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
     set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
+
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, false);
 
     ROS_INFO("Received: %d", depthRequest.depth);
 
     isReady = true;
 
     depthResponse.success.data = true;
+
+    return true;
+}
+
+bool reset_callback(auv_common::ResetCmd::Request& resetRequest,
+                    auv_common::ResetCmd::Response& resetResponse)
+{
+    request.roll	= 0;
+    request.yaw		= 0;
+    request.pitch	= 0;
+    request.march	= 0;
+    request.depth	= 0;
+    request.lag	    = 0;
+
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
+
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, true);
+
+    ROS_INFO("IMU Reset");
+
+    isReady = true;
+
+    resetResponse.success.data = true;
 
     return true;
 }
@@ -166,6 +206,7 @@ int main(int argc, char **argv)
     // ROS services
     ros::ServiceServer velocity_srv = n.advertiseService("velocity_service", movement_callback);
     ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
+    ros::ServiceServer reset_srv = n.advertiseService("reset_service", reset_callback);
     // **************
 
     while (ros::ok())

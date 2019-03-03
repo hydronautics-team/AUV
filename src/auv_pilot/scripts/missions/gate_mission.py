@@ -22,6 +22,11 @@ def create_gate_fsm():
 
     with sm:
 
+        firstForwardMoveGoal = MoveGoal()
+        firstForwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
+        firstForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+        firstForwardMoveGoal.value = 5000
+
         sideMoveGoal = MoveGoal()
         sideMoveGoal.direction = MoveGoal.DIRECTION_LEFT
         sideMoveGoal.value = 0
@@ -32,6 +37,13 @@ def create_gate_fsm():
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
         forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         forwardMoveGoal.value = 10000
+
+        smach.StateMachine.add('FIRST_FORWARD_MOVE',
+                               smach_ros.SimpleActionState(
+                                   'move_by_time',
+                                   MoveAction,
+                                   goal=firstForwardMoveGoal),
+                               {'succeeded':'SIDE_MOVE', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
         smach.StateMachine.add('SIDE_MOVE',
                                 smach_ros.SimpleActionState(

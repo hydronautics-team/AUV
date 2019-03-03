@@ -152,24 +152,14 @@ ResponseMessage::ResponseMessage()
     pitchSpeed = 0;
     yawSpeed = 0;
 
-    pressure = 0;
-
-    wf_type = 0;
-    wf_tickrate = 0;
-    wf_voltage = 0;
-    wf_x = 0;
-    wf_y = 0;
+    depth = 0;
+    in_pressure = 0;
 
     dev_state = 0;
     leak_data = 0;
-    in_pressure = 0;
 
     for(int i=0; i<VmaAmount; i++) {
         vma_current[i] = 0;
-    }
-
-    for(int i=0; i<VmaAmount; i++) {
-        vma_velocity[i] = 0;
     }
 
     for(int i=0; i<DevAmount; i++) {
@@ -189,9 +179,13 @@ ResponseMessage::ResponseMessage()
   */
 bool ResponseMessage::parseVector(std::vector<uint8_t> &input)
 {
-    popFromVector(input, checksum);
+    popFromVector(input, checksum, true);
 
     uint16_t checksum_calc = getChecksum16b(input);
+
+    if(checksum_calc != checksum) {
+        return false;
+    }
 
     popFromVector(input, pc_errors);
     popFromVector(input, dev_errors);
@@ -202,24 +196,14 @@ bool ResponseMessage::parseVector(std::vector<uint8_t> &input)
     }
 
     for(int i=0; i<VmaAmount; i++) {
-        popFromVector(input, vma_velocity[VmaAmount-i]);
-    }
-
-    for(int i=0; i<VmaAmount; i++) {
         popFromVector(input, vma_current[VmaAmount-i]);
     }
 
-    popFromVector(input, in_pressure);
     popFromVector(input, leak_data);
     popFromVector(input, dev_state);
 
-    popFromVector(input, wf_y);
-    popFromVector(input, wf_x);
-    popFromVector(input, wf_voltage);
-    popFromVector(input, wf_tickrate);
-    popFromVector(input, wf_type);
-
-    popFromVector(input, pressure);
+    popFromVector(input, in_pressure);
+    popFromVector(input, depth);
 
     popFromVector(input, yawSpeed);
     popFromVector(input, pitchSpeed);
@@ -229,12 +213,7 @@ bool ResponseMessage::parseVector(std::vector<uint8_t> &input)
     popFromVector(input, pitch);
     popFromVector(input, roll);
 
-    if(checksum_calc == checksum) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return true;
 }
 
 /** @brief Overloaded transform to string function, transforms value to string bitwise correctly
@@ -409,13 +388,11 @@ uint16_t getChecksum16b(std::vector<uint8_t> &vector)
 {
     uint16_t len = vector.size();
     uint16_t crc = 0xFFFF;
-    //int crc_fix = reinterpret_cast<int*>(&crc);
     uint8_t i;
     uint8_t g = 0;
 
     while (len--) {
-        crc ^= vector[g] << 8;
-        g++;
+        crc ^= vector[g++] << 8;
 
         for (i = 0; i < 8; i++)
             crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1;

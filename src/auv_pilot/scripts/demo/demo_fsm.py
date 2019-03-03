@@ -13,7 +13,7 @@ def create_demo_fsm():
 
     forward = MoveGoal()
     forward.direction = MoveGoal.DIRECTION_FORWARD
-    forward.velocityLevel = MoveGoal.VELOCITY_LEVEL_3
+    forward.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
     forward.value = 2000
 
     rotation = MoveGoal()

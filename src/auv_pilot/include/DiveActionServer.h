@@ -11,6 +11,12 @@ private:
 
     std::string depthService;
 
+    std::string depthTopic;
+
+    unsigned int depthRange;
+
+    float diveTime;
+
     ros::NodeHandle nodeHandle;
     actionlib::SimpleActionServer<auv_common::DiveAction> actionServer;
 
@@ -18,7 +24,8 @@ private:
 
 public:
 
-    DiveActionServer(const std::string& actionName, const std::string& depthService);
+    DiveActionServer(const std::string& actionName, const std::string& depthService, const std::string& depthTopic,
+            unsigned int depthRange, float diveTime);
     ~DiveActionServer() = default;
 };
 

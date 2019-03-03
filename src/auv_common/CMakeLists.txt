@@ -63,6 +63,7 @@ add_service_files(
   FILES
   VelocityCmd.srv
   DepthCmd.srv
+  ResetCmd.srv
 )
 
 ## Generate actions in the 'action' folder
