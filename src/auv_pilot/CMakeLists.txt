@@ -154,7 +154,7 @@ add_executable(pilot
         src/twist/SimulationTwistFactory.cpp 
         include/twist/RealTwistFactory.h 
         src/twist/RealTwistFactory.cpp
-        include/DiveActionServer.h src/DiveActionServer.cpp)
+        include/DiveActionServer.h src/DiveActionServer.cpp include/DropperServer.h src/DropperServer.cpp include/LifterServer.h src/LifterServer.cpp)
 target_link_libraries(pilot ${catkin_LIBRARIES})
 add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 
