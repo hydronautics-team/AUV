@@ -98,7 +98,7 @@ def create_mat_bottom_cam_navigation_fsm():
 
             self.subscriber = rospy.Subscriber('/drums/mat/cam_bottom', DistancesToMatEdges, self.callback)
             self.detected = False
-            self.delta = 30 # Tolerance parameter
+            self.delta = 45 # Tolerance parameter
             self.needToReverse = False
 
         def callback(self, matMessage):

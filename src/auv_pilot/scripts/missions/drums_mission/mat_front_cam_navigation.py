@@ -259,14 +259,15 @@ def create_mat_front_cam_navigation_fsm():
                                             'EDGE_DETECTED':'HORIZONTAL_EDGE_DETECTED',
                                             'MAT_DETECTED':'FORWARD_MOVE',
                                             'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-
+        '''
         # MonitorState outcome switches from valid to invalid
-        #smach.StateMachine.add('WAITING_MAT_DETECTION_MSG',
-        #                       smach_ros.MonitorState(
-         #                          '/drums/mat/cam_front',
-          #                          OptionalPoint2D,
-           #                        mat_check),
-           #                    {'invalid':'MAT_CENTERING', 'valid':'WAITING_MAT_DETECTION_MSG', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
+        smach.StateMachine.add('WAITING_MAT_DETECTION_MSG',
+                               smach_ros.MonitorState(
+                                   '/drums/mat/cam_front',
+                                    OptionalPoint2D,
+                                   mat_check),
+                               {'invalid':'MAT_CENTERING', 'valid':'WAITING_MAT_DETECTION_MSG', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
+        '''
 
         # Create the sub SMACH state machine
         sm_sub_mat = smach.StateMachine(outcomes=['CENTERED', 'DETECTING_MAT', 'FAILED'])

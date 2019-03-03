@@ -7,9 +7,11 @@ import actionlib
 import actionlib_msgs
 from auv_common.msg import DrumsCoordinates
 from auv_common.msg import MoveGoal, MoveAction
+#from std_msgs.msg import Float64, Bool
 
+#timer_pub = rospy.Publisher('/drum_navigation_FSM/time', Float64)
+#timer_sub = rospy.Subscriber('/drum_navigation_FSM/timer_status', JointState, transform_callback)
 
-# TODO: Try to implement through extending smach.StateMachine class
 def create_drums_navigation_fsm():
     '''
     def color_check(userData, drumMessage):

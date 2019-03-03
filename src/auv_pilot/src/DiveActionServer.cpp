@@ -10,7 +10,7 @@ DiveActionServer::DiveActionServer(const std::string &actionName, const std::str
         depthRange(depthRange),
         diveTime(diveTime),
         actionServer(nodeHandle, actionName, boost::bind(&DiveActionServer::goalCallback, this, _1), false) {
-    actionServer.start();
+        actionServer.start();
 }
 
 

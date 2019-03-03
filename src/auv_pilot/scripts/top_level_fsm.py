@@ -26,6 +26,7 @@ def main():
         launch_delay = int(rospy.get_param('~launch_delay'))
         dive_delay = int(rospy.get_param('~dive_delay'))
         initial_depth = int(rospy.get_param('~initial_depth'))
+        initial_depthToRise = int(rospy.get_param('~initial_depthToRise'))
 
     sm = smach.StateMachine(outcomes=['SUCCEEDED', 'FAILED'])
 
@@ -38,7 +39,7 @@ def main():
 
         elif mode == 'MISSIONS':
             #smach.StateMachine.add('RESET', common_states.IMUResetState(), transitions={'OK': 'MISSIONS'})
-            smach.StateMachine.add('MISSIONS', missions_fsm.create_missions_fsm(launch_delay, dive_delay, initial_depth), 
+            smach.StateMachine.add('MISSIONS', missions_fsm.create_missions_fsm(launch_delay, dive_delay, initial_depth, initial_depthToRise),
                 transitions={'MISSIONS_OK': 'SUCCEEDED', 'MISSIONS_FAILED': 'FAILED'})
 
         elif mode == 'DEMO':

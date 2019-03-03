@@ -189,6 +189,7 @@
         <param name="launch_delay" value="5" />
         <param name="dive_delay" value="5" />
         <param name="initial_depth" value="150" />
+        <param name="initial_depthToRise" value="10" />
     </node>
 
 

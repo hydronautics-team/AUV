@@ -268,7 +268,6 @@ protected:
             //cv::namedWindow("Horizontal Lines");
             //if (!drawing.empty()) cv::imshow("Horizontal Lines", drawing);
 
-
             /// Expand the lines
             for (int i = 0; i < bottom_image.getHorizontalLines().size(); i++) {
                 /*
