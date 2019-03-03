@@ -5,7 +5,7 @@ import smach
 import smach_ros
 import actionlib
 import actionlib_msgs
-from auv_common.msg import OptionalPoint2D
+from auv_common.msg import Gate
 from auv_common.msg import MoveGoal, MoveAction, CenteringAction, CenteringGoal
 
 
@@ -17,7 +17,7 @@ def create_gate_fsm():
 
 
     def centerGate(userData, gateMessage):
-        return not (gateMessage.hasPoint and abs(gateMessage.x) < 10)
+        return not (gateMessage.isPresent and abs(gateMessage.xCenter) < 10)
 
     sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
 
@@ -56,7 +56,7 @@ def create_gate_fsm():
         smach.StateMachine.add('GATE_MONITOR', 
                                 smach_ros.MonitorState(
                                     '/gate',
-                                    OptionalPoint2D,
+                                    Gate,
                                     centerGate),
                                 {'valid':'GATE_MONITOR', 'invalid':'FORWARD_MOVE', 'preempted':'GATE_FAILED'})
 
@@ -76,9 +76,9 @@ def create_new_gate_fsm():
     gate_count = 0
     def exploreGate(userData, gateMessage):
         global gate_count
-        if gateMessage.hasPoint:
+        if gateMessage.isPresent:
             gate_count += 1
-            if gate_count > 10:
+            if gate_count > 2:
                 gate_count = 0
                 return False
         else:
@@ -89,16 +89,61 @@ def create_new_gate_fsm():
 
     with sm:
 
+        firstForwardMoveGoal = MoveGoal()
+        firstForwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
+        firstForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+        firstForwardMoveGoal.value = 0
+        firstForwardMoveGoal.holdIfInfinityValue = False
+
         centeringGoal = CenteringGoal()
         centeringGoal.targetSource = '/gate'
         centeringGoal.initialDirection = CenteringGoal.NONE
+
+        stopGoal = MoveGoal()
+        stopGoal.direction = MoveGoal.STOP
+        stopGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+        stopGoal.value = 0
+        stopGoal.holdIfInfinityValue = False
+
+        secondForwardMoveGoal = MoveGoal()
+        secondForwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
+        secondForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_4
+        secondForwardMoveGoal.value = 10000
+
+        smach.StateMachine.add('FIRST_FORWARD_MOVE',
+                               smach_ros.SimpleActionState(
+                                   'move_by_time',
+                                   MoveAction,
+                                   goal=firstForwardMoveGoal),
+                               {'succeeded':'GATE_MONITOR', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
+
+        smach.StateMachine.add('GATE_MONITOR',
+                               smach_ros.MonitorState(
+                                   '/gate',
+                                   Gate,
+                                   exploreGate),
+                               {'valid':'STOP', 'invalid':'STOP', 'preempted':'GATE_FAILED'})
+
+        smach.StateMachine.add('STOP',
+                               smach_ros.SimpleActionState(
+                                   'move_by_time',
+                                   MoveAction,
+                                   goal=stopGoal),
+                               {'succeeded':'CENTERING', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
         smach.StateMachine.add('CENTERING',
                                 smach_ros.SimpleActionState(
                                     'centering',
                                     CenteringAction,
                                     goal=centeringGoal),
-                                {'succeeded':'GATE_OK', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
+                                {'succeeded':'SECOND_FORWARD_MOVE', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
+
+        smach.StateMachine.add('SECOND_FORWARD_MOVE',
+                               smach_ros.SimpleActionState(
+                                   'move_by_time',
+                                   MoveAction,
+                                   goal=secondForwardMoveGoal),
+                               {'succeeded':'GATE_OK', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
 
     return sm
