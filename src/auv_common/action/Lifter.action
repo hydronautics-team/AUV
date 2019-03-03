@@ -1,0 +1,15 @@
+# Device for grabbing previously thrown object.
+# Has two states: up and down.
+
+# Goal
+
+uint8 STATE_UP=1
+uint8 STATE_DOWN=2
+
+uint8 state
+---
+# Result
+bool success
+---
+# Feedback
+bool isFinished
