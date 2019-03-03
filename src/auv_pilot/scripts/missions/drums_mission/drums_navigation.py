@@ -11,9 +11,10 @@ from auv_common.msg import MoveGoal, MoveAction
 
 # TODO: Try to implement through extending smach.StateMachine class
 def create_drums_navigation_fsm():
-
+    '''
     def color_check(userData, drumMessage):
         return not drumMessage.hasRedDrum
+    '''
 
     class lag_direction_control(smach.State):
         def __init__(self):
@@ -44,7 +45,6 @@ def create_drums_navigation_fsm():
                     return 'NeedLeftMove'
             else:
                 return 'X_PositionIsOK'
-
 
     class march_direction_control(smach.State):
         def __init__(self):
@@ -78,20 +78,19 @@ def create_drums_navigation_fsm():
                 return 'Y_PositionIsOK'
 
 
-
     sm = smach.StateMachine(outcomes=['DRUMS_NAVIGATION_OK', 'DRUMS_NAVIGATION_FAILED'])
 
     with sm:
 
         leftMoveGoal = MoveGoal()
         leftMoveGoal.direction = MoveGoal.DIRECTION_LEFT
-        leftMoveGoal.value = 800
+        leftMoveGoal.value = 500
         leftMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         leftMoveGoal.holdIfInfinityValue = False
 
         rightMoveGoal = MoveGoal()
         rightMoveGoal.direction = MoveGoal.DIRECTION_RIGHT
-        rightMoveGoal.value = 800
+        rightMoveGoal.value = 500
         rightMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         rightMoveGoal.holdIfInfinityValue = False
 
@@ -99,23 +98,25 @@ def create_drums_navigation_fsm():
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
         forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        forwardMoveGoal.value = 800
+        forwardMoveGoal.value = 500
         forwardMoveGoal.holdIfInfinityValue = False
 
         backwardsMoveGoal = MoveGoal()
         backwardsMoveGoal.direction = MoveGoal.DIRECTION_BACKWARDS
         backwardsMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        backwardsMoveGoal.value = 800
+        backwardsMoveGoal.value = 500
         backwardsMoveGoal.holdIfInfinityValue = False
 
 
         # DEBUG!!!
+        '''
         smach.StateMachine.add('COLOR_CHECK',
                                smach_ros.MonitorState(
                                    '/drums/drum',
                                    DrumsCoordinates,
                                    color_check),
                                {'invalid':'DRUM_CENTERING', 'valid':'COLOR_CHECK', 'preempted':'DRUMS_NAVIGATION_FAILED'})
+        '''
 
         # Create the sub SMACH state machine
         sm_sub = smach.StateMachine(outcomes=['CENTERED', 'FAILED'])
@@ -140,8 +141,6 @@ def create_drums_navigation_fsm():
                                        MoveAction,
                                        goal=rightMoveGoal),
                                    {'succeeded':'DRUM_NAVIGATION_LAG', 'preempted':'FAILED', 'aborted':'FAILED'})
-
-
 
 
             smach.StateMachine.add('DRUM_NAVIGATION_MARCH', march_direction_control(),

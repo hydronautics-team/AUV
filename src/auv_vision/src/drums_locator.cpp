@@ -145,6 +145,13 @@ protected:
 
 
         }
+        // TODO enable this when concurrence state is fully OK
+        /*
+        else {
+            msg_front_cam.hasPoint = false;
+            matFrontCamPublisher.publish(msg_front_cam);
+        }
+        */
 
         if (windowsEnabled) {
             if (!image_copy_descriptor_front.empty()) cv::imshow(OPENCV_WINDOW_FRONT_CAM_MAT, image_copy_descriptor_front);

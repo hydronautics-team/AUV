@@ -14,7 +14,6 @@ from auv_common.msg import MoveGoal, MoveAction
 
 def create_drums_fsm():
 
-    '''
     mode = rospy.get_param('~drum_mission_direction_mode', 'none').upper()
 
     rospy.loginfo(mode)
@@ -43,7 +42,7 @@ def create_drums_fsm():
             self.matDetected = False
 
         def callback(self, matMessage):
-            if matMessage.hasPoint:
+            if matMessage.hasPoint and matMessage.x < 160:
                 self.matDetected = True
 
         def execute(self, userdata):
@@ -52,11 +51,10 @@ def create_drums_fsm():
             else:
                 return 'NO_MAT_DETECTED'
 
-    '''
     sm = smach.StateMachine(outcomes=['DRUMS_OK', 'DRUMS_FAILED'])
 
     with sm:
-        '''
+
         leftMoveGoal = MoveGoal()
         leftMoveGoal.direction = MoveGoal.DIRECTION_LEFT
         leftMoveGoal.value = 800
@@ -69,23 +67,22 @@ def create_drums_fsm():
         rightMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         rightMoveGoal.holdIfInfinityValue = False
 
-        forwardMoveGoal = MoveGoal()
-        forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
-        forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        forwardMoveGoal.value = 800
-        forwardMoveGoal.holdIfInfinityValue = False
+        forwardLongMoveGoal = MoveGoal()
+        forwardLongMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
+        forwardLongMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+        forwardLongMoveGoal.value = 2000
+        forwardLongMoveGoal.holdIfInfinityValue = False
 
 
-        smach.StateMachine.add('FORWARD_MOVE',
+        smach.StateMachine.add('FORWARD_LONG_MOVE',
                                smach_ros.SimpleActionState(
                                    'move_by_time',
                                    MoveAction,
-                                   goal=forwardMoveGoal),
+                                   goal=forwardLongMoveGoal),
                                {'succeeded':'LAG_DIRECTION_CONTROL', 'preempted':'DRUMS_FAILED', 'aborted':'DRUMS_FAILED'})
 
         smach.StateMachine.add('LAG_DIRECTION_CONTROL', lag_direction_control(),
                                {'RIGHT':'RIGHT_MOVE', 'LEFT':'LEFT_MOVE', 'FAILED':'DRUMS_FAILED'})
-
 
         smach.StateMachine.add('LEFT_MOVE',
                                smach_ros.SimpleActionState(
@@ -101,7 +98,6 @@ def create_drums_fsm():
                                    goal=rightMoveGoal),
                                {'succeeded':'MAT_DETECTION_CHECK', 'preempted':'DRUMS_FAILED', 'aborted':'DRUMS_FAILED'})
 
-
         smach.StateMachine.add('MAT_DETECTION_CHECK', mat_detection_check(),
                                transitions={'MAT_DETECTED':'MAT_FRONT_CAM_NAVIGATION',
                                             'NO_MAT_DETECTED':'LAG_DIRECTION_CONTROL',
@@ -114,7 +110,6 @@ def create_drums_fsm():
         smach.StateMachine.add('MAT_BOTTOM_CAM_NAVIGATION', mat_bottom_cam_navigation.create_mat_bottom_cam_navigation_fsm(),
                                transitions={'BLUE_DRUM_DETECTED': 'DRUMS_NAVIGATION', 'RED_DRUM_DETECTED': 'DRUMS_NAVIGATION', 'MAT_BOTTOM_CAM_NAVIGATION_FAILED': 'DRUMS_FAILED'})
 
-        '''
         smach.StateMachine.add('DRUMS_NAVIGATION', drums_navigation.create_drums_navigation_fsm(),
                                transitions={'DRUMS_NAVIGATION_OK': 'DRUMS_OK', 'DRUMS_NAVIGATION_FAILED': 'DRUMS_FAILED'})
 

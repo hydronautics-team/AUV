@@ -21,12 +21,12 @@ private:
     float higher_red_2_H = 180;
 
     float lower_red_1_S = 0;
-    float higher_red_1_S = 173;
+    float higher_red_1_S = 255;
     float lower_red_2_S = 62;
     float higher_red_2_S = 255;
 
     float lower_red_1_V = 50;
-    float higher_red_1_V = 137;
+    float higher_red_1_V = 170;
     float lower_red_2_V = 60;
     float higher_red_2_V = 255;
 

@@ -18,33 +18,48 @@ def create_mat_bottom_cam_navigation_fsm():
 
     class horizontal_edge_position(smach.State):
         def __init__(self):
-            smach.State.__init__(self, outcomes=['OK', 'NeedForwardMove', 'NeedBackwardMove', 'FAILED'])
+            smach.State.__init__(self, outcomes=['OK', 'NeedForwardMove', 'NeedBackwardMove', 'EdgeDetectionFailure', 'FAILED', 'INITIALIZATION'])
 
             self.subscriber = rospy.Subscriber('/drums/mat/cam_bottom', DistancesToMatEdges, self.callback)
             self.correctionNeeded = False
             self.forwardMove = False
             self.backwardMove = False
+            self.edgeDetectionFailure = False
             self.delta = 15 # Tolerance parameter
+            self.initFlag = True # To initialize CONDITION data
 
         def callback(self, matMessage):
-            if matMessage.distanceToHorizontalLine < distance - self.delta or matMessage.distanceToHorizontalLine > distance + self.delta:
-                self.correctionNeeded = True
-                if matMessage.distanceToHorizontalLine < distance - self.delta:
-                    self.forwardMove = True
-                    self.backwardMove = False
+            if matMessage.hasHorizontalLine:
+                self.edgeDetectionFailure = False
+                if matMessage.distanceToHorizontalLine < distance - self.delta or matMessage.distanceToHorizontalLine > distance + self.delta:
+                    self.correctionNeeded = True
+                    if matMessage.distanceToHorizontalLine < distance - self.delta:
+                        self.forwardMove = False
+                        self.backwardMove = True
+                    else:
+                        self.backwardMove = False
+                        self.forwardMove = True
                 else:
-                    self.backwardMove = True
-                    self.forwardMove = False
-            else: self.correctionNeeded = False
+                    self.correctionNeeded = False
+            else:
+                self.edgeDetectionFailure = True
+                self.correctionNeeded = False
+
 
         def execute(self, userdata):
-            if self.correctionNeeded:
+            if self.edgeDetectionFailure:
+                return 'EdgeDetectionFailure'
+            elif self.correctionNeeded:
                 if self.forwardMove:
                     return 'NeedForwardMove'
                 if self.backwardMove:
                     return 'NeedBackwardMove'
+            elif self.initFlag:
+                self.initFlag = False
+                return 'INITIALIZATION'
             else:
                 return 'OK'
+
 
     class drum_detection_check(smach.State):
         def __init__(self):
@@ -69,12 +84,11 @@ def create_mat_bottom_cam_navigation_fsm():
                 self.blueDetected = False
 
         def execute(self, userdata):
-            if self.redDetected and self.blueDetected:
+            if self.blueDetected:
+                print ("Blue drum detected")
                 return 'BLUE_DRUM_DETECTED'
             elif self.redDetected:
-                'RED_DRUM_DETECTED'
-            elif self.blueDetected:
-                'BLUE_DRUM_DETECTED'
+                return 'RED_DRUM_DETECTED'
             else:
                 return 'NO_DRUM_DETECTED'
 
@@ -84,7 +98,7 @@ def create_mat_bottom_cam_navigation_fsm():
 
             self.subscriber = rospy.Subscriber('/drums/mat/cam_bottom', DistancesToMatEdges, self.callback)
             self.detected = False
-            self.delta = 20 # Tolerance parameter
+            self.delta = 30 # Tolerance parameter
             self.needToReverse = False
 
         def callback(self, matMessage):
@@ -102,6 +116,7 @@ def create_mat_bottom_cam_navigation_fsm():
                 if self.needToReverse:
                     return 'NEED_TO_REVERSE'
                 else:
+                    print ("Vertical edge detected")
                     return 'VERTICAL_EDGE_DETECTED'
             else:
                 return 'NO_VERTICAL_EDGE_DETECTED'
@@ -125,7 +140,6 @@ def create_mat_bottom_cam_navigation_fsm():
             smach.State.__init__(self, outcomes=['LEFT_MOVE', 'RIGHT_MOVE', 'FAILED'],
                                        input_keys=['CONDITION'])
         def execute(self, userdata):
-            print (userdata.CONDITION)
             if userdata.CONDITION:
                 return 'LEFT_MOVE'
             else:
@@ -133,13 +147,13 @@ def create_mat_bottom_cam_navigation_fsm():
 
     class error_check(smach.State):
         def __init__(self):
-            smach.State.__init__(self, outcomes=['OK', 'SOMETHING_WRONG', 'FAILED'],
+            smach.State.__init__(self, outcomes=['OK', 'SWIMMING_TOO_MANY_TIMES', 'FAILED'],
                                        input_keys=['COUNTER'],
                                        output_keys=['FLAG'])
         def execute(self, userdata):
-            if userdata.COUNTER >= 2:
+            if userdata.COUNTER >= 3:
                 userdata.FLAG = True
-                return 'SOMETHING_WRONG'
+                return 'SWIMMING_TOO_MANY_TIMES'
             else:
                 userdata.FLAG = False
                 return 'OK'
@@ -152,7 +166,11 @@ def create_mat_bottom_cam_navigation_fsm():
             if not userdata.FLAG:
                 return 'NO_ERROR'
             else:
-                return 'ERROR'
+                return 'ERROR' # If error -> searching red drum
+
+    def edge_check(userData, matMessage):
+        return not matMessage.hasHorizontalLine
+
 
     sm = smach.StateMachine(outcomes=['BLUE_DRUM_DETECTED', 'RED_DRUM_DETECTED', 'MAT_BOTTOM_CAM_NAVIGATION_FAILED'])
 
@@ -174,13 +192,13 @@ def create_mat_bottom_cam_navigation_fsm():
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
         forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        forwardMoveGoal.value = 800
+        forwardMoveGoal.value = 400
         forwardMoveGoal.holdIfInfinityValue = False
 
         backwardsMoveGoal = MoveGoal()
         backwardsMoveGoal.direction = MoveGoal.DIRECTION_BACKWARDS
         backwardsMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        backwardsMoveGoal.value = 800
+        backwardsMoveGoal.value = 400
         backwardsMoveGoal.holdIfInfinityValue = False
 
 
@@ -191,6 +209,14 @@ def create_mat_bottom_cam_navigation_fsm():
                                    goal=forwardMoveGoal),
                                {'succeeded':'HORIZONTAL_EDGE_POSITION', 'preempted':'MAT_BOTTOM_CAM_NAVIGATION_FAILED', 'aborted':'MAT_BOTTOM_CAM_NAVIGATION_FAILED'})
 
+        # MonitorState outcome switches from valid to invalid
+        smach.StateMachine.add('WAITING_EDGE_DETECTION_MSG',
+                               smach_ros.MonitorState(
+                                   '/drums/mat/cam_bottom',
+                                   DistancesToMatEdges,
+                                   edge_check),
+                               {'invalid':'HORIZONTAL_EDGE_POSITION', 'valid':'WAITING_EDGE_DETECTION_MSG', 'preempted':'MAT_BOTTOM_CAM_NAVIGATION_FAILED'})
+
         smach.StateMachine.add('BACKWARDS_MOVE',
                                smach_ros.SimpleActionState(
                                    'move_by_time',
@@ -200,8 +226,10 @@ def create_mat_bottom_cam_navigation_fsm():
 
         smach.StateMachine.add('HORIZONTAL_EDGE_POSITION', horizontal_edge_position(),
                               transitions={'OK':'MOVE',
+                                           'INITIALIZATION':'REVERSE_DIRECTION',
                                            'NeedForwardMove':'FORWARD_MOVE',
                                            'NeedBackwardMove':'BACKWARDS_MOVE',
+                                           'EdgeDetectionFailure':'WAITING_EDGE_DETECTION_MSG',
                                            'FAILED':'MAT_BOTTOM_CAM_NAVIGATION_FAILED'})
 
         smach.StateMachine.add('DRUM_DETECTION_CHECK', drum_detection_check(),
@@ -237,7 +265,7 @@ def create_mat_bottom_cam_navigation_fsm():
         # Check if we have swum above the mat several times and didn't detect drums
         smach.StateMachine.add('ERROR_CHECK', error_check(),
                               transitions={'OK':'MOVE',
-                                           'SOMETHING_WRONG':'MOVE',
+                                           'SWIMMING_TOO_MANY_TIMES':'MOVE',
                                            'FAILED':'MAT_BOTTOM_CAM_NAVIGATION_FAILED'},
                               remapping={'COUNTER':'sm_counter',
                                          'FLAG':'sm_flag'})
