@@ -35,6 +35,7 @@ void reconfigure(auv_vision::GateLocatorConfig& config, uint32_t level) {
     detector.setSidesRelationThreshold(config.sidesRelationThreshold);
     detector.setAngleDiffThreshold(config.angleDiffThreshold);
     detector.setAreaFrameRelationThreshold(config.areaFrameRelationThreshold);
+    detector.setHorizontalPositionRatioThreshold(config.horizontalPositionRatioThreshold);
     detector.setLength_threshold(config.fld_length_threshold);
     detector.setDistance_threshold(config.fld_distance_threshold);
     detector.setCanny_th1(config.fld_canny_threshold_1);
@@ -55,7 +56,7 @@ private:
     ros::Publisher gatePublisher;
 
     bool windowsEnabled;
-
+    
 protected:
 
     void process(const cv_bridge::CvImagePtr &cv_ptr) {
