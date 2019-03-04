@@ -91,7 +91,7 @@ def create_new_gate_fsm():
 
         firstForwardMoveGoal = MoveGoal()
         firstForwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
-        firstForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+        firstForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_4
         firstForwardMoveGoal.value = 0
         firstForwardMoveGoal.holdIfInfinityValue = False
 

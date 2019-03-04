@@ -11,7 +11,7 @@ CenteringServer::CenteringServer(const std::string& actionName, const std::strin
 
 void CenteringServer::move(const Direction &direction) {
     geometry_msgs::Twist twist = twistFactory->createDirectionTwist(direction, VelocityLevel::LEVEL_1);
-    twist.linear.x = twist.linear.z;
+    twist.linear.x = std::abs(twist.linear.z);
     auv_common::VelocityCmd velocityCmd;
     velocityCmd.request.twist = twist;
     ros::service::call(velocityService, velocityCmd);
@@ -30,7 +30,7 @@ void CenteringServer::goalCallback(const auv_common::CenteringGoalConstPtr &goal
 
                 double limit = (gateMsg->xTR - gateMsg->xTL) / 4.0;
                 ROS_INFO("Center: %f, Limit: %f", gateMsg->xCenter, limit);
-                if (std::abs(gateMsg->xCenter) < limit) {
+                if (std::abs(gateMsg->xCenter) < 10.0) {
                     this->move(Direction::STOP);
                     inRange = true;
                 } else {
