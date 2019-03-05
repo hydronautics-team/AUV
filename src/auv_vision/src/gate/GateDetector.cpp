@@ -119,7 +119,7 @@ GateDescriptor GateDetector::detect(const cv::Mat &src) {
     mergeVerticalLines(verticalLines, mergedVertical);
 
 
-    return findBestByQuality(mergedVertical, horizontalLines, src.rows * src.cols);
+    return findBestByQuality(mergedVertical, horizontalLines, src.cols, src.rows);
 }
 
 
@@ -234,7 +234,7 @@ cv::Vec4f GateDetector::createVerticalLine(const std::vector<cv::Vec4f> &lines) 
 
 GateDescriptor GateDetector::findBestByQuality(const std::vector<cv::Vec4f> &verticalLines,
                                            const std::vector<cv::Vec4f> &horizontalLines,
-                                           long frameArea) {
+                                           long frameWidth, long frameHeight) {
 
     std::vector<std::pair<cv::Vec4f, cv::Vec4f>> candidates;
 
@@ -245,6 +245,8 @@ GateDescriptor GateDetector::findBestByQuality(const std::vector<cv::Vec4f> &ver
             if (horizontal[0] > horizontal[2])
                 horizontal = cv::Vec4f(horizontal[2], horizontal[3], horizontal[0], horizontal[1]);
 
+            if (std::max(horizontal[1], horizontal[3]) > (1.0f - horizontalPositionRatioThreshold) * frameHeight)
+                continue;
 
             float overlap = std::max(horizontal[1], horizontal[3]) - vertical[1];
             if ((overlap > 0.0f) && (overlap > overlapThreshold))
@@ -278,7 +280,7 @@ GateDescriptor GateDetector::findBestByQuality(const std::vector<cv::Vec4f> &ver
                 continue;
 
             float area = getLength(vertical) * getLength(horizontal);
-            if (area / (float)frameArea < areaFrameRelationThreshold)
+            if (area / (float)(frameHeight * frameWidth) < areaFrameRelationThreshold)
                 continue;
 
             candidates.emplace_back(vertical, horizontal);
@@ -349,6 +351,10 @@ void GateDetector::setAngleDiffThreshold(float angleDiffThreshold) {
 
 void GateDetector::setAreaFrameRelationThreshold(float areaFrameRelationThreshold) {
     this->areaFrameRelationThreshold = areaFrameRelationThreshold;
+}
+
+void GateDetector::setHorizontalPositionRatioThreshold(float horizontalPositionRatioThreshold) {
+    this->horizontalPositionRatioThreshold = horizontalPositionRatioThreshold;
 }
 
 void GateDetector::setLength_threshold(int length_threshold) {

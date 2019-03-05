@@ -7,7 +7,7 @@ from common import common_states
 from auv_common.msg import MoveGoal, MoveAction
 
 
-def create_qualification_fsm(launch_delay, dive_delay, initial_depth):
+def create_qualification_fsm(launch_delay, dive_delay, initial_depth, qualification_duration):
 
     sm = smach.StateMachine(outcomes=['QUALIFICATION_OK', 'QUALIFICATION_FAILED'])
 
@@ -15,8 +15,8 @@ def create_qualification_fsm(launch_delay, dive_delay, initial_depth):
 
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
-        forwardMoveGoal.value = 30000 # 10,000 msec = 10 sec
-        forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1 # Maximal velocity
+        forwardMoveGoal.value = qualification_duration * 1000 # Convert seconds to milliseconds
+        forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_4 # Maximal velocity
         forwardMoveGoal.holdIfInfinityValue = False
 
 

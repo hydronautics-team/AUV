@@ -8,6 +8,9 @@
     <!-- Disables connection with STM32 -->
     <arg name="connectionDisabled" default="false" />
 
+    <!-- Disables cameras -->
+    <arg name="camerasDisabled" default="false" />
+
     <!-- Enables video streaming through network -->
     <arg name="stream" default="false" />
 
@@ -34,22 +37,12 @@
         <param name="debugVision" value="$(arg debugVision)" />
     </node>
 
-    <node pkg="auv_vision" name="tile_locator" type="tile_locator" output="screen">
-        <remap from="/cam_bottom/image_raw" to="/ROV_model_URDF/camera_bottom/image_raw" if="$(arg simulation)" />
-        <param name="debugVision" value="$(arg debugVision)" />
-    </node>
-
-<!--
-    <node pkg="auv_vision" name="drums_locator" type="drums_locator" output="screen" />
-    <node pkg="auv_vision" name="flare_locator" type="flare_locator" output="screen" />
--->
-
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
         <param name="simulation" value="$(arg simulation)" />
-        <param name="velocityLevel1" value="10000.0" />
-        <param name="velocityLevel2" value="7000.0" />
-        <param name="velocityLevel3" value="10000.0" />
-        <param name="velocityLevel4" value="13000.0" />
+        <param name="velocityLevel1" value="3000.0" />
+        <param name="velocityLevel2" value="5000.0" />
+        <param name="velocityLevel3" value="7000.0" />
+        <param name="velocityLevel4" value="15000.0" />
         <param name="diveTime" value="5.0" />
     </node>
         
@@ -69,18 +62,34 @@
             </node>
             <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" respawn="true" />
         </group>
-        
-        <!-- First front camera -->
-        <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
-            <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />
-            <param name="image_width" value="640" />
-            <param name="image_height" value="480" />
-            <param name="pixel_format" value="yuyv" />
-            <param name="framerate" value="30" />
-            <param name="camera_frame_id" value="cam_front_1" />
-            <param name="camera_name" value="cam_front_1" />
-            <param name="io_method" value="mmap"/>
-        </node>
+
+        <group unless="$(arg camerasDisabled)">
+
+            <!-- First front camera -->
+            <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
+                <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />
+                <param name="image_width" value="640" />
+                <param name="image_height" value="480" />
+                <param name="pixel_format" value="yuyv" />
+                <param name="framerate" value="30" />
+                <param name="camera_frame_id" value="cam_front_1" />
+                <param name="camera_name" value="cam_front_1" />
+                <param name="io_method" value="mmap"/>
+            </node>
+
+            <!-- Bottom camera -->
+            <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
+                <param name="video_device" value="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._H264_USB_Camera_SN0001-video-index0" />
+                <param name="image_width" value="640" />
+                <param name="image_height" value="480" />
+                <param name="pixel_format" value="yuyv" />
+                <param name="framerate" value="30" />
+                <param name="camera_frame_id" value="cam_bottom" />
+                <param name="camera_name" value="cam_bottom" />
+                <param name="io_method" value="mmap"/>
+            </node>
+
+        </group>
 
         <!--TODO: Allow to record in simulation mode -->
         <group if="$(arg record)">
@@ -116,7 +125,8 @@
         <param name="mode" value="$(arg mode)" />
         <param name="launch_delay" value="5" />
         <param name="dive_delay" value="5" />
-        <param name="initial_depth" value="150" />
+        <param name="initial_depth" value="50" />
+        <param name="qualification_duration" value="25" /> <!-- March move duration in seconds -->
     </node>
 
 </launch>

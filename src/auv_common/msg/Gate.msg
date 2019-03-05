@@ -1,0 +1,11 @@
+bool isPresent
+float64 xTL
+float64 yTL
+float64 xTR
+float64 yTR
+float64 xBL
+float64 yBL
+float64 xBR
+float64 yBR
+float64 xCenter
+float64 yCenter

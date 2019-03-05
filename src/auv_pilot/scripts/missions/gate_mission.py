@@ -5,8 +5,8 @@ import smach
 import smach_ros
 import actionlib
 import actionlib_msgs
-from auv_common.msg import OptionalPoint2D
-from auv_common.msg import MoveGoal, MoveAction
+from auv_common.msg import Gate
+from auv_common.msg import MoveGoal, MoveAction, CenteringAction, CenteringGoal
 
 
 # TODO: Try to implement through extending smach.StateMachine class
@@ -17,7 +17,7 @@ def create_gate_fsm():
 
 
     def centerGate(userData, gateMessage):
-        return not (gateMessage.hasPoint and abs(gateMessage.x) < 10)
+        return not (gateMessage.isPresent and abs(gateMessage.xCenter) < 10)
 
     sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
 
@@ -56,7 +56,7 @@ def create_gate_fsm():
         smach.StateMachine.add('GATE_MONITOR', 
                                 smach_ros.MonitorState(
                                     '/gate',
-                                    OptionalPoint2D,
+                                    Gate,
                                     centerGate),
                                 {'valid':'GATE_MONITOR', 'invalid':'FORWARD_MOVE', 'preempted':'GATE_FAILED'})
 
@@ -70,12 +70,13 @@ def create_gate_fsm():
     
     return sm
 
-'''
+
 def create_new_gate_fsm():
 
     gate_count = 0
     def exploreGate(userData, gateMessage):
-        if gateMessage.hasPoint:
+        global gate_count
+        if gateMessage.isPresent:
             gate_count += 1
             if gate_count > 10:
                 gate_count = 0
@@ -84,39 +85,59 @@ def create_new_gate_fsm():
             gate_count = 0
             return True
 
-    sm = smach.StateMachine(outcomes=['OK', 'FAILED'])
+    sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
 
     with sm:
 
-        rotateGoal = MoveGoal()
-        rotateGoal.direction = MoveGoal.ROTATE_YAW_CW
-        rotateGoal.value = 0
+        firstForwardMoveGoal = MoveGoal()
+        firstForwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
+        firstForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_4
+        firstForwardMoveGoal.value = 0
+        firstForwardMoveGoal.holdIfInfinityValue = False
+
+        centeringGoal = CenteringGoal()
+        centeringGoal.targetSource = '/gate'
+        centeringGoal.initialDirection = CenteringGoal.NONE
 
         stopGoal = MoveGoal()
         stopGoal.direction = MoveGoal.STOP
+        stopGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         stopGoal.value = 0
+        stopGoal.holdIfInfinityValue = False
 
+        secondForwardMoveGoal = MoveGoal()
+        secondForwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
+        secondForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_4
+        secondForwardMoveGoal.value = 10000
 
-        smach.StateMachine.add('ROTATE',
+        smach.StateMachine.add('FIRST_FORWARD_MOVE',
+                               smach_ros.SimpleActionState(
+                                   'move_by_time',
+                                   MoveAction,
+                                   goal=firstForwardMoveGoal),
+                               {'succeeded':'GATE_MONITOR', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
+
+        smach.StateMachine.add('GATE_MONITOR',
+                               smach_ros.MonitorState(
+                                   '/gate',
+                                   Gate,
+                                   exploreGate),
+                               {'valid':'GATE_MONITOR', 'invalid':'CENTERING', 'preempted':'GATE_FAILED'})
+
+        smach.StateMachine.add('CENTERING',
                                 smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=rotateGoal),
-                                {'succeeded':'GATE_MONITOR', 'preempted':'FAILED', 'aborted':'FAILED'})
+                                    'centering',
+                                    CenteringAction,
+                                    goal=centeringGoal),
+                                {'succeeded':'SECOND_FORWARD_MOVE', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
-        smach.StateMachine.add('GATE_MONITOR', 
-                                smach_ros.MonitorState(
-                                    '/gate',
-                                    OptionalPoint2D,
-                                    exploreGate),
-                                {'valid':'GATE_MONITOR', 'invalid':'STOP', 'preempted':'FAILED'})
+        smach.StateMachine.add('SECOND_FORWARD_MOVE',
+                               smach_ros.SimpleActionState(
+                                   'move_by_time',
+                                   MoveAction,
+                                   goal=secondForwardMoveGoal),
+                               {'succeeded':'GATE_OK', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
-        smach.StateMachine.add('STOP',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=stopGoal),
-                                {'succeeded':'OK', 'preempted':'FAILED', 'aborted':'FAILED'})
 
     return sm
-    '''
+    

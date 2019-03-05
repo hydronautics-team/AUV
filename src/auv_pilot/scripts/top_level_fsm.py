@@ -26,6 +26,11 @@ def main():
         launch_delay = int(rospy.get_param('~launch_delay'))
         dive_delay = int(rospy.get_param('~dive_delay'))
         initial_depth = int(rospy.get_param('~initial_depth'))
+    if mode == 'QUALIFICATION':
+        if not (rospy.has_param('~qualification_duration')):
+            rospy.logerr("qualification_duration parameter must be set for qualification mode")
+            raise
+        qualification_duration = int(rospy.get_param('~qualification_duration'))
 
     sm = smach.StateMachine(outcomes=['SUCCEEDED', 'FAILED'])
 
@@ -33,7 +38,8 @@ def main():
         
         if mode == 'QUALIFICATION':
             #smach.StateMachine.add('RESET', common_states.IMUResetState(), transitions={'OK': 'QUALIFICATION'})
-            smach.StateMachine.add('QUALIFICATION', qualification_fsm.create_qualification_fsm(launch_delay, dive_delay, initial_depth), 
+            smach.StateMachine.add('QUALIFICATION', qualification_fsm.create_qualification_fsm(launch_delay, dive_delay,
+                                                                                               initial_depth, qualification_duration),
                 transitions={'QUALIFICATION_OK': 'SUCCEEDED', 'QUALIFICATION_FAILED': 'FAILED'})
 
         elif mode == 'MISSIONS':
