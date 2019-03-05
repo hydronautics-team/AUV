@@ -180,7 +180,11 @@ bool reset_callback(auv_common::ResetCmd::Request& resetRequest,
 bool dropper_callback(auv_common::DropperCmd::Request& dropperRequest,
                     auv_common::DropperCmd::Response& dropperResponse) {
 
-    // TODO: Implement
+    ROS_INFO("Dropper velocity: %d", dropperRequest.velocity);
+    request.dev[1] = dropperRequest.velocity;
+
+    isReady = true;
+
     return true;
 }
 

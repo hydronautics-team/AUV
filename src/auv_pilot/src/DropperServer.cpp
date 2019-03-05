@@ -1,4 +1,5 @@
 #include <DropperServer.h>
+#include <auv_common/DropperCmd.h>
 
 
 DropperServer::DropperServer(const std::string &actionName, const std::string &dropperService) :
@@ -9,6 +10,15 @@ DropperServer::DropperServer(const std::string &actionName, const std::string &d
 
 
 void DropperServer::goalCallback(const auv_common::DropperGoalConstPtr &goal) {
-    // Temporary stub
+
+    auv_common::DropperCmd dropperCmd;
+    dropperCmd.request.velocity = 60;
+    ros::service::call(dropperService, dropperCmd);
+
+    ros::Duration(1.5).sleep();
+
+    dropperCmd.request.velocity = 0;
+    ros::service::call(dropperService, dropperCmd);
+
     actionServer.setSucceeded();
 }

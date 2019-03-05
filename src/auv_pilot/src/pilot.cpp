@@ -3,6 +3,7 @@
 #include <MoveByTimeServer.h>
 #include <DiveActionServer.h>
 #include <CenteringServer.h>
+#include <DropperServer.h>
 #include <twist/SimulationTwistFactory.h>
 #include <twist/RealTwistFactory.h>
 
@@ -33,6 +34,10 @@ static const std::string DEPTH_SERVICE = "depth_service";
 static const std::string DEPTH_TOPIC = "/perception/depth";
 
 static const std::string CENTERING_ACTION = "centering";
+
+static const std::string DROPPER_ACTION = "dropper";
+
+static const std::string DROPPER_SERVICE = "dropper_service";
 
 static unsigned int DEPTH_RANGE = 10; // 10 cm
 
@@ -66,6 +71,7 @@ int main(int argc, char **argv)
     MoveByTimeServer moveByTimeServer(MOVE_BY_TIME_ACTION, VELOCITY_SERVICE, *twistFactory);
     DiveActionServer diveService(DIVE_ACTION, DEPTH_SERVICE, DEPTH_TOPIC, DEPTH_RANGE, diveTime);
     CenteringServer centeringServer(CENTERING_ACTION, VELOCITY_SERVICE, *twistFactory);
+    DropperServer dropperServer(DROPPER_ACTION, DROPPER_SERVICE);
 
     ros::spin();
 
