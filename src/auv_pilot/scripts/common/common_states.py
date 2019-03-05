@@ -38,3 +38,4 @@ def create_diving_state(depth):
     dive = DiveGoal()
     dive.depth = depth
     return smach_ros.SimpleActionState('dive', DiveAction, goal=dive)
+

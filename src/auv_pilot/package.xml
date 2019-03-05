@@ -17,9 +17,13 @@
   <depend>geometry_msgs</depend>
   <depend>actionlib</depend>
   <depend>actionlib_msgs</depend>
-  <depend>auv_common</depend>
 
   <build_depend>message_generation</build_depend>
+  <build_depend>auv_common</build_depend>
+
+  <build_export_depend>auv_common</build_export_depend>
+
+  <exec_depend>auv_common</exec_depend>
   <exec_depend>message_runtime</exec_depend>
 
   <export>

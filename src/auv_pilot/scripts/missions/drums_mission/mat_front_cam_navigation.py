@@ -136,6 +136,7 @@ def create_mat_front_cam_navigation_fsm():
                 self.start_time = rospy.get_rostime() # get time as rospy.Time instance
                 rospy.loginfo("Start time %i %i", self.start_time.secs, self.start_time.nsecs)
                 self.timerFlag = False
+                rospy.sleep(3.0) # Test
                 return 'CALCULATING_TIME'
             elif abs(self.current_time.secs - self.start_time.secs) > 50 and userdata.TIME.secs > 3*60:
                 print ("userdata.TIME.secs")
@@ -144,6 +145,7 @@ def create_mat_front_cam_navigation_fsm():
                 print (self.start_time.secs)
                 return 'TERMINATING'
             else:
+                rospy.sleep(3.0) # Test
                 return 'CALCULATING_TIME'
 
     def mat_check(userData, matMessage):
