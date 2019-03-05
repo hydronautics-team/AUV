@@ -1,5 +1,13 @@
 # Goal
+uint8 LEFT=1
+uint8 RIGHT=2
+uint8 NONE=3
+
+uint8 DEFAULT_LIMITS=10
+
 string targetSource # Topic or service name for retrieving centering value
+uint8 initialDirection
+uint8 limits
 ---
 # Result
 int64 resultError # Resulting error between image center and target point

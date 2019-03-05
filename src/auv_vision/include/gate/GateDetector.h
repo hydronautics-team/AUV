@@ -17,7 +17,7 @@ private:
     float verticalSlope = 10.0f;
     float horizontalSlope = 10.0f;
     float lengthRelation = 0.15f;
-    float mergingLineDistanceHorizontal = 8.0f;
+    float mergingLineDistanceHorizontal = 10.0f;
     float mergingLineDistanceVertical = 5.0f;
 
     float overlapThreshold = 3.0f;
@@ -26,6 +26,8 @@ private:
     float sidesRelationThreshold = 0.7f;
     float angleDiffThreshold = 7.0f;
     float areaFrameRelationThreshold = 0.05f;
+    float horizontalPositionRatioThreshold = 0.45f;
+
 
 
     /** FLD settings */
@@ -63,7 +65,8 @@ private:
     cv::Vec4f createVerticalLine(const std::vector<cv::Vec4f> &lines);
 
     GateDescriptor findBestByQuality(const std::vector<cv::Vec4f>& verticalLines,
-                                     const std::vector<cv::Vec4f>& horizontalLines, long frameArea);
+                                     const std::vector<cv::Vec4f>& horizontalLines,
+                                     long frameWidth, long frameHeight);
 
     void updateFLD();
 
@@ -99,6 +102,8 @@ public:
     void setAngleDiffThreshold(float angleDiffThreshold);
 
     void setAreaFrameRelationThreshold(float areaFrameRelationThreshold);
+
+    void setHorizontalPositionRatioThreshold(float horizontalPositionRatioThreshold);
 
     void setLength_threshold(int length_threshold);
 

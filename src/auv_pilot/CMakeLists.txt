@@ -146,8 +146,8 @@ add_executable(pilot
         src/MoveByTileServer.cpp
         include/MoveActionServerBase.h
         src/MoveActionServerBase.cpp
-        include/MoveCenteringServer.h
-        src/MoveCenteringServer.cpp 
+        include/CenteringServer.h
+        src/CenteringServer.cpp
         include/twist/TwistFactory.h
         src/twist/TwistFactory.cpp 
         include/twist/SimulationTwistFactory.h 

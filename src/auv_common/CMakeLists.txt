@@ -56,6 +56,7 @@ add_message_files(
    DistancesToMatEdges.msg
    OptionalPoint2D.msg
    LabeledPoint2D.msg
+   Gate.msg
 )
 
 ## Generate services in the 'srv' folder

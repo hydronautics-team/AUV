@@ -9,13 +9,14 @@ function show_help()
 {
     printf "\n\nSimple AUV managment script. Usage:\n"
 
-    printf "./auv-admin.sh run <mode> [--sim] [--stream] [--nocon]\n"
+    printf "./auv-admin.sh run <mode> [--sim] [--stream] [--nocon] [--nocam]\n"
     printf "Runs nodes. Parameters and arguments:\n"
     printf "    mode - Application mode. Available modes: qualification, missions, demo, none.\n"
     printf "    --sim - Optional argument, enables simulation mode.\n"
     printf "    --stream - Optional argument, enables video stream from cameras.\n"
     printf "    --nocon - Optional argument, disables connection with hardware interfaces.\n"
-    printf "\n\n"
+    printf "    --nocam - Optional argument, disables cameras.\n"
+    printf "\n"
 }
 
 STATE_BEGIN=0
@@ -91,6 +92,10 @@ while [ "$1" != "" ]; do
                     ;;
                  "--nocon" )
                     LAUNCH_COMMAND="$LAUNCH_COMMAND connectionDisabled:=true"
+                    NEXT_STATE=${STATE_OPT_ARG}
+                    ;;
+                 "--nocam" )
+                    LAUNCH_COMMAND="$LAUNCH_COMMAND camerasDisabled:=true"
                     NEXT_STATE=${STATE_OPT_ARG}
                     ;;
                  * )

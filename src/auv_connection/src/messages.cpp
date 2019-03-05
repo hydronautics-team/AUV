@@ -327,10 +327,12 @@ void popFromVector(std::vector<uint8_t> &vector, int16_t &output, bool revert)
     uint8_t *ptr = reinterpret_cast<uint8_t*>(&output);
     if(revert) {
         ptr[1] = vector.back();
+        vector.pop_back();
         ptr[0] = vector.back();
     }
     else {
         ptr[0] = vector.back();
+        vector.pop_back();
         ptr[1] = vector.back();
     }
     vector.pop_back();
