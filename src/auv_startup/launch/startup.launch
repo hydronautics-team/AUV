@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="auv_startup" name="startup_controller" type="startup_controller.py" output="screen" />
+    <node pkg="auv_startup" name="time_start_trigger" type="time_start_trigger.py" output="screen">
+        <param name="delay" value="5" />
+    </node>
+</launch>
