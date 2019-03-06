@@ -1,20 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(auv_connection)
+project(auv_startup)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+# add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  roscpp
   rospy
-  sensor_msgs
   std_msgs
-  auv_common
-  serial
 )
 
 ## System dependencies are found with CMake's conventions
@@ -74,7 +69,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   geometry_msgs#   sensor_msgs#   std_msgs
+#   std_msgs
 # )
 
 ################################################
@@ -108,9 +103,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES auv_connection
-#  CATKIN_DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs
-  DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs auv_common serial
+#  LIBRARIES auv_startup
+#  CATKIN_DEPENDS rospy std_msgs
+#  DEPENDS system_lib
 )
 
 ###########
@@ -120,13 +115,13 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  "include"
+# include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/auv_connection.cpp
+#   src/${PROJECT_NAME}/auv_startup.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -137,7 +132,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/auv_connection_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/auv_startup_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -153,23 +148,6 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-
-add_executable(hardware_bridge
-        src/hardware_bridge.cpp
-        include/messages.h
-		src/messages.cpp)
-target_link_libraries(hardware_bridge ${catkin_LIBRARIES})
-add_dependencies(hardware_bridge auv_common_generate_messages_cpp)
-
-add_executable(uart_bridge
-        src/uart_bridge.cpp)
-target_link_libraries(uart_bridge ${catkin_LIBRARIES})
-add_dependencies(uart_bridge auv_common_generate_messages_cpp)
-
-add_executable(gazebo_bridge
-		src/gazebo_bridge.cpp)
-target_link_libraries(gazebo_bridge ${catkin_LIBRARIES})
-add_dependencies(gazebo_bridge auv_common_generate_messages_cpp)
 
 #############
 ## Install ##
@@ -211,7 +189,7 @@ add_dependencies(gazebo_bridge auv_common_generate_messages_cpp)
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_auv_connection.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_auv_startup.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

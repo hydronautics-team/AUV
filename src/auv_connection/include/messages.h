@@ -1,10 +1,10 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
-#include <stdint.h> /*  */
+#include <stdint.h>
+#include <unistd.h>
 #include <vector>
 
-#include "serial.h"
 
 /** Enumerator for VMA names
  * H - horizontal, V - verical

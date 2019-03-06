@@ -22,7 +22,6 @@
 #include <vector>
 #include <std_msgs/UInt32.h>
 
-#include "serial.h"
 #include "messages.h"
 
 #define SHORE_STABILIZE_DEPTH_BIT       0
@@ -102,7 +101,7 @@ void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
     }
     bool ok = response.parseVector(received_vector);
     if (ok)
-        current_depth = (int)response.depth * 100; // Convert metres to centimetres
+        current_depth = std::abs((int)response.depth) * 100; // Convert metres to centimetres
     else
         ROS_ERROR("Wrong checksum");
 }
