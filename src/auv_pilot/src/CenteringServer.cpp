@@ -22,14 +22,23 @@ void CenteringServer::goalCallback(const auv_common::CenteringGoalConstPtr &goal
     std::string topic = goal->targetSource;
 
     bool inRange = false;
+    int negatives = 0;
+    
     boost::function<void (const auv_common::Gate::ConstPtr&)> callback =
-            [&inRange, this] (const auv_common::Gate::ConstPtr& gateMsg) {
+            [&inRange, &negatives, this] (const auv_common::Gate::ConstPtr& gateMsg) {
 
-                if (inRange || !(gateMsg->isPresent))
+                if (inRange || !(gateMsg->isPresent)) {
+                    negatives++;
+                    if (negatives > 15) {
+                        ROS_INFO("Too many gate missings, asumming we have entered the gates");
+                        inRange = true;
+                    }
                     return;
+                }
 
-                double limit = (gateMsg->xTR - gateMsg->xTL) / 4.0;
-                ROS_INFO("Center: %f, Limit: %f", gateMsg->xCenter, limit);
+                //double limit = (gateMsg->xTR - gateMsg->xTL) / 4.0;
+                //ROS_INFO("Center: %f, Limit: %f", gateMsg->xCenter, limit);
+
                 if (std::abs(gateMsg->xCenter) < 10.0) {
                     this->move(Direction::STOP);
                     inRange = true;
