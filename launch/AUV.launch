@@ -26,6 +26,9 @@
     <!-- Root path for all output videos and images. MUST NOT END WITH SLASH!!!!!! -->
     <arg name="storage" />
 
+    <!-- Reset IMU after start -->
+    <arg name="imuReset" default="false" />
+
     <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
         <remap from="/cam_front_1/image_raw" to="/stereo/camera/right/image_raw" if="$(arg simulation)" />
         <param name="debugVision" value="$(arg debugVision)" />
@@ -53,13 +56,13 @@
     <group unless="$(arg simulation)">
 
         <group unless="$(arg connectionDisabled)">
-            <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" respawn="true" >
+<!--            <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" respawn="true" >
                 <param name="device" value="/dev/ttyS0" />
                 <param name="baudrate" value="57600" />
                 <param name="dataBytes" value="8" />
                 <param name="parity" value="none" />
                 <param name="stopBits" value="1" />
-            </node>
+            </node>-->
             <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" respawn="true" />
         </group>
 
@@ -123,10 +126,10 @@
 
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
         <param name="mode" value="$(arg mode)" />
-        <param name="launch_delay" value="5" />
-        <param name="dive_delay" value="5" />
-        <param name="initial_depth" value="50" />
-        <param name="qualification_duration" value="25" /> <!-- March move duration in seconds -->
+        <param name="diveDelay" value="5" />
+        <param name="initialDepth" value="50" />
+        <param name="imuReset" value="$(arg imuReset)" />
+        <param name="qualificationDuration" value="25" /> <!-- March move duration in seconds -->
     </node>
 
 </launch>

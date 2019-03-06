@@ -3,7 +3,7 @@
 import rospy
 import smach
 import smach_ros
-from auv_common.srv import *
+from auv_common.srv import EnablingCmd
 from auv_common.msg import DiveGoal, DiveAction
 
 # TODO: Create more common states
@@ -21,15 +21,28 @@ class WaitState(smach.State):
         rate.sleep()
         return 'OK'
 
-
-class IMUResetState(smach.State):
+class IMUInitState(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['OK'])
 
     def execute(self, userdata):
-        reset_service = rospy.ServiceProxy("reset_service", ResetCmd)
-        response = reset_service()
-        rospy.sleep(0.5)
+        imu_init_service = rospy.ServiceProxy("imu_init_service", EnablingCmd)
+        imu_init_service(True)
+        rospy.sleep(0.8)
+        imu_init_service(False)
+        return 'OK'
+
+
+class StabilizationInitState(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['OK'])
+
+    def execute(self, userdata):
+        stabilization_service = rospy.ServiceProxy("stabilization_service", EnablingCmd)
+        stabilization_service(False)
+        rospy.sleep(1.0)
+        stabilization_service(True)
+        rospy.sleep(5.0)
         return 'OK'
 
 
