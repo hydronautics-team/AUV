@@ -14,10 +14,13 @@
 #include <auv_common/VelocityCmd.h>
 #include <auv_common/DepthCmd.h>
 #include <auv_common/ResetCmd.h>
+#include <auv_common/DropperCmd.h>
+#include <auv_common/LifterCmd.h>
 
 #include <sstream>
 #include <string>
 #include <vector>
+#include <std_msgs/UInt32.h>
 
 #include "serial.h"
 #include "messages.h"
@@ -46,6 +49,8 @@ bool isReady = false;
 
 RequestMessage request;
 ResponseMessage response;
+
+int current_depth = 0;
 
 bool pick_bit(uint8_t &input, uint8_t bit)
 {
@@ -91,18 +96,15 @@ void parseInputMessage()
   */
 void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
 {
-    /*
     std::vector<uint8_t> received_vector;
     for(int i=0; i<ResponseMessage::length; i++) {
         received_vector.push_back(msg->data[i]);
-        ROS_INFO("BYTE %d || %x",i,received_vector[i]);
     }
     bool ok = response.parseVector(received_vector);
     if (ok)
-        ROS_INFO_STREAM("Depth: " << response.depth);
+        current_depth = (int)response.depth * 100; // Convert metres to centimetres
     else
         ROS_ERROR("Wrong checksum");
-        */
 }
 
 /** @brief Parse string bitwise correctly into ResponseMessage and check 16bit checksum.
@@ -175,6 +177,24 @@ bool reset_callback(auv_common::ResetCmd::Request& resetRequest,
     return true;
 }
 
+bool dropper_callback(auv_common::DropperCmd::Request& dropperRequest,
+                    auv_common::DropperCmd::Response& dropperResponse) {
+
+    ROS_INFO("Dropper velocity: %d", dropperRequest.velocity);
+    request.dev[1] = dropperRequest.velocity;
+
+    isReady = true;
+
+    return true;
+}
+
+bool lifter_callback(auv_common::LifterCmd::Request& lifterRequest,
+                      auv_common::LifterCmd::Response& lifterResponse) {
+
+    // TODO: Implement
+    return true;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "hardware_bridge");
@@ -193,9 +213,12 @@ int main(int argc, char **argv)
     msg_out.layout.dim[0].size = RequestMessage::length;
     msg_out.layout.dim[0].stride = RequestMessage::length;
     msg_out.layout.dim[0].label = "msg_out";
+
+    std_msgs::UInt32 depth_message;
     
     // ROS publishers
     ros::Publisher outputMessage_pub 	= n.advertise<std_msgs::UInt8MultiArray>("/hard_bridge/parcel", 1000);
+    ros::Publisher depth_pub = n.advertise<std_msgs::UInt32>("/perception/depth", 1000);
     //ros::Publisher outputMessage_pub 	= n.advertise<std_msgs::UInt8MultiArray>("", 1000);
 	// **************
 
@@ -207,6 +230,8 @@ int main(int argc, char **argv)
     ros::ServiceServer velocity_srv = n.advertiseService("velocity_service", movement_callback);
     ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
     ros::ServiceServer reset_srv = n.advertiseService("reset_service", reset_callback);
+    ros::ServiceServer dropper_srv = n.advertiseService("dropper_service", dropper_callback);
+    ros::ServiceServer lifter_srv = n.advertiseService("lifter_service", lifter_callback);
     // **************
 
     while (ros::ok())
@@ -214,6 +239,9 @@ int main(int argc, char **argv)
         if(isReady) {
         	makeOutputMessage();
         	outputMessage_pub.publish(msg_out);
+
+        	depth_message.data = current_depth;
+        	depth_pub.publish(depth_message);
         }
 
     	ros::spinOnce();

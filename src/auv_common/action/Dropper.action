@@ -1,0 +1,8 @@
+# Goal
+std_msgs/Empty empty
+---
+# Result
+bool success
+---
+# Feedback
+bool isFinished

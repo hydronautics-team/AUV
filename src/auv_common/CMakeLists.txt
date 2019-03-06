@@ -66,6 +66,8 @@ add_service_files(
   TimerFsm.srv
   DepthCmd.srv
   ResetCmd.srv
+  DropperCmd.srv
+  LifterCmd.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -74,6 +76,8 @@ add_action_files(
   Move.action
   Centering.action
   Dive.action
+  Dropper.action
+  Lifter.action
 )
 
 ## Generate added messages and services with any dependencies listed here
