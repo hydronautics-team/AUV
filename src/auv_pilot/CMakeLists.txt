@@ -158,11 +158,6 @@ add_executable(pilot
 target_link_libraries(pilot ${catkin_LIBRARIES})
 add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 
-add_executable(TimerServer
-        src/TimerServer.cpp)
-target_link_libraries(TimerServer ${catkin_LIBRARIES})
-add_dependencies(TimerServer auv_common_generate_messages_cpp)
-
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use

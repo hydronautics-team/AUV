@@ -32,6 +32,20 @@ class IMUResetState(smach.State):
         rospy.sleep(0.5)
         return 'OK'
 
+def create_timer_state(time):
+    class mat_timer_fsm(smach.State):
+        def __init__(self):
+            smach.State.__init__(self, outcomes=['ERROR'])
+            self.timer_flag = True
+            #self.timer = rospy.ServiceProxy("timer_service", TimerFsm)
+            #self.timerControl = self.timer(False)
+            #print (self.timerControl.duration)
+            print ("Timer FSM created with delay parameter: ", time)
+
+        def execute(self, userdata):
+            rospy.sleep(time) # Test
+            return 'ERROR'
+    return mat_timer_fsm()
 
 # Creates diving state (depth in centimeters)
 def create_diving_state(depth):

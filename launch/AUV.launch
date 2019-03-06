@@ -3,7 +3,7 @@
     <!-- TODO: Decompose -->
 
     <!-- Sets mode: qualification, missions, demo or none -->
-    <arg name="mode" default="missions" />
+    <arg name="mode" default="none" />
 
     <!-- Sets mode for drums mission: left, right, middle or none -->
     <arg name="drum_mission_direction_mode" default="left" />

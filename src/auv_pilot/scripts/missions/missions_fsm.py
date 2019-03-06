@@ -23,10 +23,7 @@ def create_missions_fsm(launch_delay, dive_delay, initial_depth, initial_depthTo
             'succeeded':'MISSIONS_OK', 'preempted':'MISSIONS_FAILED', 'aborted':'MISSIONS_FAILED'})
         #smach.StateMachine.add('REACQUISITION', reacquisition_mission_fsm.create_reacquisition_mission_fsm(), transitions={
             #'succeeded':'MISSIONS_OK', 'preempted':'MISSIONS_FAILED', 'aborted':'MISSIONS_FAILED'})
-
         #smach.StateMachine.add('BALL_DROP', common_states.create_diving_state(initial_depth), transitions={
-            #'succeeded':'DRUMS_MISSION', 'preempted':'MISSIONS_FAILED', 'aborted':'MISSIONS_FAILED'})
-        #smach.StateMachine.add('RISE', common_states.create_diving_state(initial_depth), transitions={
             #'succeeded':'DRUMS_MISSION', 'preempted':'MISSIONS_FAILED', 'aborted':'MISSIONS_FAILED'})
 
     return sm
