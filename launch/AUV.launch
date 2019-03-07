@@ -127,6 +127,7 @@
     </group>
 
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
+        <param name="startCondition" value="auto" />
         <param name="mode" value="$(arg mode)" />
         <param name="diveDelay" value="5" />
         <param name="initialDepth" value="50" />

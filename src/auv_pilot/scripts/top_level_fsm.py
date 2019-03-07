@@ -3,16 +3,51 @@
 import rospy
 import smach
 import smach_ros
+import auv_common.srv
 from common import common_states
 from qualification import qualification_fsm
 from missions import missions_fsm
 from demo import demo_fsm
 
+launched = False
+receivedMode = None
+
+def launch_callback(req):
+    global launched
+    global receivedMode
+    resp = auv_common.srv.LaunchCmdResponse
+    mode = req.mode.upper()
+    if mode not in ['QUALIFICATION_SIMPLE', 'QUALIFICATION_VISION', 'MISSIONS']:
+        resp.message = 'No executable mode specified. Allowed executable modes: qualification_simple, qualification_vision, missions.'
+        resp.success = False
+        return resp
+    receivedMode = mode
+    launched = True
+    resp.success = True
+    return resp
+
 
 def main():
+    global receivedMode
+    global launched
+
     rospy.init_node('top_level_fsm')
 
-    mode = rospy.get_param('~mode', 'none').upper()
+    startCondition = rospy.get_param('~startCondition', 'none').upper()
+    if startCondition not in ['AUTO', 'TRIGGER']:
+        rospy.logerr('Unknown start condition. Available start conditions: auto, trigger')
+
+    if startCondition == 'TRIGGER':
+        rospy.loginfo('Waiting for launch trigger')
+        fsm_start_service = rospy.ServiceProxy('fsm_start', auv_common.srv.LaunchCmd, launch_callback)
+        while not launched:
+            pass
+
+    if startCondition == 'AUTO':
+        mode = rospy.get_param('~mode', 'none').upper()
+    else:
+        mode = receivedMode
+
     rospy.loginfo(mode)
     if mode not in ['QUALIFICATION_SIMPLE', 'QUALIFICATION_VISION', 'MISSIONS', 'DEMO']:
         rospy.loginfo('No executable mode specified. Allowed executable modes: qualification_simple, qualification_vision, missions, demo.')
@@ -61,10 +96,10 @@ def main():
 
         elif mode == 'DEMO':
             smach.StateMachine.add('DEMO', demo_fsm.create_demo_fsm(), transitions={'DEMO_OK': 'SUCCEEDED', 'DEMO_FAILED': 'FAILED'})
-        
+
     server = smach_ros.IntrospectionServer('top_level_fsm', sm, '/fsm/top_level_fsm')
     server.start()
-    
+
     outcome = sm.execute()
 
     rospy.spin()

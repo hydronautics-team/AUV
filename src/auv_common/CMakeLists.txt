@@ -67,6 +67,7 @@ add_service_files(
   DropperCmd.srv
   LifterCmd.srv
   EnablingCmd.srv
+  LaunchCmd.srv
 )
 
 ## Generate actions in the 'action' folder

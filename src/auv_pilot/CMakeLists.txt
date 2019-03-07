@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  std_srvs
   geometry_msgs
   sensor_msgs
   actionlib
@@ -107,7 +108,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_pilot
-  CATKIN_DEPENDS roscpp rospy actionlib std_msgs geometry_msgs actionlib_msgs auv_common
+  CATKIN_DEPENDS roscpp rospy actionlib std_msgs std_srvs geometry_msgs actionlib_msgs auv_common
 #  DEPENDS system_lib
 )
 
