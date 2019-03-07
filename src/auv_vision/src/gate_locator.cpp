@@ -1,8 +1,8 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Pose2D.h"
 #include <sstream>
-#include <gate/GateDescriptor.h>
-#include <gate/GateDetector.h>
+#include "gate/AngleGateDetector.h"
+#include "gate/VerticalGateDetector.h"
 #include <util/ImgprocUtil.h>
 #include <dynamic_reconfigure/server.h>
 #include <auv_vision/GateLocatorConfig.h>
@@ -20,34 +20,23 @@ static const std::string GATE_PUBLISH_TOPIC = "/gate";
 
 static const std::string GATE_LOCATOR_NODE_NAME = "gate_locator";
 
+static const std::string DETECTOR_MODE_PARAM = "detectorMode";
 
-GateDetector detector;
+static const std::string DETECTOR_MODE_VERTICAL_STR = "vertical";
 
-void reconfigure(auv_vision::GateLocatorConfig& config, uint32_t level) {
-    detector.setVerticalSlope(config.verticalSlope);
-    detector.setHorizontalSlope(config.horizontalSlope);
-    detector.setLengthRelation(config.lengthRelation);
-    detector.setMergingLineDistanceHorizontal(config.mergingLineDistanceHorizontal);
-    detector.setMergingLineDistanceVertical(config.mergingLineDistanceVertical);
-    detector.setOverlapThreshold(config.overlapThreshold);
-    detector.setDistXThreshold(config.distXThreshold);
-    detector.setDistYThreshold(config.distYThreshold);
-    detector.setSidesRelationThreshold(config.sidesRelationThreshold);
-    detector.setAngleDiffThreshold(config.angleDiffThreshold);
-    detector.setAreaFrameRelationThreshold(config.areaFrameRelationThreshold);
-    detector.setHorizontalPositionRatioThreshold(config.horizontalPositionRatioThreshold);
-    detector.setLength_threshold(config.fld_length_threshold);
-    detector.setDistance_threshold(config.fld_distance_threshold);
-    detector.setCanny_th1(config.fld_canny_threshold_1);
-    detector.setCanny_th2(config.fld_canny_threshold_2);
-    if (config.fld_canny_aperture == 3.0 || config.fld_canny_aperture == 5.0 || config.fld_canny_aperture == 7.0)
-        detector.setCanny_aperture_size(config.fld_canny_aperture);
+static const std::string DETECTOR_MODE_ANGLE_STR = "angle";
 
-}
+typedef enum {
+    VERTICAL,
+    ANGLE
+} DetectorMode;
+
 
 class GatePublisher : public AbstractImageConverter {
 
 private:
+
+    IGateDetector* detector;
 
     dynamic_reconfigure::Server<auv_vision::GateLocatorConfig> reconfigurationServer;
 
@@ -59,10 +48,10 @@ private:
     
 protected:
 
-    void process(const cv_bridge::CvImagePtr &cv_ptr) {
+    void process(const cv_bridge::CvImagePtr &cv_ptr) override {
         cv::Mat image = cv_ptr->image;
 
-        GateDescriptor gate = detector.detect(image);
+        GateDescriptor gate = detector->detect(image);
 
         auv_common::Gate msg;
 
@@ -112,13 +101,25 @@ protected:
         imagePublisher.publish(imageMsg);
     }
 
+    void reconfigure(auv_vision::GateLocatorConfig& config, uint32_t level) {
+        detector->reconfigure(config, level);
+    }
+
+
 public:
 
-    GatePublisher(const std::string &inputImageTopic, bool enableWindows) : AbstractImageConverter(inputImageTopic),
-                                                                            windowsEnabled(enableWindows) {
+    GatePublisher(const std::string &inputImageTopic, const DetectorMode& detectorMode,
+            bool enableWindows, const ros::NodeHandle& nh) : AbstractImageConverter(inputImageTopic),
+                                                                windowsEnabled(enableWindows) {
+
+        if (detectorMode == DetectorMode::ANGLE)
+            detector = new AngleGateDetector();
+        else
+            detector = new VerticalGateDetector();
+        detector->setPublisher(nh);
 
         dynamic_reconfigure::Server<auv_vision::GateLocatorConfig>::CallbackType f;
-        f = boost::bind(&reconfigure, _1, _2);
+        f = boost::bind(&GatePublisher::reconfigure, this, _1, _2);
         reconfigurationServer.setCallback(f);
 
         image_transport::ImageTransport it(nodeHandle);
@@ -130,6 +131,7 @@ public:
     }
 
     ~GatePublisher() {
+        delete detector;
         if (windowsEnabled)
             cv::destroyWindow(OPENCV_WINDOW);
     }
@@ -151,12 +153,18 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nodeHandle(GATE_LOCATOR_NODE_NAME);
 
-    detector.setPublisher(nodeHandle);
-
     bool windowsEnabled;
     nodeHandle.param(ENABLE_WINDOWS_PARAM, windowsEnabled, false);
+    std::string detectorModeStr;
+    nodeHandle.param(DETECTOR_MODE_PARAM, detectorModeStr, DETECTOR_MODE_VERTICAL_STR);
+    DetectorMode detectorMode;
+    if (detectorModeStr == DETECTOR_MODE_VERTICAL_STR)
+        detectorMode = DetectorMode::VERTICAL;
+    else if (detectorModeStr == DETECTOR_MODE_ANGLE_STR)
+        detectorMode = DetectorMode::ANGLE;
 
-    GatePublisher gatePublisher(CAMERA_TOPIC, windowsEnabled);
+
+    GatePublisher gatePublisher(CAMERA_TOPIC, detectorMode, windowsEnabled, nodeHandle);
 
     ros::spin();
 
