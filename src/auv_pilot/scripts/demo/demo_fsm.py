@@ -14,7 +14,7 @@ def create_demo_fsm():
     forward = MoveGoal()
     forward.direction = MoveGoal.DIRECTION_FORWARD
     forward.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-    forward.value = 2000
+    forward.value = 10000
 
     rotation = MoveGoal()
     rotation.direction = MoveGoal.ROTATE_YAW_CCW
@@ -23,56 +23,13 @@ def create_demo_fsm():
 
     with sm:
         
-        smach.StateMachine.add('DELAY', common_states.WaitState(10), transitions={'OK': 'FORWARD_1'})
+        smach.StateMachine.add('DELAY', common_states.WaitState(3), transitions={'OK': 'FORWARD_1'})
 
         smach.StateMachine.add('FORWARD_1',
                                 smach_ros.SimpleActionState(
                                     'move_by_time',
                                     MoveAction,
                                     goal=forward),
-                                {'succeeded':'ROTATION_1', 'preempted':'DEMO_FAILED', 'aborted':'DEMO_FAILED'})
-
-        smach.StateMachine.add('ROTATION_1',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=rotation),
-                                {'succeeded':'FORWARD_2', 'preempted':'DEMO_FAILED', 'aborted':'DEMO_FAILED'})
-
-        smach.StateMachine.add('FORWARD_2',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=forward),
-                                {'succeeded':'ROTATION_2', 'preempted':'DEMO_FAILED', 'aborted':'DEMO_FAILED'})
-
-        smach.StateMachine.add('ROTATION_2',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=rotation),
-                                {'succeeded':'FORWARD_3', 'preempted':'DEMO_FAILED', 'aborted':'DEMO_FAILED'})
-
-
-        smach.StateMachine.add('FORWARD_3',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=forward),
-                                {'succeeded':'ROTATION_3', 'preempted':'DEMO_FAILED', 'aborted':'DEMO_FAILED'})
-
-        smach.StateMachine.add('ROTATION_3',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=rotation),
-                                {'succeeded':'FORWARD_4', 'preempted':'DEMO_FAILED', 'aborted':'DEMO_FAILED'})
-
-        smach.StateMachine.add('FORWARD_4',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=forward),
-                                {'succeeded':'FORWARD_1', 'preempted':'DEMO_FAILED', 'aborted':'DEMO_FAILED'})
+                                {'succeeded':'DEMO_OK', 'preempted':'DEMO_FAILED', 'aborted':'DEMO_FAILED'})
 
     return sm

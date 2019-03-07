@@ -16,9 +16,9 @@ def launch_callback(req):
     global launched
     global receivedMode
     mode = req.mode.upper()
-    if mode not in ['QUALIFICATION_SIMPLE', 'QUALIFICATION_VISION', 'MISSIONS']:
+    if mode not in ['QUALIFICATION_SIMPLE', 'QUALIFICATION_VISION', 'MISSIONS', 'DEMO']:
         return auv_common.srv.LaunchCmdResponse(False,
-                                                'No executable mode specified. Allowed executable modes: qualification_simple, qualification_vision, missions.')
+                                                'No executable mode specified. Allowed executable modes: qualification_simple, qualification_vision, missions, demo.')
     if launched:
         return auv_common.srv.LaunchCmdResponse(False, 'Already launched')
     receivedMode = mode

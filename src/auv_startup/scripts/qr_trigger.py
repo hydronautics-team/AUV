@@ -12,7 +12,7 @@ def barcode_callback(msg):
     global launched
 
     message = msg.data.lower()
-    if message not in ['qualification_simple', 'qualification_vision', 'missions', 'shutdown']:
+    if message not in ['qualification_simple', 'qualification_vision', 'missions', 'shutdown', 'demo']:
         rospy.logerr('Unknown messages')
         return
 
@@ -26,8 +26,9 @@ def barcode_callback(msg):
         return
 
     launch_service = rospy.ServiceProxy('fsm_start', auv_common.srv.LaunchCmd)
-    launch_service(message)
-    launched = True
+    resp = launch_service(message)
+    if resp.success:
+        launched = True
 
 
 def main():
