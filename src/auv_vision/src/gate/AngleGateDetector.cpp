@@ -1,6 +1,6 @@
 #include "gate/AngleGateDetector.h"
 
-AngleGateDetector::AngleGateDetector() : IGateDetector() {}
+AngleGateDetector::AngleGateDetector(float horizontalToVerticalRelation) : IGateDetector(horizontalToVerticalRelation) {}
 
 GateDescriptor AngleGateDetector::findBestByQuality(const std::vector<cv::Vec4f> &verticalLines,
                                                const std::vector<cv::Vec4f> &horizontalLines,
@@ -37,7 +37,7 @@ GateDescriptor AngleGateDetector::findBestByQuality(const std::vector<cv::Vec4f>
                 sideRelation = getLength(horizontal) / getLength(vertical);
             else
                 sideRelation = getLength(vertical) / getLength(horizontal);
-            if (sideRelation < sidesRelationThreshold)
+            if (std::abs(horizontalToVerticalRelation - sideRelation) > sidesRelationErrorThreshold)
                 continue;
 
             float coordVertX = vertical[0] - vertical[2];
@@ -114,8 +114,8 @@ void AngleGateDetector::setDistYThreshold(float distYThreshold) {
     this->distYThreshold = distYThreshold;
 }
 
-void AngleGateDetector::setSidesRelationThreshold(float sidesRelationThreshold) {
-    this->sidesRelationThreshold = sidesRelationThreshold;
+void AngleGateDetector::setSidesRelationErrorThreshold(float sidesRelationErrorThreshold) {
+    this->sidesRelationErrorThreshold = sidesRelationErrorThreshold;
 }
 
 void AngleGateDetector::setAngleDiffThreshold(float angleDiffThreshold) {
@@ -135,7 +135,7 @@ void AngleGateDetector::reconfigure(auv_vision::GateLocatorConfig &config, uint3
     setOverlapThreshold(config.angle_overlapThreshold);
     setDistXThreshold(config.angle_distXThreshold);
     setDistYThreshold(config.angle_distYThreshold);
-    setSidesRelationThreshold(config.angle_sidesRelationThreshold);
+    setSidesRelationErrorThreshold(config.angle_horizontalToVerticalRelationErroThreshold);
     setAngleDiffThreshold(config.angle_angleDiffThreshold);
     setAreaFrameRelationThreshold(config.angle_areaFrameRelationThreshold);
     setHorizontalPositionRatioThreshold(config.angle_horizontalPositionRatioThreshold);

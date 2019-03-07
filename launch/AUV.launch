@@ -32,6 +32,7 @@
     <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
         <remap from="/cam_front_1/image_raw" to="/stereo/camera/right/image_raw" if="$(arg simulation)" />
         <param name="detectorMode" value="vertical" />
+        <param name="horizontalToVerticalRelation" value="1.5" />
         <param name="debugVision" value="$(arg debugVision)" />
     </node>
 

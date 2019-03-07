@@ -26,6 +26,8 @@ static const std::string DETECTOR_MODE_VERTICAL_STR = "vertical";
 
 static const std::string DETECTOR_MODE_ANGLE_STR = "angle";
 
+static const std::string HORIZONTAL_TO_VERTICAL_RELATION_PARAM = "horizontalToVerticalRelation";
+
 typedef enum {
     VERTICAL,
     ANGLE
@@ -109,13 +111,13 @@ protected:
 public:
 
     GatePublisher(const std::string &inputImageTopic, const DetectorMode& detectorMode,
-            bool enableWindows, const ros::NodeHandle& nh) : AbstractImageConverter(inputImageTopic),
+            bool enableWindows, float horizontalToVerticalRelation, const ros::NodeHandle& nh) : AbstractImageConverter(inputImageTopic),
                                                                 windowsEnabled(enableWindows) {
 
         if (detectorMode == DetectorMode::ANGLE)
-            detector = new AngleGateDetector();
+            detector = new AngleGateDetector(horizontalToVerticalRelation);
         else
-            detector = new VerticalGateDetector();
+            detector = new VerticalGateDetector(horizontalToVerticalRelation);
         detector->setPublisher(nh);
 
         dynamic_reconfigure::Server<auv_vision::GateLocatorConfig>::CallbackType f;
@@ -162,9 +164,10 @@ int main(int argc, char **argv)
         detectorMode = DetectorMode::VERTICAL;
     else if (detectorModeStr == DETECTOR_MODE_ANGLE_STR)
         detectorMode = DetectorMode::ANGLE;
+    double horizontalToVerticalRelation;
+    nodeHandle.param(HORIZONTAL_TO_VERTICAL_RELATION_PARAM, horizontalToVerticalRelation, 1.5);
 
-
-    GatePublisher gatePublisher(CAMERA_TOPIC, detectorMode, windowsEnabled, nodeHandle);
+    GatePublisher gatePublisher(CAMERA_TOPIC, detectorMode, horizontalToVerticalRelation, windowsEnabled, nodeHandle);
 
     ros::spin();
 

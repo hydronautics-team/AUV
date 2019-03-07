@@ -81,10 +81,8 @@ add_executable(gate_locator
         src/common/AbstractImageConverter.cpp
         include/gate/GateDescriptor.h
         src/gate/GateDescriptor.cpp
-        include/gate/GateDetector.h
         include/util/ImgprocPipeline.h
         src/util/ImgprocPipeline.cpp
-        src/gate/GateDetector.cpp
         include/util/ImgprocUtil.h
         src/util/ImgprocUtil.cpp src/gate/IGateDetector.cpp src/gate/AngleGateDetector.cpp src/gate/VerticalGateDetector.cpp)
 target_link_libraries(gate_locator ${catkin_LIBRARIES}

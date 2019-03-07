@@ -25,7 +25,7 @@ private:
 
 public:
 
-    VerticalGateDetector();
+    VerticalGateDetector(float horizontalToVerticalRelation);
     ~VerticalGateDetector() = default;
 
     void reconfigure(auv_vision::GateLocatorConfig& config, uint32_t level) override;

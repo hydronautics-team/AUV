@@ -1,5 +1,7 @@
 #include "gate/IGateDetector.h"
 
+IGateDetector::IGateDetector(float horizontalToVerticalRelation) :
+    horizontalToVerticalRelation(horizontalToVerticalRelation) {}
 
 void IGateDetector::setPublisher(const ros::NodeHandle& nh) {
     image_transport::ImageTransport it(nh);

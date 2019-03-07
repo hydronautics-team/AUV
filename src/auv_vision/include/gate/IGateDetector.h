@@ -13,6 +13,8 @@ class IGateDetector {
 
 protected:
 
+    float horizontalToVerticalRelation;
+
     float verticalSlope = 10.0f;
     float horizontalSlope = 10.0f;
     float lengthRelation = 0.15f;
@@ -76,7 +78,7 @@ protected:
 
 public:
 
-    IGateDetector() = default;
+    IGateDetector(float horizontalToVerticalRelation);
     ~IGateDetector() = default;
 
     void setPublisher(const ros::NodeHandle& nh);

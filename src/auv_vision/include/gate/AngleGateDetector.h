@@ -10,7 +10,7 @@ private:
     float overlapThreshold = 3.0f;
     float distXThreshold = 17.0f;
     float distYThreshold = 17.0f;
-    float sidesRelationThreshold = 0.7f;
+    float sidesRelationErrorThreshold = 0.3f;
     float angleDiffThreshold = 7.0f;
     float areaFrameRelationThreshold = 0.05f;
     float horizontalPositionRatioThreshold = 0.45f;
@@ -25,7 +25,7 @@ private:
 
     void setDistYThreshold(float distYThreshold);
 
-    void setSidesRelationThreshold(float sidesRelationThreshold);
+    void setSidesRelationErrorThreshold(float sidesRelationThreshold);
 
     void setAngleDiffThreshold(float angleDiffThreshold);
 
@@ -36,7 +36,7 @@ private:
 
 public:
 
-    AngleGateDetector();
+    AngleGateDetector(float horizontalToVerticalRelation);
     ~AngleGateDetector() = default;
 
     void reconfigure(auv_vision::GateLocatorConfig& config, uint32_t level) override;

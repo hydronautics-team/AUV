@@ -1,6 +1,6 @@
 #include "gate/VerticalGateDetector.h"
 
-VerticalGateDetector::VerticalGateDetector() : IGateDetector() {}
+VerticalGateDetector::VerticalGateDetector(float horizontalToVerticalRelation) : IGateDetector(horizontalToVerticalRelation) {}
 
 GateDescriptor VerticalGateDetector::findBestByQuality(const std::vector<cv::Vec4f> &verticalLines, long frameWidth,
                                                        long frameHeight) {
@@ -32,10 +32,10 @@ GateDescriptor VerticalGateDetector::findBestByQuality(const std::vector<cv::Vec
             if (horizontalSlope > horizontalSlopeThreshold)
                 continue;
 
-            float relationError1 = std::abs(1.5f - getLength(horizontalTop) / getLength(vertical1));
-            float relationError2 = std::abs(1.5f - getLength(horizontalTop) / getLength(vertical2));
-            float relationError3 = std::abs(1.5f - getLength(horizontalBottom) / getLength(vertical1));
-            float relationError4 = std::abs(1.5f - getLength(horizontalBottom) / getLength(vertical2));
+            float relationError1 = std::abs(horizontalToVerticalRelation - getLength(horizontalTop) / getLength(vertical1));
+            float relationError2 = std::abs(horizontalToVerticalRelation - getLength(horizontalTop) / getLength(vertical2));
+            float relationError3 = std::abs(horizontalToVerticalRelation - getLength(horizontalBottom) / getLength(vertical1));
+            float relationError4 = std::abs(horizontalToVerticalRelation - getLength(horizontalBottom) / getLength(vertical2));
             float relationError = std::min({relationError1, relationError2, relationError3, relationError4});
             if (relationError > orthogonalRelationErrorThreshold)
                 continue;
