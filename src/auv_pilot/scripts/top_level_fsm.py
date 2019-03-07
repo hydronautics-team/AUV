@@ -79,14 +79,7 @@ def main():
 
                 if mode != 'DEMO':
                     if imu_reset:
-                        if startCondition == 'TRIGGER':
-                             smach.StateMachine.add('SIGNAL', common_states.create_signal_state(),
-                                           transitions={'succeeded':'IMU_INIT', 'preempted':'SUCCEEDED', 'aborted':'FAILED'})
                         smach.StateMachine.add('IMU_INIT', common_states.IMUInitState(), transitions={'OK': 'DIVE_DELAY'})
-                    else:
-                        if startCondition == 'TRIGGER':
-                            smach.StateMachine.add('SIGNAL', common_states.create_signal_state(),
-                                           transitions={'succeeded':'DIVE_DELAY', 'preempted':'SUCCEEDED', 'aborted':'FAILED'})
                     smach.StateMachine.add('DIVE_DELAY', common_states.WaitState(dive_delay), transitions={'OK': 'STABILIZATION_INIT'})
                     smach.StateMachine.add('STABILIZATION_INIT', common_states.StabilizationInitState(), transitions={'OK': 'DIVE'})
                     smach.StateMachine.add('DIVE', common_states.create_diving_state(initial_depth),

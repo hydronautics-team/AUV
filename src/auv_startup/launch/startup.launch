@@ -55,7 +55,7 @@
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
         <param name="startCondition" value="trigger" />
         <param name="mode" value="none" />
-        <param name="diveDelay" value="5" />
+        <param name="diveDelay" value="1" />
         <param name="initialDepth" value="50" />
         <param name="imuReset" value="false" />
         <param name="qualificationDuration" value="25" /> <!-- March move duration in seconds -->
