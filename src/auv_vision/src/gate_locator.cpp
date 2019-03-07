@@ -167,7 +167,7 @@ int main(int argc, char **argv)
     double horizontalToVerticalRelation;
     nodeHandle.param(HORIZONTAL_TO_VERTICAL_RELATION_PARAM, horizontalToVerticalRelation, 1.5);
 
-    GatePublisher gatePublisher(CAMERA_TOPIC, detectorMode, horizontalToVerticalRelation, windowsEnabled, nodeHandle);
+    GatePublisher gatePublisher(CAMERA_TOPIC, detectorMode, windowsEnabled, horizontalToVerticalRelation, nodeHandle);
 
     ros::spin();
 
