@@ -3,6 +3,7 @@
 import rospy
 import roslaunch
 import std_srvs.srv
+import os
 
 launchRequested = False
 launched = False
@@ -25,7 +26,7 @@ def lauch_callback(req):
     launchRequested = True
 
 
-def shutdown_callback(req):
+def stop_callback(req):
     global shutDownRequested
     global launched
     if shutDownRequested:
@@ -41,6 +42,12 @@ def shutdown_callback(req):
     shutDownRequested = True
 
 
+def poweroff_callback(req):
+    # TODO: stop launch file
+    rospy.logwarn('Poweroff request handled, shutting down machine')
+    os.system('shutdown now')
+
+
 def main():
     global launchRequested
     global launched
@@ -49,7 +56,8 @@ def main():
     rospy.init_node('startup_controller')
 
     launch_service = rospy.Service('controller_launch', std_srvs.srv.Trigger, lauch_callback)
-    shutdown_service = rospy.Service('controller_shutdown', std_srvs.srv.Trigger, shutdown_callback)
+    stop_service = rospy.Service('controller_stop', std_srvs.srv.Trigger, stop_callback)
+    poweroff_service = rospy.Service('controller_poweroff', std_srvs.srv.Trigger, poweroff_callback)
 
     launch = None
 
@@ -64,7 +72,7 @@ def main():
             launched = True
             launchRequested = False
         elif shutDownRequested and launched:
-            rospy.loginfo("Shutting down...")
+            rospy.loginfo("Stopping launch config...")
             launch.shutdown()
             launched = False
             shutDownRequested = False
