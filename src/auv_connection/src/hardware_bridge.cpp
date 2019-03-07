@@ -120,14 +120,6 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
   	request.march	= static_cast<int16_t> (velocityRequest.twist.linear.x);
   	request.lag	    = static_cast<int16_t> (velocityRequest.twist.linear.z);
 
-    /*
-     * Just for "if something case" - normally, stabilization and IMU working mode must be enabled before
-     * sending twists.
-     */
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, false);
-
     isReady = true;
 
   	velocityResponse.success.data = true;
@@ -141,13 +133,6 @@ bool depth_callback(auv_common::DepthCmd::Request& depthRequest,
     ROS_INFO("Setting depth to %d", depthRequest.depth);
     request.depth	= -(static_cast<int16_t> (depthRequest.depth * 10)); // For low-level stabilization purposes
     ROS_INFO("Sending to STM32 depth value: %d", request.depth);
-
-    /*
-     * Just for "if something case" - normally, stabilization and IMU working mode must be enabled before.
-     */
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, false);
 
     isReady = true;
 
