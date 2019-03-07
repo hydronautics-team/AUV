@@ -4,7 +4,7 @@ import rospy
 import smach
 import smach_ros
 from auv_common.srv import EnablingCmd
-from auv_common.msg import DiveGoal, DiveAction
+from auv_common.msg import DiveGoal, DiveAction, MoveAction, MoveGoal
 
 # TODO: Create more common states
 
@@ -51,3 +51,11 @@ def create_diving_state(depth):
     dive = DiveGoal()
     dive.depth = depth
     return smach_ros.SimpleActionState('dive', DiveAction, goal=dive)
+
+
+def create_signal_state():
+    goal = MoveGoal()
+    goal.direction = MoveGoal.DIRECTION_FORWARD
+    goal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+    goal.value = 1000
+    return smach_ros.SimpleActionState('move_by_time', MoveAction, goal=goal)

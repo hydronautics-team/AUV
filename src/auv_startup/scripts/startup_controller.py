@@ -73,30 +73,6 @@ def main():
     stop_service = rospy.Service('controller_stop', std_srvs.srv.Trigger, stop_callback)
     poweroff_service = rospy.Service('controller_poweroff', std_srvs.srv.Trigger, poweroff_callback)
 
-    parent = None
-
-    rate = rospy.Rate(10)
-    while not rospy.is_shutdown():
-        if launchRequested and not launched:
-            uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-            roslaunch.configure_logging(uuid)
-            #launchArgs = ['/home/sibirsky/factory/AUV/launch/AUV.launch', 'mode:=none']
-            #roslaunchArgs = launchArgs[1:]
-            #roslaunchFile = [(roslaunch.rlutil.resolve_launch_arguments(launchArgs)[0], roslaunchArgs)]
-            cli_args = ['/home/sibirsky/factory/AUV/launch/AUV.launch', 'mode:=none']
-            roslaunch_args = cli_args[1:]
-            roslaunch_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
-            parent = roslaunch.parent.ROSLaunchParent(uuid, roslaunch_file)
-            rospy.loginfo("Launching...")
-            parent.start()
-            launched = True
-            launchRequested = False
-        elif shutDownRequested and launched:
-            rospy.loginfo("Stopping launch config...")
-            parent.shutdown()
-            launched = False
-            shutDownRequested = False
-        rate.sleep()
 
 
 if __name__ == '__main__':
