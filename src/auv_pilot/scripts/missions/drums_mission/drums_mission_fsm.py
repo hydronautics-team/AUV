@@ -56,9 +56,12 @@ def create_drums_fsm():
 
     # gets called when ANY child state terminates
     def child_term_cb_detection(outcome_map):
-        if outcome_map['MAT_DETECTION_TIMER'] == 'ERROR':
-            return True
         if outcome_map['MAT_DETECTION'] == 'MAT_FRONT_CAM_NAVIGATION':
+            return True
+        # terminate all running states if a lot of time passed
+        if outcome_map['MAT_DETECTION_TIMER'] == 'TERMINATING':
+            return True
+        if outcome_map['MAT_DETECTION_TIMER'] == 'CALCULATING_TIME':
             return True
         if outcome_map['MAT_DETECTION'] == 'DRUMS_FAILED':
             return True
@@ -66,8 +69,10 @@ def create_drums_fsm():
 
     # gets called when ALL child states are terminated
     def out_cb_detection(outcome_map):
-        if outcome_map['MAT_DETECTION_TIMER'] == 'ERROR':
+        if outcome_map['MAT_DETECTION_TIMER'] == 'TERMINATING' and outcome_map['MAT_DETECTION'] != 'MAT_FRONT_CAM_NAVIGATION':
             return 'DRUMS_FAILED'
+        if outcome_map['MAT_DETECTION_TIMER'] == 'CALCULATING_TIME' and outcome_map['MAT_DETECTION'] != 'MAT_FRONT_CAM_NAVIGATION':
+            return 'Calculating_TIME_DETECTION'
         if outcome_map['MAT_DETECTION'] == 'MAT_FRONT_CAM_NAVIGATION':
             return 'SUCCESS'
         if outcome_map['MAT_DETECTION'] == 'DRUMS_FAILED':
@@ -75,17 +80,21 @@ def create_drums_fsm():
 
 
     def child_term_cb_front_cam_navigation(outcome_map):
-        if outcome_map['MAT_FRONT_CAM_NAVIGATION_TIMER'] == 'ERROR':
-            return True
         if outcome_map['MAT_FRONT_CAM_NAVIGATION'] == 'HORIZONTAL_EDGE_DETECTED':
+            return True
+        if outcome_map['MAT_FRONT_CAM_NAVIGATION_TIMER'] == 'TERMINATING':
+            return True
+        if outcome_map['MAT_FRONT_CAM_NAVIGATION_TIMER'] == 'CALCULATING_TIME':
             return True
         if outcome_map['MAT_FRONT_CAM_NAVIGATION'] == 'MAT_FRONT_CAM_NAVIGATION_FAILED':
             return True
         return False
 
     def out_cb_front_cam_navigation(outcome_map):
-        if outcome_map['MAT_FRONT_CAM_NAVIGATION_TIMER'] == 'ERROR':
+        if outcome_map['MAT_FRONT_CAM_NAVIGATION_TIMER'] == 'TERMINATING' and outcome_map['MAT_FRONT_CAM_NAVIGATION'] != 'HORIZONTAL_EDGE_DETECTED':
             return 'DRUMS_FAILED'
+        if outcome_map['MAT_FRONT_CAM_NAVIGATION_TIMER'] == 'CALCULATING_TIME' and outcome_map['MAT_FRONT_CAM_NAVIGATION'] != 'HORIZONTAL_EDGE_DETECTED':
+            return 'Calculating_TIME_FRONT_CAM_NAVIGATION'
         if outcome_map['MAT_FRONT_CAM_NAVIGATION'] == 'HORIZONTAL_EDGE_DETECTED':
             return 'SUCCESS'
         if outcome_map['MAT_FRONT_CAM_NAVIGATION'] == 'MAT_FRONT_CAM_NAVIGATION_FAILED':
@@ -93,9 +102,11 @@ def create_drums_fsm():
 
 
     def child_term_cb_bottom_cam_navigation(outcome_map):
-        if outcome_map['MAT_BOTTOM_CAM_NAVIGATION_TIMER'] == 'ERROR':
-            return True
         if outcome_map['MAT_BOTTOM_CAM_NAVIGATION'] == 'BLUE_DRUM_DETECTED':
+            return True
+        if outcome_map['MAT_BOTTOM_CAM_NAVIGATION_TIMER'] == 'TERMINATING':
+            return True
+        if outcome_map['MAT_BOTTOM_CAM_NAVIGATION_TIMER'] == 'CALCULATING_TIME':
             return True
         if outcome_map['MAT_BOTTOM_CAM_NAVIGATION'] == 'MAT_BOTTOM_CAM_NAVIGATION_FAILED':
             return True
@@ -104,8 +115,10 @@ def create_drums_fsm():
         return False
 
     def out_cb_bottom_cam_navigation(outcome_map):
-        if outcome_map['MAT_BOTTOM_CAM_NAVIGATION_TIMER'] == 'ERROR':
+        if outcome_map['MAT_BOTTOM_CAM_NAVIGATION_TIMER'] == 'TERMINATING' and (outcome_map['MAT_BOTTOM_CAM_NAVIGATION'] != 'BLUE_DRUM_DETECTED' or outcome_map['MAT_BOTTOM_CAM_NAVIGATION'] != 'RED_DRUM_DETECTED'):
             return 'DRUMS_FAILED'
+        if outcome_map['MAT_BOTTOM_CAM_NAVIGATION_TIMER'] == 'CALCULATING_TIME' and (outcome_map['MAT_BOTTOM_CAM_NAVIGATION'] != 'BLUE_DRUM_DETECTED' or outcome_map['MAT_BOTTOM_CAM_NAVIGATION'] != 'RED_DRUM_DETECTED'):
+            return 'Calculating_TIME_BOTTOM_CAM_NAVIGATION'
         if outcome_map['MAT_BOTTOM_CAM_NAVIGATION'] == 'BLUE_DRUM_DETECTED':
             return 'SUCCESS'
         if outcome_map['MAT_BOTTOM_CAM_NAVIGATION'] == 'RED_DRUM_DETECTED':
@@ -115,17 +128,21 @@ def create_drums_fsm():
 
 
     def child_term_cb_drum_cam(outcome_map):
-        if outcome_map['DRUMS_NAVIGATION_TIMER'] == 'ERROR':
-            return True
         if outcome_map['DRUMS_NAVIGATION'] == 'DRUMS_NAVIGATION_OK':
+            return True
+        if outcome_map['DRUMS_NAVIGATION_TIMER'] == 'TERMINATING':
+            return True
+        if outcome_map['DRUMS_NAVIGATION_TIMER'] == 'CALCULATING_TIME':
             return True
         if outcome_map['DRUMS_NAVIGATION'] == 'DRUMS_NAVIGATION_FAILED':
             return True
         return False
 
     def out_cb_drum_cam(outcome_map):
-        if outcome_map['DRUMS_NAVIGATION_TIMER'] == 'ERROR':
+        if outcome_map['DRUMS_NAVIGATION_TIMER'] == 'TERMINATING' and outcome_map['DRUMS_NAVIGATION'] != 'DRUMS_NAVIGATION_OK':
             return 'DRUMS_FAILED'
+        if outcome_map['DRUMS_NAVIGATION_TIMER'] == 'CALCULATING_TIME' and outcome_map['DRUMS_NAVIGATION'] != 'DRUMS_NAVIGATION_OK':
+            return 'Calculating_TIME_DRUMS_NAVIGATION'
         if outcome_map['DRUMS_NAVIGATION'] == 'DRUMS_NAVIGATION_OK':
             return 'SUCCESS'
         if outcome_map['DRUMS_NAVIGATION'] == 'DRUMS_NAVIGATION_FAILED':
@@ -167,17 +184,22 @@ def create_drums_fsm():
         forwardLongMoveGoal.value = 10000
         forwardLongMoveGoal.holdIfInfinityValue = False
 
+        smach.StateMachine.add('FORWARD_LONG_MOVE',
+                               smach_ros.SimpleActionState(
+                                   'move_by_time',
+                                   MoveAction,
+                                   goal=forwardLongMoveGoal),
+                               {'succeeded':'DRUM_MISSION_DETECTION_FSM', 'preempted':'DRUMS_FAILED', 'aborted':'DRUMS_FAILED'})
+
 
         # Create the sub SMACH state machine
         sm_sub = smach.StateMachine(outcomes=['MAT_FRONT_CAM_NAVIGATION', 'DRUMS_FAILED'])
 
         with sm_sub:
-            smach.StateMachine.add('FORWARD_LONG_MOVE',
-                                   smach_ros.SimpleActionState(
-                                       'move_by_time',
-                                       MoveAction,
-                                       goal=forwardLongMoveGoal),
-                                   {'succeeded':'LAG_DIRECTION_CONTROL', 'preempted':'DRUMS_FAILED', 'aborted':'DRUMS_FAILED'})
+            smach.StateMachine.add('MAT_DETECTION_CHECK', mat_detection_check(),
+                                   transitions={'MAT_DETECTED':'MAT_FRONT_CAM_NAVIGATION',
+                                                'NO_MAT_DETECTED':'LAG_DIRECTION_CONTROL',
+                                                'FAILED':'DRUMS_FAILED'})
 
             smach.StateMachine.add('LAG_DIRECTION_CONTROL', lag_direction_control(),
                                    {'RIGHT':'RIGHT_MOVE', 'LEFT':'LEFT_MOVE', 'FAILED':'DRUMS_FAILED'})
@@ -195,14 +217,9 @@ def create_drums_fsm():
                                        MoveAction,
                                        goal=rightMoveGoal),
                                    {'succeeded':'MAT_DETECTION_CHECK', 'preempted':'DRUMS_FAILED', 'aborted':'DRUMS_FAILED'})
-
-            smach.StateMachine.add('MAT_DETECTION_CHECK', mat_detection_check(),
-                                   transitions={'MAT_DETECTED':'MAT_FRONT_CAM_NAVIGATION',
-                                                'NO_MAT_DETECTED':'LAG_DIRECTION_CONTROL',
-                                                'FAILED':'DRUMS_FAILED'})
         '''-----------------------------------------------------------------------'''
         # Create the sub SMACH state machine
-        sm_con_detection = smach.Concurrence(outcomes=['SUCCESS','DRUMS_FAILED'],
+        sm_con_detection = smach.Concurrence(outcomes=['SUCCESS','DRUMS_FAILED', 'Calculating_TIME_DETECTION'],
                                              default_outcome='SUCCESS',
                                              child_termination_cb = child_term_cb_detection,
                                              outcome_cb = out_cb_detection)
@@ -210,16 +227,20 @@ def create_drums_fsm():
         with sm_con_detection:
             # Add states to the container
             smach.Concurrence.add('MAT_DETECTION', sm_sub)
-            smach.Concurrence.add('MAT_DETECTION_TIMER', common_states.create_timer_state(30))
+            smach.Concurrence.add('MAT_DETECTION_TIMER', common_states.create_time_calculation_state(60, 1))
 
 
         smach.StateMachine.add('DRUM_MISSION_DETECTION_FSM', sm_con_detection,
                                transitions={'SUCCESS':'DRUM_MISSION_FRONT_CAM_NAVIGATION_FSM',
-                                            'DRUMS_FAILED':'DRUMS_FAILED'})
+                                            'DRUMS_FAILED':'DRUMS_FAILED',
+                                            'Calculating_TIME_DETECTION':'CIRCLE_DETECTION'})
+
+        smach.StateMachine.add('CIRCLE_DETECTION', common_states.create_time_calculation_state(60, 1),
+                               transitions={'CALCULATING_TIME':'DRUM_MISSION_DETECTION_FSM', 'TERMINATING':'DRUMS_FAILED'})
         '''-----------------------------------------------------------------------'''
 
         # Create the sub SMACH state machine
-        sm_con_front_cam_navigation = smach.Concurrence(outcomes=['SUCCESS','DRUMS_FAILED'],
+        sm_con_front_cam_navigation = smach.Concurrence(outcomes=['SUCCESS','DRUMS_FAILED', 'Calculating_TIME_FRONT_CAM_NAVIGATION'],
                                              default_outcome='SUCCESS',
                                              child_termination_cb = child_term_cb_front_cam_navigation,
                                              outcome_cb = out_cb_front_cam_navigation)
@@ -227,15 +248,19 @@ def create_drums_fsm():
         with sm_con_front_cam_navigation:
             # Add states to the container
             smach.Concurrence.add('MAT_FRONT_CAM_NAVIGATION', mat_front_cam_navigation.create_mat_front_cam_navigation_fsm())
-            smach.Concurrence.add('MAT_FRONT_CAM_NAVIGATION_TIMER', common_states.create_timer_state(40))
+            smach.Concurrence.add('MAT_FRONT_CAM_NAVIGATION_TIMER', common_states.create_time_calculation_state(60, 1))
 
         smach.StateMachine.add('DRUM_MISSION_FRONT_CAM_NAVIGATION_FSM', sm_con_front_cam_navigation,
                                transitions={'SUCCESS':'DRUM_MISSION_BOTTOM_CAM_NAVIGATION_FSM',
-                                            'DRUMS_FAILED':'DRUMS_FAILED'})
+                                            'DRUMS_FAILED':'DRUMS_FAILED',
+                                            'Calculating_TIME_FRONT_CAM_NAVIGATION':'CIRCLE_FRONT_CAM_NAVIGATION'})
+
+        smach.StateMachine.add('CIRCLE_FRONT_CAM_NAVIGATION', common_states.create_time_calculation_state(60, 1),
+                               transitions={'CALCULATING_TIME':'DRUM_MISSION_FRONT_CAM_NAVIGATION_FSM', 'TERMINATING':'DRUMS_FAILED'})
         '''-----------------------------------------------------------------------'''
 
         # Create the sub SMACH state machine
-        sm_con_bottom_cam_navigation = smach.Concurrence(outcomes=['SUCCESS','DRUMS_FAILED'],
+        sm_con_bottom_cam_navigation = smach.Concurrence(outcomes=['SUCCESS','DRUMS_FAILED', 'Calculating_TIME_BOTTOM_CAM_NAVIGATION'],
                                                         default_outcome='SUCCESS',
                                                         child_termination_cb = child_term_cb_bottom_cam_navigation,
                                                         outcome_cb = out_cb_bottom_cam_navigation)
@@ -243,15 +268,19 @@ def create_drums_fsm():
         with sm_con_bottom_cam_navigation:
             # Add states to the container
             smach.Concurrence.add('MAT_BOTTOM_CAM_NAVIGATION', mat_bottom_cam_navigation.create_mat_bottom_cam_navigation_fsm())
-            smach.Concurrence.add('MAT_BOTTOM_CAM_NAVIGATION_TIMER', common_states.create_timer_state(50))
+            smach.Concurrence.add('MAT_BOTTOM_CAM_NAVIGATION_TIMER', common_states.create_time_calculation_state(60, 1))
 
         smach.StateMachine.add('DRUM_MISSION_BOTTOM_CAM_NAVIGATION_FSM', sm_con_bottom_cam_navigation,
                                transitions={'SUCCESS':'DRUM_MISSION_DRUM_NAVIGATION_FSM',
-                                            'DRUMS_FAILED':'DRUMS_FAILED'})
+                                            'DRUMS_FAILED':'DRUMS_FAILED',
+                                            'Calculating_TIME_BOTTOM_CAM_NAVIGATION':'CIRCLE_BOTTOM_CAM_NAVIGATION'})
+
+        smach.StateMachine.add('CIRCLE_BOTTOM_CAM_NAVIGATION', common_states.create_time_calculation_state(60, 1),
+                               transitions={'CALCULATING_TIME':'DRUM_MISSION_BOTTOM_CAM_NAVIGATION_FSM', 'TERMINATING':'DRUMS_FAILED'})
         '''-----------------------------------------------------------------------'''
 
         # Create the sub SMACH state machine
-        sm_con_drum_cam = smach.Concurrence(outcomes=['SUCCESS','DRUMS_FAILED'],
+        sm_con_drum_cam = smach.Concurrence(outcomes=['SUCCESS','DRUMS_FAILED', 'Calculating_TIME_DRUMS_NAVIGATION'],
                                                          default_outcome='SUCCESS',
                                                          child_termination_cb = child_term_cb_drum_cam,
                                                          outcome_cb = out_cb_drum_cam)
@@ -259,11 +288,15 @@ def create_drums_fsm():
         with sm_con_drum_cam:
             # Add states to the container
             smach.Concurrence.add('DRUMS_NAVIGATION', drums_navigation.create_drums_navigation_fsm())
-            smach.Concurrence.add('DRUMS_NAVIGATION_TIMER', common_states.create_timer_state(60))
+            smach.Concurrence.add('DRUMS_NAVIGATION_TIMER', common_states.create_time_calculation_state(60, 1))
 
         smach.StateMachine.add('DRUM_MISSION_DRUM_NAVIGATION_FSM', sm_con_drum_cam,
                                transitions={'SUCCESS':'DRUMS_OK',
-                                            'DRUMS_FAILED':'DRUMS_FAILED'})
+                                            'DRUMS_FAILED':'DRUMS_FAILED',
+                                            'Calculating_TIME_DRUMS_NAVIGATION':'CIRCLE_DRUM_NAVIGATION'})
+
+        smach.StateMachine.add('CIRCLE_DRUM_NAVIGATION', common_states.create_time_calculation_state(60, 1),
+                               transitions={'CALCULATING_TIME':'DRUM_MISSION_DRUM_NAVIGATION_FSM', 'TERMINATING':'DRUMS_FAILED'})
 
         '''
         smach.Concurrence.add('MAT_FRONT_CAM_NAVIGATION', mat_front_cam_navigation.create_mat_front_cam_navigation_fsm(),

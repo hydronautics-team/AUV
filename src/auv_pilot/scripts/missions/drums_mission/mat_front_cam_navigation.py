@@ -139,10 +139,6 @@ def create_mat_front_cam_navigation_fsm():
                 rospy.sleep(3.0) # Test
                 return 'CALCULATING_TIME'
             elif abs(self.current_time.secs - self.start_time.secs) > 50 and userdata.TIME.secs > 3*60:
-                print ("userdata.TIME.secs")
-                print (userdata.TIME.secs)
-                print ("self.start_time.secs")
-                print (self.start_time.secs)
                 return 'TERMINATING'
             else:
                 rospy.sleep(3.0) # Test
@@ -217,6 +213,11 @@ def create_mat_front_cam_navigation_fsm():
         forwardMoveAboveMatGoal.value = 800
         forwardMoveAboveMatGoal.holdIfInfinityValue = False
 
+        smach.StateMachine.add('MAT_HORIZONTAL_EDGE_CHECK', edge_check(),
+                               transitions={'NO_EDGE_DETECTED':'MAT_CENTERING',
+                                            'EDGE_DETECTED':'HORIZONTAL_EDGE_DETECTED',
+                                            'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'},
+                               remapping={'MISSION_START_TIME':'sm_time'})
 
         smach.StateMachine.add('FORWARD_MOVE',
                                smach_ros.SimpleActionState(
@@ -224,12 +225,6 @@ def create_mat_front_cam_navigation_fsm():
                                    MoveAction,
                                    goal=forwardMoveGoal),
                                {'succeeded':'MAT_HORIZONTAL_EDGE_CHECK', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED', 'aborted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-
-        smach.StateMachine.add('MAT_HORIZONTAL_EDGE_CHECK', edge_check(),
-                                transitions={'NO_EDGE_DETECTED':'MAT_CENTERING',
-                                             'EDGE_DETECTED':'HORIZONTAL_EDGE_DETECTED',
-                                             'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'},
-                                remapping={'MISSION_START_TIME':'sm_time'})
 
         '''
         smach.StateMachine.add('MAT_DETECTION', mat_detection(),

@@ -202,6 +202,14 @@ def create_mat_bottom_cam_navigation_fsm():
         backwardsMoveGoal.holdIfInfinityValue = False
 
 
+        smach.StateMachine.add('HORIZONTAL_EDGE_POSITION', horizontal_edge_position(),
+                               transitions={'OK':'MOVE',
+                                            'INITIALIZATION':'REVERSE_DIRECTION',
+                                            'NeedForwardMove':'FORWARD_MOVE',
+                                            'NeedBackwardMove':'BACKWARDS_MOVE',
+                                            'EdgeDetectionFailure':'WAITING_EDGE_DETECTION_MSG',
+                                            'FAILED':'MAT_BOTTOM_CAM_NAVIGATION_FAILED'})
+
         smach.StateMachine.add('FORWARD_MOVE',
                                smach_ros.SimpleActionState(
                                    'move_by_time',
@@ -223,14 +231,6 @@ def create_mat_bottom_cam_navigation_fsm():
                                    MoveAction,
                                    goal=backwardsMoveGoal),
                                {'succeeded':'HORIZONTAL_EDGE_POSITION', 'preempted':'MAT_BOTTOM_CAM_NAVIGATION_FAILED', 'aborted':'MAT_BOTTOM_CAM_NAVIGATION_FAILED'})
-
-        smach.StateMachine.add('HORIZONTAL_EDGE_POSITION', horizontal_edge_position(),
-                              transitions={'OK':'MOVE',
-                                           'INITIALIZATION':'REVERSE_DIRECTION',
-                                           'NeedForwardMove':'FORWARD_MOVE',
-                                           'NeedBackwardMove':'BACKWARDS_MOVE',
-                                           'EdgeDetectionFailure':'WAITING_EDGE_DETECTION_MSG',
-                                           'FAILED':'MAT_BOTTOM_CAM_NAVIGATION_FAILED'})
 
         smach.StateMachine.add('DRUM_DETECTION_CHECK', drum_detection_check(),
                                transitions={'RED_DRUM_DETECTED':'ERROR_FLAG_CHECK',
