@@ -19,18 +19,18 @@
         <param name="diveTime" value="5.0" />
     </node>
 
-<!--    <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" respawn="true" >
+    <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" respawn="true" >
         <param name="device" value="/dev/ttyS0" />
         <param name="baudrate" value="57600" />
         <param name="dataBytes" value="8" />
         <param name="parity" value="none" />
         <param name="stopBits" value="1" />
-    </node>-->
+    </node>
     <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" respawn="true" />
 
     <!-- First front camera -->
     <node name="cam_front_1" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
-        <param name="video_device" value="/dev/video0" />
+        <param name="video_device" value="/dev/v4l/by-id/usb-3.0_USB_Camera_3.0_USB_Camera-video-index0" />
         <param name="image_width" value="640" />
         <param name="image_height" value="480" />
         <param name="pixel_format" value="yuyv" />
@@ -40,7 +40,7 @@
         <param name="io_method" value="mmap"/>
     </node>
 
-<!--    &lt;!&ndash; Bottom camera &ndash;&gt;
+    <!-- Bottom camera -->
     <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
         <param name="video_device" value="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._H264_USB_Camera_SN0001-video-index0" />
         <param name="image_width" value="640" />
@@ -50,7 +50,7 @@
         <param name="camera_frame_id" value="cam_bottom" />
         <param name="camera_name" value="cam_bottom" />
         <param name="io_method" value="mmap"/>
-    </node>-->
+    </node>
 
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
         <param name="startCondition" value="trigger" />
