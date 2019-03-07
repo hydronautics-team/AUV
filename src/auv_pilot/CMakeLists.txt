@@ -185,10 +185,12 @@ add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
    scripts/top_level_fsm.py
-   scripts/demo.py
-   init/init_states.py
-   missions/gate_mission.py
-   missions/drums_mission.py
+   scripts/qualification/qualification_fsm.py
+   scripts/demo/demo_fsm.py
+   scripts/common/common_states.py
+   scripts/missions/drums_mission.py
+   scripts/missions/gate_mission.py
+   scripts/missions/missions_fsm.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

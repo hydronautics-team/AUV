@@ -1,0 +1,14 @@
+<launch>
+
+    <include file="$(find auv_startup)/launch/common.launch" />
+
+    <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
+        <param name="notifyOnFinish" value="true" />
+        <param name="mode" value="demo" />
+        <param name="diveDelay" value="20" />
+        <param name="initialDepth" value="50" />
+        <param name="imuReset" value="false" />
+        <param name="qualificationDuration" value="25" /> <!-- March move duration in seconds -->
+    </node>
+
+</launch>

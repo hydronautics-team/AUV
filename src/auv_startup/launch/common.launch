@@ -1,0 +1,21 @@
+<launch>
+
+    <node pkg="auv_connection" name="uart_bridge" type="uart_bridge" output="screen" respawn="true" >
+        <param name="device" value="/dev/ttyS0" />
+        <param name="baudrate" value="57600" />
+        <param name="dataBytes" value="8" />
+        <param name="parity" value="none" />
+        <param name="stopBits" value="1" />
+    </node>
+    <node pkg="auv_connection" name="hardware_bridge" type="hardware_bridge" output="screen" respawn="true" />
+
+    <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
+        <param name="simulation" value="false" />
+        <param name="velocityLevel1" value="3000.0" />
+        <param name="velocityLevel2" value="5000.0" />
+        <param name="velocityLevel3" value="7000.0" />
+        <param name="velocityLevel4" value="15000.0" />
+        <param name="diveTime" value="5.0" />
+    </node>
+
+</launch>
