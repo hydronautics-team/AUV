@@ -27,7 +27,7 @@
     <arg name="storage" />
 
     <!-- Reset IMU after start -->
-    <arg name="imuReset" default="false" />
+    <arg name="imuReset" default="true" />
 
     <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
         <remap from="/cam_front_1/image_raw" to="/stereo/camera/right/image_raw" if="$(arg simulation)" />
@@ -47,7 +47,7 @@
         <param name="velocityLevel1" value="3000.0" />
         <param name="velocityLevel2" value="5000.0" />
         <param name="velocityLevel3" value="7000.0" />
-        <param name="velocityLevel4" value="15000.0" />
+        <param name="velocityLevel4" value="20000.0" />
         <param name="diveTime" value="5.0" />
     </node>
         
@@ -82,7 +82,8 @@
                 <param name="io_method" value="mmap"/>
             </node>
 
-            <!-- Bottom camera -->
+             <!-- Bottom camera -->
+             <!--
             <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
                 <param name="video_device" value="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._H264_USB_Camera_SN0001-video-index0" />
                 <param name="image_width" value="640" />
@@ -93,6 +94,7 @@
                 <param name="camera_name" value="cam_bottom" />
                 <param name="io_method" value="mmap"/>
             </node>
+            -->
 
         </group>
 
@@ -107,13 +109,14 @@
                 <param name="filename" value="$front-1.avi" />
             </node>
             
-            <!-- Bottom camera recorder -->
+            <!-- Bottom camera recorder 
             <node name="bottom_recorder" pkg="auv_vision" type="video_recorder" output="screen">
                 <remap from="image" to="/cam_bottom/image_raw"/>
                 <param name="fps" value="30" />
                 <param name="codec" value="H264" />
                 <param name="filename" value="bottom.avi" />
             </node>
+            -->
         </group>
 
     </group>
@@ -129,9 +132,9 @@
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
         <param name="mode" value="$(arg mode)" />
         <param name="diveDelay" value="5" />
-        <param name="initialDepth" value="50" />
+        <param name="initialDepth" value="40" />
         <param name="imuReset" value="$(arg imuReset)" />
-        <param name="qualificationDuration" value="25" /> <!-- March move duration in seconds -->
+        <param name="qualificationDuration" value="20" /> <!-- March move duration in seconds -->
     </node>
 
 </launch>

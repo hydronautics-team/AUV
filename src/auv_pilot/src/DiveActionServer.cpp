@@ -15,7 +15,7 @@ DiveActionServer::DiveActionServer(const std::string &actionName, const std::str
 
 
 void DiveActionServer::goalCallback(const auv_common::DiveGoalConstPtr &goal) {
-    unsigned int desiredDepth = goal->depth;
+    int desiredDepth = goal->depth;
 
     auv_common::DepthCmd cmd;
     cmd.request.depth = goal->depth;
@@ -25,12 +25,14 @@ void DiveActionServer::goalCallback(const auv_common::DiveGoalConstPtr &goal) {
     sleepRate.sleep();*/
 
     bool depthInRange = false;
-    while (!depthInRange) {
+    while (true) {
         std_msgs::UInt32 depthMessage = *ros::topic::waitForMessage<std_msgs::UInt32>(depthTopic, nodeHandle);
-        unsigned int currentDepth = depthMessage.data;
+        int currentDepth = depthMessage.data;
         ROS_INFO("Current depth: %d, desired depth: %d, depth error range: %d", currentDepth, desiredDepth, depthRange);
-        if (std::abs(desiredDepth - currentDepth) < depthRange)
-            depthInRange = true;
+        if (std::abs(desiredDepth - currentDepth) < depthRange) {
+            ROS_INFO("Dive achieved");
+            break;
+        }
     }
 
     ROS_INFO("Dive succeeded");

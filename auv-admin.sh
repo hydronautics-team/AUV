@@ -121,6 +121,6 @@ then
     exit
 fi
 
-LAUNCH_COMMAND="$LAUNCH_COMMAND record:=true imuReset:=true"
+LAUNCH_COMMAND="$LAUNCH_COMMAND imuReset:=true"
 echo $LAUNCH_COMMAND
 roslaunch launch/AUV.launch $LAUNCH_COMMAND

@@ -100,8 +100,10 @@ void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
         received_vector.push_back(msg->data[i]);
     }
     bool ok = response.parseVector(received_vector);
-    if (ok)
-        current_depth = std::abs((int)response.depth) * 100; // Convert metres to centimetres
+    if (ok) {
+        //ROS_INFO("Received depth: %f", response.depth);
+        current_depth = std::abs(static_cast<int>(response.depth * 100.0f)); // Convert metres to centimetres
+    }
     else
         ROS_ERROR("Wrong checksum");
 }
