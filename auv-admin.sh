@@ -11,7 +11,7 @@ function show_help()
 
     printf "./auv-admin.sh run <mode> [--sim] [--stream] [--nocon] [--nocam]\n"
     printf "Runs nodes. Parameters and arguments:\n"
-    printf "    mode - Application mode. Available modes: qualification, missions, demo, none.\n"
+    printf "    mode - Application mode. Available modes: qualification_simple, qualification_vision, missions, demo, none.\n"
     printf "    --sim - Optional argument, enables simulation mode.\n"
     printf "    --stream - Optional argument, enables video stream from cameras.\n"
     printf "    --nocon - Optional argument, disables connection with hardware interfaces.\n"
@@ -55,8 +55,12 @@ while [ "$1" != "" ]; do
         $STATE_RUN_MODE )
 
             case "$1" in
-                "qualification" | "qualif" )
-                    LAUNCH_COMMAND="$LAUNCH_COMMAND mode:=qualification"
+                "qualification_simple" | "qualifs" )
+                    LAUNCH_COMMAND="$LAUNCH_COMMAND mode:=qualification_simple"
+                    NEXT_STATE=${STATE_OPT_ARG}
+                    ;;
+                "qualification_vision" | "qualifv" )
+                    LAUNCH_COMMAND="$LAUNCH_COMMAND mode:=qualification_simple"
                     NEXT_STATE=${STATE_OPT_ARG}
                     ;;
                 "missions" )
@@ -117,5 +121,6 @@ then
     exit
 fi
 
+LAUNCH_COMMAND="$LAUNCH_COMMAND record:=true imuReset:=true"
 echo $LAUNCH_COMMAND
 roslaunch launch/AUV.launch $LAUNCH_COMMAND
