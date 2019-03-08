@@ -12,9 +12,9 @@
         <param name="notifyOnFinish" value="true" />
         <param name="mode" value="qualification_simple" />
         <param name="diveDelay" value="20" />
-        <param name="initialDepth" value="50" />
+        <param name="initialDepth" value="40" />
         <param name="imuReset" value="true" />
-        <param name="qualificationDuration" value="25" /> <!-- March move duration in seconds -->
+        <param name="qualificationDuration" value="20" /> <!-- March move duration in seconds -->
     </node>
 
 </launch>
