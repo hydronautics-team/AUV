@@ -104,7 +104,7 @@
                 <remap from="image" to="/cam_front_1/image_raw"/>
                 <param name="fps" value="30" />
                 <param name="codec" value="H264" />
-                <param name="filename" value="$(arg storage)/front-1.avi" />
+                <param name="filename" value="$front-1.avi" />
             </node>
             
             <!-- Bottom camera recorder -->
@@ -112,7 +112,7 @@
                 <remap from="image" to="/cam_bottom/image_raw"/>
                 <param name="fps" value="30" />
                 <param name="codec" value="H264" />
-                <param name="filename" value="$(arg storage)/bottom.avi" />
+                <param name="filename" value="bottom.avi" />
             </node>
         </group>
 
