@@ -69,7 +69,7 @@ def main():
         if launchRequested:
             uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
             roslaunch.configure_logging(uuid)
-            launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/sibirsky/factory/AUV/src/auv_startup/launch/" +
+            launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/nvidia/AUV/src/auv_startup/launch/" +
                                                      requestedMode + ".launch"])
             rospy.loginfo('Starting launch mode ' + requestedMode)
             launch.start()
