@@ -27,7 +27,7 @@ def create_qualification_simple_fsm(qualification_duration):
                                     goal=forwardMoveGoal),
                                 {'succeeded':'ASCENT', 'preempted':'QUALIFICATION_FAILED', 'aborted':'QUALIFICATION_FAILED'})
 
-        smach.StateMachine.add('ASCENT', common_states.create_diving_state(-20), transitions={
+        smach.StateMachine.add('ASCENT', common_states.create_diving_state(0), transitions={
             'succeeded':'QUALIFICATION_OK', 'preempted':'QUALIFICATION_FAILED', 'aborted':'QUALIFICATION_FAILED'})
 
     return sm
@@ -94,7 +94,7 @@ def create_qualification_vision_fsm():
                                    goal=secondForwardMoveGoal),
                                {'succeeded':'ASCENT', 'preempted':'QUALIFICATION_FAILED', 'aborted':'QUALIFICATION_FAILED'})
 
-        smach.StateMachine.add('ASCENT', common_states.create_diving_state(-20), transitions={
+        smach.StateMachine.add('ASCENT', common_states.create_diving_state(0), transitions={
             'succeeded':'QUALIFICATION_OK', 'preempted':'QUALIFICATION_FAILED', 'aborted':'QUALIFICATION_FAILED'})
 
 
