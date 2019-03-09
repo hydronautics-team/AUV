@@ -11,11 +11,12 @@ from common import common_states
 
 
 LAG_DIRECTION = None
-lagDirectionParam = int(rospy.get_param('~lagDirection', 'LEFT'))
+lagDirectionParam = rospy.get_param('~lagDirection', 'LEFT')
 if lagDirectionParam == 'LEFT':
     LAG_DIRECTION = MoveGoal.DIRECTION_LEFT
 else:
     LAG_DIRECTION = MoveGoal.DIRECTION_RIGHT
+rospy.loginfo('Lag direction: '+  str(LAG_DIRECTION))
 
 FIRST_MARCH_TIME = int(rospy.get_param('~firstMarchTime', '9500'))
 SECOND_MARCH_TIME = int(rospy.get_param('~secondMarchTime', '5000'))
@@ -132,83 +133,6 @@ def create_gate_fsm_centering_vision():
             MoveGoal.DIRECTION_FORWARD, SECOND_MARCH_TIME, MoveGoal.VELOCITY_LEVEL_2),
                                {'succeeded':'GATE_OK', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
-
-
-
-
-
-
-# TODO: Try to implement through extending smach.StateMachine class
-def create_gate_fsm():
-
-    gate_count = 0
-    def exploreGate(userData, gateMessage):
-        global gate_count
-        if gateMessage.isPresent:
-            gate_count += 1
-            if gate_count > 5:
-                gate_count = 0
-                return False
-            else:
-                gate_count = 0
-                return True
-        else:
-            gate_count = 0
-            return True
-
-    sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
-
-    with sm:
-
-        firstForwardMoveGoal = MoveGoal()
-        firstForwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
-        firstForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_3
-        firstForwardMoveGoal.value = 9500
-
-        lagDirection = rospy.get_param('~lagDirection', 'LEFT')
-        sideMoveGoal = MoveGoal()
-        if lagDirection == 'LEFT':
-            sideMoveGoal.direction = MoveGoal.DIRECTION_LEFT
-        else:
-            sideMoveGoal.direction = MoveGoal.DIRECTION_RIGHT
-        sideMoveGoal.value = 0
-        sideMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        sideMoveGoal.holdIfInfinityValue = False
-
-        forwardMoveGoal = MoveGoal()
-        forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
-        forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        forwardMoveGoal.value = 4000
-
-        smach.StateMachine.add('FIRST_FORWARD_MOVE',
-                               smach_ros.SimpleActionState(
-                                   'move_by_time',
-                                   MoveAction,
-                                   goal=firstForwardMoveGoal),
-                               {'succeeded':'SIDE_MOVE', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
-
-        smach.StateMachine.add('SIDE_MOVE',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=sideMoveGoal),
-                                {'succeeded':'GATE_MONITOR', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
-
-        smach.StateMachine.add('GATE_MONITOR', 
-                                smach_ros.MonitorState(
-                                    '/gate',
-                                    Gate,
-                                    exploreGate),
-                                {'valid':'GATE_MONITOR', 'invalid':'FORWARD_MOVE', 'preempted':'GATE_FAILED'})
-
-        smach.StateMachine.add('FORWARD_MOVE',
-                                smach_ros.SimpleActionState(
-                                    'move_by_time',
-                                    MoveAction,
-                                    goal=forwardMoveGoal),
-                                {'succeeded':'GATE_OK', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
-
-    
     return sm
 
     

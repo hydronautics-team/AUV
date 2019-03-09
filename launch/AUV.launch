@@ -31,8 +31,8 @@
 
     <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
         <remap from="/cam_front_1/image_raw" to="/stereo/camera/right/image_raw" if="$(arg simulation)" />
-        <param name="detectorMode" value="vertical" />
-        <param name="horizontalToVerticalRelation" value="1.5" />
+        <param name="detectorMode" value="angle" />
+        <param name="horizontalToVerticalRelation" value="1.0" />
         <param name="debugVision" value="$(arg debugVision)" />
     </node>
 
@@ -50,7 +50,7 @@
         <param name="velocityLevel4" value="20000.0" />
         <param name="diveTime" value="5.0" />
     </node>
-        
+
     <group if="$(arg simulation)">
         <node pkg="auv_connection" name="gazebo_bridge" type="gazebo_bridge" output="screen" />
     </group>
@@ -108,8 +108,8 @@
                 <param name="codec" value="H264" />
                 <param name="filename" value="$front-1.avi" />
             </node>
-            
-            <!-- Bottom camera recorder 
+
+            <!-- Bottom camera recorder
             <node name="bottom_recorder" pkg="auv_vision" type="video_recorder" output="screen">
                 <remap from="image" to="/cam_bottom/image_raw"/>
                 <param name="fps" value="30" />
@@ -130,11 +130,16 @@
     </group>
 
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
+        
         <param name="mode" value="$(arg mode)" />
+        
         <param name="diveDelay" value="5" />
         <param name="initialDepth" value="40" />
         <param name="imuReset" value="$(arg imuReset)" />
+        
         <param name="qualificationDuration" value="20" /> <!-- March move duration in seconds -->
+        
+        <param name="gateFsmMode" value="vision" />
         <param name="lagDirection" value="LEFT" />
     </node>
 

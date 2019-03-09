@@ -29,6 +29,7 @@ def main():
         initial_depth = int(rospy.get_param('~initialDepth'))
         imu_reset = bool(rospy.get_param('~imuReset'))
         rospy.loginfo("Dive delay: " + str(dive_delay) + " Initial depth: " + str(initial_depth) + " IMU reset: " + str(imu_reset))
+
     if mode == 'QUALIFICATION_SIMPLE':
         if not (rospy.has_param('~qualificationDuration')):
             rospy.logerr("qualification_duration parameter must be set for qualification simple mode")

@@ -15,12 +15,14 @@ GateDescriptor AngleGateDetector::findBestByQuality(const std::vector<cv::Vec4f>
             if (horizontal[0] > horizontal[2])
                 horizontal = cv::Vec4f(horizontal[2], horizontal[3], horizontal[0], horizontal[1]);
 
-            if (std::max(horizontal[1], horizontal[3]) > (1.0f - horizontalPositionRatioThreshold) * frameHeight)
-                continue;
+/*            if (std::max(horizontal[1], horizontal[3]) > (1.0f - horizontalPositionRatioThreshold) * frameHeight)
+                continue;*/
 
-            float overlap = std::max(horizontal[1], horizontal[3]) - vertical[1];
-            if ((overlap > 0.0f) && (overlap > overlapThreshold))
-                continue;
+            if (vertical[1] > horizontal[1] && vertical[1] < horizontal[3]) {
+                float overlap = std::min(vertical[1] - horizontal[1], horizontal[3] - vertical[1]);
+                if ((overlap > 0.0f) && (overlap > overlapThreshold))
+                    continue;
+            }
 
             float distX = std::min(std::abs(vertical[0] - horizontal[0]),
                                    std::abs(vertical[0] - horizontal[2]));
