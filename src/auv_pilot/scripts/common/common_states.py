@@ -59,3 +59,12 @@ def create_signal_state():
     goal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
     goal.value = 1000
     return smach_ros.SimpleActionState('move_by_time', MoveAction, goal=goal)
+
+
+def create_move_state(direction, velocity_level, value, hold_if_infinity = False):
+    action_goal = MoveGoal()
+    action_goal.direction = direction
+    action_goal.velocityLevel = velocity_level
+    action_goal.value = value
+    action_goal.holdIfInfinityValue = hold_if_infinity
+    return smach_ros.SimpleActionState('move_by_time', MoveAction, goal=action_goal)

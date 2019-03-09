@@ -19,7 +19,7 @@ def barcode_callback(msg):
     global requestedMode
 
     message = msg.data.lower()
-    if message not in ['qualification_simple', 'qualification_vision', 'missions_left', 'missions_right' 'demo', 'stop']:
+    if message not in ['qualification_simple', 'qualification_vision', 'missions_left', 'missions_right', 'demo', 'stop']:
         rospy.logerr('Unknown messages')
         return
 
