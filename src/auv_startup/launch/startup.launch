@@ -13,7 +13,7 @@
     </node>
 
     <!-- Bottom camera -->
-<!--    <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
+    <node name="cam_bottom" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true" >
         <param name="video_device" value="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._H264_USB_Camera_SN0001-video-index0" />
         <param name="image_width" value="640" />
         <param name="image_height" value="480" />
@@ -22,7 +22,7 @@
         <param name="camera_frame_id" value="cam_bottom" />
         <param name="camera_name" value="cam_bottom" />
         <param name="io_method" value="mmap"/>
-    </node>-->
+    </node>
 
     <node pkg="zbar_ros" type="barcode_reader_node" name="barcode_reader" output="screen">
         <remap from="image" to="/cam_front_1/image_raw" />

@@ -72,7 +72,7 @@ def main():
             if requestedMode in ['qualification_simple', 'qualification_vision', 'demo', 'stop']:
                 uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
                 roslaunch.configure_logging(uuid)
-                launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/sibirsky/factory/AUV/src/auv_startup/launch/" +
+                launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/nvidia/AUV/src/auv_startup/launch/" +
                                                                  requestedMode + ".launch"])
                 rospy.loginfo('Starting launch mode ' + requestedMode)
                 launch.start()
@@ -87,7 +87,7 @@ def main():
 
                     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
                     roslaunch.configure_logging(uuid)
-                    launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/sibirsky/factory/AUV/src/auv_startup/launch/" +
+                    launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/nvidia/AUV/src/auv_startup/launch/" +
                                                                      mode + ".launch"])
                     rospy.loginfo('Starting launch mode ' + mode)
                     rospy.loginfo('Gate FSM mode ' + gate_fsm_mode)
@@ -104,7 +104,7 @@ def main():
 
                     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
                     roslaunch.configure_logging(uuid)
-                    launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/sibirsky/factory/AUV/src/auv_startup/launch/" +
+                    launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/nvidia/AUV/src/auv_startup/launch/" +
                                                                      mode + ".launch"])
                     rospy.loginfo('Starting launch mode ' + mode)
                     rospy.loginfo('Gate FSM mode ' + str(gate_fsm_mode))
