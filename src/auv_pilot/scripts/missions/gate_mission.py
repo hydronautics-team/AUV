@@ -26,9 +26,10 @@ def create_gate_fsm_by_timings():
     sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
     with sm:
 
-        smach.StateMachine.add('MARCH_1', common_states.create_move_state(
-            MoveGoal.DIRECTION_FORWARD, FIRST_MARCH_TIME, MoveGoal.VELOCITY_LEVEL_2),
-                               {'succeeded':'LAG_1', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
+        if FIRST_MARCH_TIME != 0:
+            smach.StateMachine.add('MARCH_1', common_states.create_move_state(
+                MoveGoal.DIRECTION_FORWARD, FIRST_MARCH_TIME, MoveGoal.VELOCITY_LEVEL_2),
+                                   {'succeeded':'LAG_INF', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
         smach.StateMachine.add('LAG_1', common_states.create_move_state(
             LAG_DIRECTION, 4500, MoveGoal.VELOCITY_LEVEL_2),
@@ -59,9 +60,10 @@ def create_gate_fsm_centering_simple():
     sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
     with sm:
 
-        smach.StateMachine.add('MARCH_1', common_states.create_move_state(
-            MoveGoal.DIRECTION_FORWARD, FIRST_MARCH_TIME, MoveGoal.VELOCITY_LEVEL_2),
-                               {'succeeded':'LAG_INF', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
+        if FIRST_MARCH_TIME != 0:
+            smach.StateMachine.add('MARCH_1', common_states.create_move_state(
+                MoveGoal.DIRECTION_FORWARD, FIRST_MARCH_TIME, MoveGoal.VELOCITY_LEVEL_2),
+                                   {'succeeded':'LAG_INF', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
         smach.StateMachine.add('LAG_INF', common_states.create_move_state(
             LAG_DIRECTION, MoveGoal.VALUE_INFINITY, MoveGoal.VELOCITY_LEVEL_2, False),
@@ -107,9 +109,10 @@ def create_gate_fsm_centering_vision():
     sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
     with sm:
 
-        smach.StateMachine.add('MARCH_1', common_states.create_move_state(
-            MoveGoal.DIRECTION_FORWARD, FIRST_MARCH_TIME, MoveGoal.VELOCITY_LEVEL_2),
-                               {'succeeded':'LAG_INF', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
+        if FIRST_MARCH_TIME != 0:
+            smach.StateMachine.add('MARCH_1', common_states.create_move_state(
+                MoveGoal.DIRECTION_FORWARD, FIRST_MARCH_TIME, MoveGoal.VELOCITY_LEVEL_2),
+                                   {'succeeded':'LAG_INF', 'preempted':'GATE_FAILED', 'aborted':'GATE_FAILED'})
 
         smach.StateMachine.add('LAG_INF', common_states.create_move_state(
             LAG_DIRECTION, MoveGoal.VALUE_INFINITY, MoveGoal.VELOCITY_LEVEL_2, False),

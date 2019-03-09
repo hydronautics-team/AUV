@@ -23,9 +23,10 @@ void CenteringServer::goalCallback(const auv_common::CenteringGoalConstPtr &goal
 
     bool inRange = false;
     int negatives = 0;
+    int lagChanges = 0;
     
     boost::function<void (const auv_common::Gate::ConstPtr&)> callback =
-            [&inRange, &negatives, this] (const auv_common::Gate::ConstPtr& gateMsg) {
+            [&inRange, &negatives, &lagChanges, this] (const auv_common::Gate::ConstPtr& gateMsg) {
 
                 if (inRange || !(gateMsg->isPresent)) {
                     negatives++;
@@ -43,7 +44,12 @@ void CenteringServer::goalCallback(const auv_common::CenteringGoalConstPtr &goal
                     this->move(Direction::STOP);
                     inRange = true;
                 } else {
+                    if (lagChanges > 15) {
+                        this->move(Direction::STOP);
+                        inRange = true;
+                    }
                     Direction direction = gateMsg->xCenter > 0 ? Direction::RIGHT : Direction::LEFT;
+                    lagChanges++;
                     this->move(direction);
                 }
             };

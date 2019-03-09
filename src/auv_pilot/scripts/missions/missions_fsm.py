@@ -22,10 +22,7 @@ def create_missions_fsm():
     if rospy.has_param('/drumsEnabled'):
         drums_enabled = bool(rospy.get_param('/drumsEnabled'))
     else:
-        if not rospy.has_param('~drumsEnabled'):
-            rospy.logerr('Gate FSM mode not specified, available modes: timings, simple, vision')
-            raise
-        drums_enabled = rospy.get_param('~drumsEnabled')
+        drums_enabled = rospy.get_param('~drumsEnabled', False)
     rospy.loginfo('Drums enabled: ' + str(drums_enabled))
 
     sm = smach.StateMachine(outcomes=['MISSIONS_OK', 'MISSIONS_FAILED'])
