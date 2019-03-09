@@ -1,8 +1,8 @@
 # Goal
-uint32 depth # Depth in centimetres
+int32 depth # Depth in centimetres
 ---
 # Result
-uint32 totalDepth
+int32 totalDepth
 ---
 # Feedback
-uint32 currentDepth
+int32 currentDepth
