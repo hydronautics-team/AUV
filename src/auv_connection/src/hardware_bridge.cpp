@@ -220,7 +220,7 @@ int main(int argc, char **argv)
     set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, false);
 
     std_msgs::UInt32 depth_message;
-    current_depth = 50;
+    current_depth = 0;
     
     // ROS publishers
     ros::Publisher outputMessage_pub 	= n.advertise<std_msgs::UInt8MultiArray>("/hard_bridge/parcel", 1000);

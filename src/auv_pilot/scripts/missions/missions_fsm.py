@@ -16,9 +16,17 @@ def create_missions_fsm():
         if not rospy.has_param('~gateFsmMode'):
             rospy.logerr('Gate FSM mode not specified, available modes: timings, simple, vision')
             raise
-    gate_fsm_mode = rospy.get_param('~gateFsmMode')
-
+        gate_fsm_mode = rospy.get_param('~gateFsmMode')
     rospy.loginfo('Gate FSM mode: ' + gate_fsm_mode)
+
+    if rospy.has_param('/drumsEnabled'):
+        drums_enabled = bool(rospy.get_param('/drumsEnabled'))
+    else:
+        if not rospy.has_param('~drumsEnabled'):
+            rospy.logerr('Gate FSM mode not specified, available modes: timings, simple, vision')
+            raise
+        drums_enabled = rospy.get_param('~drumsEnabled')
+    rospy.loginfo('Drums enabled: ' + str(drums_enabled))
 
     sm = smach.StateMachine(outcomes=['MISSIONS_OK', 'MISSIONS_FAILED'])
 
@@ -32,7 +40,8 @@ def create_missions_fsm():
             smach.StateMachine.add('GATE_MISSION', gate_mission.create_gate_fsm_centering_vision(), transitions={'GATE_OK': 'MISSIONS_OK', 'GATE_FAILED': 'MISSIONS_FAILED'})
 
         # TODO THIS IS ONLY FOR DEBUGGING
-        #smach.StateMachine.add('DRUMS_MISSION', drums_mission.create_drums_fsm(), transitions={'DRUMS_OK': 'MISSIONS_OK', 'DRUMS_FAILED': 'MISSIONS_FAILED'})
+        #if drums_enabled:
+            #smach.StateMachine.add('DRUMS_MISSION', drums_mission.create_drums_fsm(), transitions={'DRUMS_OK': 'MISSIONS_OK', 'DRUMS_FAILED': 'MISSIONS_FAILED'})
 
     return sm
 
