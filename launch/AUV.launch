@@ -135,6 +135,7 @@
         <param name="initialDepth" value="40" />
         <param name="imuReset" value="$(arg imuReset)" />
         <param name="qualificationDuration" value="20" /> <!-- March move duration in seconds -->
+        <param name="lagDirection" value="LEFT" />
     </node>
 
 </launch>

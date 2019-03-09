@@ -12,12 +12,20 @@ from auv_common.msg import MoveGoal, MoveAction, CenteringAction, CenteringGoal
 # TODO: Try to implement through extending smach.StateMachine class
 def create_gate_fsm():
 
+    gate_count = 0
     def exploreGate(userData, gateMessage):
-        return not gateMessage.hasPoint
-
-
-    def centerGate(userData, gateMessage):
-        return not (gateMessage.isPresent and abs(gateMessage.xCenter) < 10)
+        global gate_count
+        if gateMessage.isPresent:
+            gate_count += 1
+            if gate_count > 5 and gateMessage.xCenter < 10:
+                gate_count = 0
+                return False
+            else:
+                gate_count = 0
+                return True
+        else:
+            gate_count = 0
+            return True
 
     sm = smach.StateMachine(outcomes=['GATE_OK', 'GATE_FAILED'])
 
@@ -25,19 +33,23 @@ def create_gate_fsm():
 
         firstForwardMoveGoal = MoveGoal()
         firstForwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
-        firstForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        firstForwardMoveGoal.value = 5000
+        firstForwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_3
+        firstForwardMoveGoal.value = 9500
 
+        lagDirection = rospy.get_param('~lagDirection', 'LEFT')
         sideMoveGoal = MoveGoal()
-        sideMoveGoal.direction = MoveGoal.DIRECTION_LEFT
+        if lagDirection == 'LEFT':
+            sideMoveGoal.direction = MoveGoal.DIRECTION_LEFT
+        else:
+            sideMoveGoal.direction = MoveGoal.DIRECTION_RIGHT
         sideMoveGoal.value = 0
-        sideMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_2
+        sideMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         sideMoveGoal.holdIfInfinityValue = False
 
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
         forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        forwardMoveGoal.value = 10000
+        forwardMoveGoal.value = 4000
 
         smach.StateMachine.add('FIRST_FORWARD_MOVE',
                                smach_ros.SimpleActionState(
@@ -57,7 +69,7 @@ def create_gate_fsm():
                                 smach_ros.MonitorState(
                                     '/gate',
                                     Gate,
-                                    centerGate),
+                                    exploreGate),
                                 {'valid':'GATE_MONITOR', 'invalid':'FORWARD_MOVE', 'preempted':'GATE_FAILED'})
 
         smach.StateMachine.add('FORWARD_MOVE',
