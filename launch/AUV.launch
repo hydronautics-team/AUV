@@ -3,7 +3,7 @@
     <!-- TODO: Decompose -->
 
     <!-- Sets mode: qualification, missions, demo or none -->
-    <arg name="mode" default="none" />
+    <arg name="mode" default="missions" />
 
     <!-- Sets mode for drums mission: left, right, middle or none -->
     <arg name="drum_mission_direction_mode" default="left" />
@@ -21,10 +21,10 @@
     <arg name="stream" default="false" />
 
     <!-- Enables simulation mode (for simple simulator) -->
-    <arg name="simulation" default="false" />
+    <arg name="simulation" default="true" />
 
     <!-- Enables GUI windows for debugging vision nodes -->
-    <arg name="debugVision" default="false" />
+    <arg name="debugVision" default="true" />
 
     <!-- Enables video recording. Use 'storage' parameter to specify recorded video location. -->
     <arg name="record" default="false" />
