@@ -389,7 +389,7 @@ float MatDetectorBottomCamera::getDistance(float x1, float y1, float x2, float y
 }
 
 /// Global for reconfigure
-cv::Mat imageAfterContourDetection, imageWithAllLines;
+cv::Mat imageAfterContourDetection, imageWithAllLines, imageAfterContourDetectionDrum;
 
 bool MatDetectorFrontCamera::getMatContour(std::vector<std::vector<cv::Point>>& contours, const cv::Mat& image) {
 
@@ -919,6 +919,116 @@ MatDescriptorFrontCamera MatDetectorFrontCamera::detect(const cv::Mat& src, cv::
 
     if (getMatContour(contours, image)) return MatDescriptorFrontCamera::create(contours);
     else return MatDescriptorFrontCamera::noMat();
+}
+
+cv::Mat imageAfterMaskDrum;
+
+cv::Mat1b FrontCameraDrumDetector::getMask(const cv::Mat& src) {
+
+    cv::Scalar lower_red_1(0, 70, 50); /// Mean - var for low
+    cv::Scalar higher_red_1(10, 255, 255); /// Mean + var for high
+
+    cv::Scalar lower_red_2(170, 70, 50); /// Mean - var for low
+    cv::Scalar higher_red_2(180, 255, 255); /// Mean + var for high
+
+    cv::Scalar lower_blue(100, 35, 50); /// Mean - var for low
+    cv::Scalar higher_blue(180, 255, 255); /// Mean + var for high
+
+
+    /// Detect the object based on HSV Range Values
+    cv::Mat1b mask1, mask2, mask3;
+    cv::Mat src_copy;
+
+    cv::Mat hsv;
+
+    /// Convert from BGR to HSV colorspace
+    cv::cvtColor(src, hsv, CV_BGR2HSV);
+
+    //cv::inRange(hsv, lower_blue, higher_blue, mask1); /// UNABLE THIS MB
+    cv::inRange(hsv, lower_red_1, higher_red_1, mask2);
+    cv::inRange(hsv, lower_red_2, higher_red_2, mask3);
+
+    cv::Mat1b mask = mask2 | mask3;
+    imageAfterMaskDrum = mask;
+
+    return mask;
+}
+
+std::vector<std::vector<cv::Point>> FrontCameraDrumDetector::getDrumContour(const cv::Mat1b& image) {
+
+    std::vector<cv::Vec4i> hierarchy;
+
+    /// Uncomment this if you want to use trackbars to adjust canny parameters
+    //createTrackbars();
+
+    cv::Mat dst_copy;
+    cv::Canny(image, dst_copy, 1, 1*3, 3);
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(dst_copy, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+    /// Draw contours
+    cv::Mat drawing = cv::Mat::zeros(image.size(), CV_8UC3); /// Black
+    cv::RNG rng;
+    for (int i = 0; i < contours.size(); i++) {
+        cv::Scalar color = cv::Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255)); /// Random colors
+        cv::drawContours(drawing, contours, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+        //cv::drawContours(drawing, hull, i, color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+    }
+
+    imageAfterContourDetectionDrum = drawing;
+
+    // TODO add max possible contour area
+    int largest_contour_index = -1;
+    int largest_contour_index_prev = -1;
+    double largest_area = 0;
+
+    for (int i = 0; i < contours.size(); i++) {
+
+        /// Finding biggest contour
+        double a = cv::contourArea(contours[i],false);           /// Find the area of contour
+        if (a > largest_area) {
+            largest_area = a;
+            largest_contour_index_prev = largest_contour_index;
+            largest_contour_index = i;                           /// Store the index of largest contour
+        }
+    }
+
+    drawing = cv::Mat::zeros(image.size(), CV_8UC3);
+    cv::Scalar color(255, 100, 255);
+    if (largest_contour_index != -1) cv::drawContours(drawing, contours, largest_contour_index, color, 1, 8, std::vector<cv::Vec4i>(), 0); /// Draw the largest contour using previously stored index
+    if (largest_contour_index_prev != -1) cv::drawContours(drawing, contours, largest_contour_index_prev, color, 1, 8, std::vector<cv::Vec4i>(), 0); /// Draw the largest contour using previously stored index
+
+    std::vector<std::vector<cv::Point>> contour_copy = contours;
+
+    if (!contour_copy.empty() && (largest_contour_index != -1) && (largest_contour_index_prev != -1)) {
+        contour_copy[0] = contours[largest_contour_index];
+        contour_copy[1] = contours[largest_contour_index_prev];
+        return contour_copy;
+    }
+    return contour_copy;
+
+}
+
+cv::Mat FrontCameraDrumDetector::getimageAfterContourDetectionDrum() {
+    return imageAfterContourDetectionDrum;
+}
+
+cv::Mat FrontCameraDrumDetector::getimageAfterMaskDrum() {
+    return imageAfterMaskDrum;
+}
+
+FrontCameraDrumDescriptor FrontCameraDrumDetector::detect(const cv::Mat& src, cv::Mat& image) {
+
+    cv::Mat1b mask;
+    std::vector<std::vector<cv::Point>> contours;
+
+    if (!src.empty()) {
+        mask = getMask(src);}
+    //morphology(mask, mask);
+    if (!mask.empty())
+        contours = getDrumContour(mask);
+    if (contours.empty()) return FrontCameraDrumDescriptor::noDrum();
+    else return FrontCameraDrumDescriptor::create(contours);
 }
 
 MatDescriptorBottomCamera MatDetectorBottomCamera::detect(const cv::Mat& src, cv::Mat &image) {

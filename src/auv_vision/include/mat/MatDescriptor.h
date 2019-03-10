@@ -29,6 +29,31 @@ public:
 
 };
 
+class FrontCameraDrumDescriptor {
+
+private:
+
+    bool drum;
+    std::vector<std::vector<cv::Point>> contour;
+
+    FrontCameraDrumDescriptor(bool drum, const std::vector<std::vector<cv::Point>>& contour);
+
+public:
+
+    static FrontCameraDrumDescriptor noDrum();
+    static FrontCameraDrumDescriptor create(const std::vector<std::vector<cv::Point>>& contour);
+
+    FrontCameraDrumDescriptor(const FrontCameraDrumDescriptor& other); /// Copy constructor
+    ~FrontCameraDrumDescriptor() = default; /// Destructor
+    FrontCameraDrumDescriptor& operator=(const FrontCameraDrumDescriptor& other); /// Copy assignment
+
+    bool hasDrum();
+    cv::Point2f getCenter();
+    std::vector<std::vector<cv::Point>> getContour();
+    cv::Rect getBoundingRect();
+
+};
+
 class MatDescriptorBottomCamera {
 
 private:

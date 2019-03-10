@@ -55,6 +55,60 @@ cv::Rect MatDescriptorFrontCamera::getBoundingRect() {
 
 /********************************************************************/
 
+FrontCameraDrumDescriptor FrontCameraDrumDescriptor::noDrum() {return FrontCameraDrumDescriptor(false, std::vector<std::vector<cv::Point>> ());}
+
+FrontCameraDrumDescriptor FrontCameraDrumDescriptor::create(const std::vector<std::vector<cv::Point>>& contour) {return FrontCameraDrumDescriptor(true, contour);}
+
+FrontCameraDrumDescriptor::FrontCameraDrumDescriptor(bool drum, const std::vector<std::vector<cv::Point>>& contour) {
+    this->drum = drum;
+    if (drum)
+        this->contour = contour;
+}
+
+FrontCameraDrumDescriptor::FrontCameraDrumDescriptor(const FrontCameraDrumDescriptor &other) {
+    this->drum = other.drum;
+    this->contour = other.contour;
+}
+
+FrontCameraDrumDescriptor& FrontCameraDrumDescriptor::operator=(const FrontCameraDrumDescriptor &other) {
+    if (this != &other) {
+        this->drum = other.drum;
+        this->contour = other.contour;
+    }
+    return *this;
+}
+
+bool FrontCameraDrumDescriptor::hasDrum() {return drum;}
+
+std::vector<std::vector<cv::Point>> FrontCameraDrumDescriptor::getContour() {return contour;}
+
+cv::Point2f FrontCameraDrumDescriptor::getCenter() {
+    if (!drum)
+        return cv::Point2f(0.0, 0.0);
+    /// Moments
+/*
+    /// Get the moment
+    cv::Moments mu;
+    mu = moments(contour[0], false);
+
+    /// Get the mass center:
+    return cv::Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
+*/
+
+    cv::Point2f center_of_rect = (cv::boundingRect(contour[0]).br() + cv::boundingRect(contour[0]).tl())*0.5;
+    return center_of_rect;
+
+    // https://docs.opencv.org/2.4/doc/tutorials/imgproc/shapedescriptors/moments/moments.html - for several contours
+}
+
+cv::Rect FrontCameraDrumDescriptor::getBoundingRect() {
+    if (!drum)
+        return cv::Rect(0.0, 0.0, 0.0, 0.0);
+    return cv::boundingRect(contour[0]);
+}
+
+/********************************************************************/
+
 MatDescriptorBottomCamera MatDescriptorBottomCamera::noLines() {
     return MatDescriptorBottomCamera(false, false, std::vector<cv::Vec4f>(), std::vector<cv::Vec4f>());
 }

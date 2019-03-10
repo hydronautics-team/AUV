@@ -79,6 +79,29 @@ public:
 
 /**************************************************************************/
 
+class FrontCameraDrumDetector {
+
+private:
+
+    cv::Mat1b getMask(const cv::Mat& src);
+    std::vector<std::vector<cv::Point>> getDrumContour(const cv::Mat1b& image);
+    float getDrumCoordinates(const std::vector<std::vector<cv::Point>>& contours);
+
+public:
+
+    FrontCameraDrumDetector() = default;
+    ~FrontCameraDrumDetector() = default;
+    FrontCameraDrumDetector& operator=(const FrontCameraDrumDetector& other) = default;
+
+    FrontCameraDrumDescriptor detect(const cv::Mat& src, cv::Mat& image);
+
+    cv::Mat getimageAfterContourDetectionDrum();
+    cv::Mat getimageAfterMaskDrum();
+
+};
+
+/**************************************************************************/
+
 class MatDetectorBottomCamera {
 
 private:

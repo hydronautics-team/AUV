@@ -50,6 +50,7 @@ def create_mat_front_cam_navigation_fsm():
             else:
                 return 'MatPositionLost'
 
+    '''
     class edge_check(smach.State):
         def __init__(self):
             smach.State.__init__(self, outcomes=['NO_EDGE_DETECTED', 'EDGE_DETECTED', 'FAILED'],
@@ -107,19 +108,17 @@ def create_mat_front_cam_navigation_fsm():
                 return 'NO_EDGE_DETECTED'
 
     '''
+
     class mat_detection(smach.State):
         def __init__(self):
-            smach.State.__init__(self, outcomes=['SHORT_TIME', 'LONG_TIME', 'FAILED'])
-            self.state_time = -1
+            smach.State.__init__(self, outcomes=['SUCCESS'])
+            #self.subscriber = rospy.Subscriber('/drums/mat/cam_front', OptionalPoint2D, self.callback)
 
         def execute(self, userdata):
-            print ("DELTA")
-            print (abs(start_time - rospy.get_rostime()))
-            if abs(start_time - rospy.get_rostime()) < 1000:
-                return 'SHORT_TIME'
-            else:
-                return 'LONG_TIME'
-    '''
+            # sleep for 10 seconds
+            rospy.sleep(1.)
+            return 'SUCCESS'
+
 
     class time_calculation(smach.State):
         def __init__(self):
@@ -136,14 +135,74 @@ def create_mat_front_cam_navigation_fsm():
                 self.start_time = rospy.get_rostime() # get time as rospy.Time instance
                 rospy.loginfo("Start time %i %i", self.start_time.secs, self.start_time.nsecs)
                 self.timerFlag = False
-                rospy.sleep(3.0) # Test
+                rospy.sleep(0.7) # Test
                 return 'CALCULATING_TIME'
-            elif abs(self.current_time.secs - self.start_time.secs) > 50 and userdata.TIME.secs > 3*60:
+            elif abs(self.current_time.secs - self.start_time.secs) > 50: # and userdata.TIME.secs > 3*60
                 return 'TERMINATING'
             else:
-                rospy.sleep(3.0) # Test
+                rospy.sleep(0.7) # Test
                 return 'CALCULATING_TIME'
 
+
+    class detecting_drum_front_cam(smach.State):
+        def __init__(self):
+            smach.State.__init__(self, outcomes=['DRUM_DETECTED', 'NO_DRUM_DETECTED', 'FAILED'])
+
+            self.subscriber = rospy.Subscriber('/drums/cam_front', OptionalPoint2D, self.callback)
+            self.drumDetected = False
+
+        def callback(self, drumMessage):
+            if drumMessage.hasPoint:
+                self.drumDetected = True
+            else: self.drumDetected = False
+
+        def execute(self, userdata):
+            if self.drumDetected:
+                return 'DRUM_DETECTED'
+            else:
+                return 'NO_DRUM_DETECTED'
+
+
+    class lag_direction_control_drum(smach.State):
+        def __init__(self):
+            smach.State.__init__(self, outcomes=['X_PositionIsOK', 'NeedRightMove', 'NeedLeftMove', 'DrumPositionLost'])
+
+            self.subscriber = rospy.Subscriber('/drums/cam_front', OptionalPoint2D, self.callback)
+            self.hasPoint = False
+            self.lagMoveNeeded = False
+            self.rightMove = False
+            self.leftMove = False
+
+        def callback(self, matMessage):
+            if matMessage.hasPoint:
+                self.hasPoint = True
+                if abs(matMessage.x) > 40:
+                    self.lagMoveNeeded = True
+                    if matMessage.x > 0:
+                        self.rightMove = True
+                        self.leftMove = False
+                    else:
+                        self.leftMove = True
+                        self.rightMove = False
+                else:
+                    self.lagMoveNeeded = False
+            else:
+                self.hasPoint = False
+
+        def execute(self, userdata):
+            if self.hasPoint:
+                if self.lagMoveNeeded:
+                    if self.rightMove:
+                        return 'NeedRightMove'
+                    if self.leftMove:
+                        return 'NeedLeftMove'
+                else:
+                    return 'X_PositionIsOK'
+            else:
+                return 'DrumPositionLost'
+
+
+    '''
     def mat_check(userData, matMessage):
         return not matMessage.hasPoint
 
@@ -171,26 +230,36 @@ def create_mat_front_cam_navigation_fsm():
     # creating the concurrence state machine
     concurrence_state = smach.Concurrence(outcomes=['MatDetectedUsingFrontCamera', 'LongTimeNoEdge', 'CalculatingTime'],
                                           default_outcome='CalculatingTime', # if none of the mappings are satisfied, the concurrence will return its default outcome
-                                          input_keys=['MISSION_START_TIME'],
+
                                           child_termination_cb = child_term_cb,
                                           outcome_cb = out_cb)
 
     with concurrence_state:
         smach.Concurrence.add('TIMER', time_calculation(),
                               remapping={'TIME':'MISSION_START_TIME'})
-        smach.Concurrence.add('WAITING_MAT_DETECTION_MSG',
+
+
+
+        smach.Concurrence.add('WAITING_DRUM_DETECTION_MSG',
                               smach_ros.MonitorState(
-                                  '/drums/mat/cam_front',
+                                  '/drums/drum_front',
                                   OptionalPoint2D,
-                                  mat_check))
+                                  drum_check))
+    '''
 
+    def mat_check(userData, matMessage):
+        return not matMessage.hasPoint
 
-    sm = smach.StateMachine(outcomes=['HORIZONTAL_EDGE_DETECTED', 'MAT_FRONT_CAM_NAVIGATION_FAILED'])
+    def drum_check(userData, matMessage):
+        return not matMessage.hasPoint
+
+    sm = smach.StateMachine(outcomes=['DRUM_DETECTED', 'MAT_FRONT_CAM_NAVIGATION_FAILED'])
 
     with sm:
 
         leftMoveGoal = MoveGoal()
         leftMoveGoal.direction = MoveGoal.DIRECTION_LEFT
+        leftMoveGoal.value = 800
         leftMoveGoal.value = 800
         leftMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         leftMoveGoal.holdIfInfinityValue = False
@@ -207,74 +276,42 @@ def create_mat_front_cam_navigation_fsm():
         forwardMoveGoal.value = 2000
         forwardMoveGoal.holdIfInfinityValue = False
 
-        forwardMoveAboveMatGoal = MoveGoal()
-        forwardMoveAboveMatGoal.direction = MoveGoal.DIRECTION_FORWARD
-        forwardMoveAboveMatGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        forwardMoveAboveMatGoal.value = 800
-        forwardMoveAboveMatGoal.holdIfInfinityValue = False
 
+        leftMoveGoalDrum = MoveGoal()
+        leftMoveGoalDrum.direction = MoveGoal.DIRECTION_LEFT
+        leftMoveGoalDrum.value = 500
+        leftMoveGoalDrum.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+        leftMoveGoalDrum.holdIfInfinityValue = False
+
+        rightMoveGoalDrum = MoveGoal()
+        rightMoveGoalDrum.direction = MoveGoal.DIRECTION_RIGHT
+        rightMoveGoalDrum.value = 500
+        rightMoveGoalDrum.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+        rightMoveGoalDrum.holdIfInfinityValue = False
+
+        forwardMoveGoalDrum = MoveGoal()
+        forwardMoveGoalDrum.direction = MoveGoal.DIRECTION_FORWARD
+        forwardMoveGoalDrum.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
+        forwardMoveGoalDrum.value = 1000
+        forwardMoveGoalDrum.holdIfInfinityValue = False
+
+        '''
         smach.StateMachine.add('MAT_HORIZONTAL_EDGE_CHECK', edge_check(),
                                transitions={'NO_EDGE_DETECTED':'MAT_CENTERING',
                                             'EDGE_DETECTED':'HORIZONTAL_EDGE_DETECTED',
                                             'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'},
                                remapping={'MISSION_START_TIME':'sm_time'})
-
-        smach.StateMachine.add('FORWARD_MOVE',
-                               smach_ros.SimpleActionState(
-                                   'move_by_time',
-                                   MoveAction,
-                                   goal=forwardMoveGoal),
-                               {'succeeded':'MAT_HORIZONTAL_EDGE_CHECK', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED', 'aborted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-
-        '''
-        smach.StateMachine.add('MAT_DETECTION', mat_detection(),
-                               transitions={'SHORT_TIME':'WAITING_MAT_DETECTION_MSG',
-                                            'LONG_TIME':'FORWARD_MOVE_ABOVE_MAT',
-                                            'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-        '''
-
-        smach.StateMachine.add('MAT_DETECTION',
-                               concurrence_state,
-                               transitions={'MatDetectedUsingFrontCamera':'MAT_CENTERING',
-                                            'LongTimeNoEdge':'FORWARD_MOVE_ABOVE_MAT',
-                                            'CalculatingTime':'CIRCLE'},
-                               remapping={'MISSION_START_TIME':'sm_time'})
-
-        smach.StateMachine.add('CIRCLE', time_calculation(),
-                               transitions={'CALCULATING_TIME':'MAT_DETECTION', 'TERMINATING':'FORWARD_MOVE_ABOVE_MAT'},
-                               remapping={'TIME':'sm_time'})
-
-        smach.StateMachine.add('FORWARD_MOVE_ABOVE_MAT',
-                               smach_ros.SimpleActionState(
-                                   'move_by_time',
-                                   MoveAction,
-                                   goal=forwardMoveAboveMatGoal),
-                               {'succeeded':'MAT_HORIZONTAL_EDGE_CHECK_ABOVE_MAT', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED', 'aborted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-
-        smach.StateMachine.add('MAT_HORIZONTAL_EDGE_CHECK_ABOVE_MAT', edge_check_above_mat(),
-                               transitions={'NO_EDGE_DETECTED':'FORWARD_MOVE_ABOVE_MAT',
-                                            'EDGE_DETECTED':'HORIZONTAL_EDGE_DETECTED',
-                                            'MAT_DETECTED':'FORWARD_MOVE',
-                                            'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-        '''
-        # MonitorState outcome switches from valid to invalid
-        smach.StateMachine.add('WAITING_MAT_DETECTION_MSG',
-                               smach_ros.MonitorState(
-                                   '/drums/mat/cam_front',
-                                    OptionalPoint2D,
-                                   mat_check),
-                               {'invalid':'MAT_CENTERING', 'valid':'WAITING_MAT_DETECTION_MSG', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
         '''
 
         # Create the sub SMACH state machine
-        sm_sub_mat = smach.StateMachine(outcomes=['CENTERED', 'DETECTING_MAT', 'FAILED'])
+        sm_sub_mat = smach.StateMachine(outcomes=['CENTERED', 'FAILED'])
 
         with sm_sub_mat:
             smach.StateMachine.add('MAT_NAVIGATION_LAG', lag_direction_control(),
                                    transitions={'X_PositionIsOK':'CENTERED',
                                                 'NeedLeftMove':'LEFT_MOVE',
                                                 'NeedRightMove':'RIGHT_MOVE',
-                                                'MatPositionLost':'DETECTING_MAT'})
+                                                'MatPositionLost':'WAITING_MAT_DETECTION_MSG'})
 
             smach.StateMachine.add('LEFT_MOVE',
                                    smach_ros.SimpleActionState(
@@ -290,11 +327,106 @@ def create_mat_front_cam_navigation_fsm():
                                        goal=rightMoveGoal),
                                    {'succeeded':'MAT_NAVIGATION_LAG', 'preempted':'FAILED', 'aborted':'FAILED'})
 
+            # MonitorState outcome switches from valid to invalid
+            smach.StateMachine.add('WAITING_MAT_DETECTION_MSG',
+                                   smach_ros.MonitorState(
+                                       '/drums/mat/cam_front',
+                                       OptionalPoint2D,
+                                       mat_check),
+                                   {'invalid':'MAT_NAVIGATION_LAG', 'valid':'WAITING_MAT_DETECTION_MSG', 'preempted':'FAILED'})
+
 
         smach.StateMachine.add('MAT_CENTERING', sm_sub_mat,
                                 transitions={'CENTERED':'FORWARD_MOVE',
-                                             'DETECTING_MAT':'MAT_DETECTION',
                                              'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
 
+
+
+        smach.StateMachine.add('FORWARD_MOVE',
+                               smach_ros.SimpleActionState(
+                                   'move_by_time',
+                                   MoveAction,
+                                   goal=forwardMoveGoal),
+                               {'succeeded':'DRUM_DETECTION_FRONT_CAM', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED', 'aborted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
+
+
+        #smach.StateMachine.add('MAT_DETECTION', mat_detection(),
+                               #transitions={'SUCCESS':'MAT_CENTERING'})
+
+
+        smach.StateMachine.add('DRUM_DETECTION_FRONT_CAM', detecting_drum_front_cam(),
+                               transitions={'DRUM_DETECTED':'DRUM_CENTERING', 'NO_DRUM_DETECTED':'LAG_MOVE_ADJUSTMENT', 'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
+
+        smach.StateMachine.add('LAG_MOVE_ADJUSTMENT',
+                               smach_ros.SimpleActionState(
+                                    'move_by_time',
+                                    MoveAction,
+                                    goal=rightMoveGoalDrum),
+                               {'succeeded':'DRUM_DETECTION_FRONT_CAM', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED', 'aborted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
+
+        # Create the sub SMACH state machine
+        sm_sub_drum = smach.StateMachine(outcomes=['CENTERED', 'FAILED'])
+
+        with sm_sub_drum:
+            smach.StateMachine.add('DRUM_NAVIGATION_LAG', lag_direction_control_drum(),
+                                   transitions={'X_PositionIsOK':'CENTERED',
+                                                'NeedLeftMove':'LEFT_MOVE',
+                                                'NeedRightMove':'RIGHT_MOVE',
+                                                'DrumPositionLost':'WAITING_DRUM_DETECTION_MSG'})
+
+            # MonitorState outcome switches from valid to invalid
+            smach.StateMachine.add('WAITING_DRUM_DETECTION_MSG',
+                                   smach_ros.MonitorState(
+                                       '/drums/cam_front',
+                                       OptionalPoint2D,
+                                       drum_check),
+                                   {'invalid':'DRUM_NAVIGATION_LAG', 'valid':'WAITING_DRUM_DETECTION_MSG', 'preempted':'FAILED'})
+
+            smach.StateMachine.add('LEFT_MOVE',
+                                   smach_ros.SimpleActionState(
+                                       'move_by_time',
+                                       MoveAction,
+                                       goal=leftMoveGoalDrum),
+                                   {'succeeded':'DRUM_NAVIGATION_LAG', 'preempted':'FAILED', 'aborted':'FAILED'})
+
+            smach.StateMachine.add('RIGHT_MOVE',
+                                   smach_ros.SimpleActionState(
+                                       'move_by_time',
+                                       MoveAction,
+                                       goal=rightMoveGoalDrum),
+                                   {'succeeded':'DRUM_NAVIGATION_LAG', 'preempted':'FAILED', 'aborted':'FAILED'})
+
+
+        smach.StateMachine.add('DRUM_CENTERING', sm_sub_drum,
+                               transitions={'CENTERED':'FORWARD_MOVE_UNTIL_DRUM_DETECTED',
+                                            'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
+
+        # Create the sub SMACH state machine
+        sm_sub_drum_navigation = smach.StateMachine(outcomes=['DRUM_DETECTED', 'FAILED'])
+
+        with sm_sub_drum_navigation:
+            smach.StateMachine.add('FORWARD_MOVE',
+                                   smach_ros.SimpleActionState(
+                                       'move_by_time',
+                                       MoveAction,
+                                       goal=forwardMoveGoal),
+                                   {'succeeded':'DRUM_DETECTION_BOTTOM_CAM', 'preempted':'FAILED', 'aborted':'FAILED'})
+
+            smach.StateMachine.add('DRUM_DETECTION_BOTTOM_CAM', detecting_drum_front_cam(),
+                                   transitions={'DRUM_DETECTED':'DRUM_DETECTED', 'NO_DRUM_DETECTED':'FORWARD_MOVE', 'FAILED':'FAILED'})
+
+        smach.StateMachine.add('FORWARD_MOVE_UNTIL_DRUM_DETECTED', sm_sub_drum_navigation,
+                               transitions={'DRUM_DETECTED':'DRUM_DETECTED',
+                                            'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
+
+        '''
+        # MonitorState outcome switches from valid to invalid
+        smach.StateMachine.add('WAITING_MAT_DETECTION_MSG',
+                               smach_ros.MonitorState(
+                                   '/drums/mat/cam_front',
+                                    OptionalPoint2D,
+                                   mat_check),
+                               {'invalid':'MAT_CENTERING', 'valid':'WAITING_MAT_DETECTION_MSG', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
+        '''
 
     return sm
