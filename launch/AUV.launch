@@ -148,8 +148,11 @@
         
         <param name="qualificationDuration" value="20" /> <!-- March move duration in seconds -->
         
-        <param name="gateFsmMode" value="vision" />
+        <param name="gateFsmMode" value="simple" />
+        <param name="drumsEnabled" value="true" />
         <param name="lagDirection" value="LEFT" />
+
+        <param name="drum_mission_direction_mode" value="$(arg drum_mission_direction_mode)" />
 
     </node>
 

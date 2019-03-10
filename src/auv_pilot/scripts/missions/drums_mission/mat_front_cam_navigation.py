@@ -172,12 +172,14 @@ def create_mat_front_cam_navigation_fsm():
             self.lagMoveNeeded = False
             self.rightMove = False
             self.leftMove = False
+            self.counter = 0
 
         def callback(self, matMessage):
             if matMessage.hasPoint:
                 self.hasPoint = True
                 if abs(matMessage.x) > 40:
                     self.lagMoveNeeded = True
+                    self.counter += 1
                     if matMessage.x > 0:
                         self.rightMove = True
                         self.leftMove = False
@@ -190,16 +192,19 @@ def create_mat_front_cam_navigation_fsm():
                 self.hasPoint = False
 
         def execute(self, userdata):
-            if self.hasPoint:
-                if self.lagMoveNeeded:
-                    if self.rightMove:
-                        return 'NeedRightMove'
-                    if self.leftMove:
-                        return 'NeedLeftMove'
+            if self.counter < 10:
+                if self.hasPoint:
+                    if self.lagMoveNeeded:
+                        if self.rightMove:
+                            return 'NeedRightMove'
+                        if self.leftMove:
+                            return 'NeedLeftMove'
+                    else:
+                        return 'X_PositionIsOK'
                 else:
-                    return 'X_PositionIsOK'
+                    return 'DrumPositionLost'
             else:
-                return 'DrumPositionLost'
+                'X_PositionIsOK'
 
 
     '''
@@ -260,7 +265,6 @@ def create_mat_front_cam_navigation_fsm():
         leftMoveGoal = MoveGoal()
         leftMoveGoal.direction = MoveGoal.DIRECTION_LEFT
         leftMoveGoal.value = 800
-        leftMoveGoal.value = 800
         leftMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
         leftMoveGoal.holdIfInfinityValue = False
 
@@ -273,7 +277,7 @@ def create_mat_front_cam_navigation_fsm():
         forwardMoveGoal = MoveGoal()
         forwardMoveGoal.direction = MoveGoal.DIRECTION_FORWARD
         forwardMoveGoal.velocityLevel = MoveGoal.VELOCITY_LEVEL_1
-        forwardMoveGoal.value = 2000
+        forwardMoveGoal.value = 1000
         forwardMoveGoal.holdIfInfinityValue = False
 
 
