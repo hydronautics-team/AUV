@@ -64,7 +64,9 @@ def main():
 
         elif mode == 'MISSIONS':
             smach.StateMachine.add('MISSIONS', missions_fsm.create_missions_fsm(),
-                                   transitions={'MISSIONS_OK': 'SUCCEEDED', 'MISSIONS_FAILED': 'FAILED'})
+                                   transitions={'MISSIONS_OK': 'ASCENT', 'MISSIONS_FAILED': 'FAILED'})
+
+            smach.StateMachine.add('ASCENT', common_states.create_diving_state(-20), transitions={'succeeded':'SUCCEEDED', 'preempted':'FAILED', 'aborted':'FAILED'})
 
         elif mode == 'DEMO':
             smach.StateMachine.add('DEMO', demo_fsm.create_demo_fsm(), transitions={'DEMO_OK': 'SUCCEEDED', 'DEMO_FAILED': 'FAILED'})

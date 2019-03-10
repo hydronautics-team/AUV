@@ -44,7 +44,7 @@
 
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
         <param name="simulation" value="$(arg simulation)" />
-        <param name="velocityLevel1" value="3000.0" />
+        <param name="velocityLevel1" value="4300.0" />
         <param name="velocityLevel2" value="5000.0" />
         <param name="velocityLevel3" value="7000.0" />
         <param name="velocityLevel4" value="20000.0" />
@@ -133,14 +133,15 @@
         
         <param name="mode" value="$(arg mode)" />
         
-        <param name="diveDelay" value="5" />
-        <param name="initialDepth" value="40" />
+        <param name="diveDelay" value="10" />
+        <param name="initialDepth" value="20" />
         <param name="imuReset" value="$(arg imuReset)" />
         
         <param name="qualificationDuration" value="20" /> <!-- March move duration in seconds -->
         
-        <param name="gateFsmMode" value="vision" />
+        <param name="gateFsmMode" value="simple" />
         <param name="lagDirection" value="LEFT" />
+        <param name="secondMarchTime" value="5000" />
     </node>
 
 </launch>
