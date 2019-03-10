@@ -22,7 +22,7 @@ void MoveByTimeServer::goalCallback(const auv_common::MoveGoalConstPtr &goal) {
             endCmd.request.twist = endMsg;
             ros::service::call(velocityService, endCmd);
 
-            ros::Duration(2.0).sleep();
+            ros::Duration(0.8).sleep();
         }
     } else if (goal->holdIfInfinityValue) {
         while (true)

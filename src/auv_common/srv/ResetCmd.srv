@@ -1,5 +1,0 @@
-# Request
-std_msgs/Empty empty
----
-# Response
-std_msgs/Bool success

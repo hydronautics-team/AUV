@@ -3,6 +3,7 @@
  * with support of slicing output video on 1 minute videos and multithreading.
  ****************************************************************************/
 
+#include <ctime>
 #include <opencv2/highgui/highgui.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
@@ -10,6 +11,9 @@
 #include <image_transport/image_transport.h>
 #include <camera_calibration_parsers/parse.h>
 #include <opencv2/videoio.hpp>
+#include <sys/stat.h>
+#include <cstdlib>
+#include <signal.h>
 
 #include "../include/util/ConcurrentQueue.h"
 
@@ -31,12 +35,27 @@ int slice_count = 1;
 ros::Duration slice_duration = ros::Duration(60.0); // One minute duration of one slice
 ros::Time first_frame_time = ros::Time(0);
 bool first_frame = true;
+bool recording = true;
 
 ConcurrentQueue<sensor_msgs::ImageConstPtr> imageQueue;
 
+std::string getCurrentDateTime()
+{
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[80];
+
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    strftime(buffer,sizeof(buffer),"%d-%m-%Y_%H_%M_%S",timeinfo);
+    std::string str(buffer);
+    return  str;
+}
+
 void consume(ConcurrentQueue<sensor_msgs::ImageConstPtr>& queue)
 {
-    while (true)
+    while (recording)
     {
         sensor_msgs::ImageConstPtr image_msg = queue.pop();
 
@@ -66,22 +85,6 @@ void consume(ConcurrentQueue<sensor_msgs::ImageConstPtr>& queue)
 
             ROS_INFO_STREAM("Starting to record " << codec << " video at " << size << "@" << fps << "fps. Press Ctrl+C to stop recording." );
 
-        }
-
-        if (!first_frame)
-        {
-            // Check for slice time achievement
-            if ((image_msg->header.stamp - first_frame_time) > slice_duration)
-            {
-                outputVideo.release();
-                queue.clear();
-                continue;
-            }
-        }
-        else
-        {
-            first_frame_time = image_msg->header.stamp;
-            first_frame = false;
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds((int)((1.0 / fps) * 1000)));
@@ -123,7 +126,12 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "video_recorder", ros::init_options::AnonymousName);
     ros::NodeHandle nh;
     ros::NodeHandle local_nh("~");
-    local_nh.param("filename", filename, std::string("output.avi"));
+
+    std::string videoName;
+    local_nh.param("filename", videoName, std::string("output"));
+
+    filename = "/home/nvidia/records/" + videoName + "_" + getCurrentDateTime() + ".avi";
+
     bool stamped_filename;
     local_nh.param("stamped_filename", stamped_filename, false);
     local_nh.param("fps", fps, 15);
@@ -164,7 +172,9 @@ int main(int argc, char** argv)
 
     ROS_INFO_STREAM("Waiting for topic " << topic << "...");
     ros::spin();
-    std::cout << "\nVideos saved" << std::endl;
+
+    ROS_INFO("Releasing...");
+    outputVideo.release();
 
     consumer.join();
 }

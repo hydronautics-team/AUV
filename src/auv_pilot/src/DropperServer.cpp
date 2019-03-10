@@ -12,10 +12,13 @@ DropperServer::DropperServer(const std::string &actionName, const std::string &d
 void DropperServer::goalCallback(const auv_common::DropperGoalConstPtr &goal) {
 
     auv_common::DropperCmd dropperCmd;
-    dropperCmd.request.velocity = 60;
+    dropperCmd.request.velocity = -127;
     ros::service::call(dropperService, dropperCmd);
+    ros::Duration(3).sleep();
 
-    ros::Duration(1.5).sleep();
+    dropperCmd.request.velocity = 127;
+    ros::service::call(dropperService, dropperCmd);
+    ros::Duration(3).sleep();
 
     dropperCmd.request.velocity = 0;
     ros::service::call(dropperService, dropperCmd);

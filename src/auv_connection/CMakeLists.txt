@@ -171,11 +171,6 @@ add_executable(gazebo_bridge
 target_link_libraries(gazebo_bridge ${catkin_LIBRARIES})
 add_dependencies(gazebo_bridge auv_common_generate_messages_cpp)
 
-add_executable(uart_bridge_ros
-		src/uart_bridge_ros.cpp)
-target_link_libraries(uart_bridge_ros ${catkin_LIBRARIES})
-add_dependencies(uart_bridge_ros auv_common_generate_messages_cpp)
-
 #############
 ## Install ##
 #############

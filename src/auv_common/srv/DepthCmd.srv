@@ -1,5 +1,5 @@
 # Request
-uint32 depth # Depth in centimetres
+int32 depth # Depth in centimetres
 ---
 # Response
 std_msgs/Bool success

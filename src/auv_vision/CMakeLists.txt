@@ -81,12 +81,10 @@ add_executable(gate_locator
         src/common/AbstractImageConverter.cpp
         include/gate/GateDescriptor.h
         src/gate/GateDescriptor.cpp
-        include/gate/GateDetector.h
         include/util/ImgprocPipeline.h
         src/util/ImgprocPipeline.cpp
-        src/gate/GateDetector.cpp
         include/util/ImgprocUtil.h
-        src/util/ImgprocUtil.cpp)
+        src/util/ImgprocUtil.cpp src/gate/IGateDetector.cpp src/gate/AngleGateDetector.cpp src/gate/VerticalGateDetector.cpp)
 target_link_libraries(gate_locator ${catkin_LIBRARIES}
         ${OpenCV_LIBS})
 add_dependencies(gate_locator auv_common_generate_messages_cpp ${PROJECT_NAME}_gencfg)
@@ -118,7 +116,7 @@ add_executable(drums_locator
         include/util/ImgprocPipeline.h
         src/util/ImgprocPipeline.cpp
         include/util/ImgprocUtil.h
-        src/util/ImgprocUtil.cpp)
+        src/util/ImgprocUtil.cpp include/gate/IGateDetector.h include/gate/VerticalGateDetector.h include/gate/AngleGateDetector.h)
 target_link_libraries(drums_locator
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES})

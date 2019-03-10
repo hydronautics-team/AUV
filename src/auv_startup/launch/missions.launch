@@ -1,0 +1,28 @@
+<launch>
+
+    <include file="$(find auv_startup)/launch/common.launch" />
+
+    <node pkg="auv_vision" name="gate_locator" type="gate_locator" output="screen">
+        <param name="detectorMode" value="angle" />
+        <param name="horizontalToVerticalRelation" value="1.0" />
+    </node>
+
+    <node pkg="auv_vision" name="drums_locator" type="drums_locator" output="screen">
+    </node>
+
+    <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
+
+        <param name="notifyOnFinish" value="true" />
+        <param name="mode" value="missions" />
+
+        <param name="diveDelay" value="20" />
+        <param name="initialDepth" value="40" />
+        <param name="imuReset" value="true" />
+
+        <param name="gateFsmMode" value="vision" />
+        <param name="lagDirection" value="LEFT" />
+        <param name="drumsEnabled" value="false" />
+
+    </node>
+
+</launch>

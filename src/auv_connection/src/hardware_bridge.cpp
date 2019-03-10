@@ -13,16 +13,15 @@
 
 #include <auv_common/VelocityCmd.h>
 #include <auv_common/DepthCmd.h>
-#include <auv_common/ResetCmd.h>
 #include <auv_common/DropperCmd.h>
 #include <auv_common/LifterCmd.h>
+#include <auv_common/EnablingCmd.h>
 
 #include <sstream>
 #include <string>
 #include <vector>
 #include <std_msgs/UInt32.h>
 
-#include "serial.h"
 #include "messages.h"
 
 #define SHORE_STABILIZE_DEPTH_BIT       0
@@ -101,8 +100,10 @@ void inputMessage_callback(const std_msgs::UInt8MultiArray::ConstPtr &msg)
         received_vector.push_back(msg->data[i]);
     }
     bool ok = response.parseVector(received_vector);
-    if (ok)
-        current_depth = (int)response.depth * 100; // Convert metres to centimetres
+    if (ok) {
+        //ROS_INFO("Received depth: %f", response.depth);
+        current_depth = std::abs(static_cast<int>(response.depth * 100.0f)); // Convert metres to centimetres
+    }
     else
         ROS_ERROR("Wrong checksum");
 }
@@ -119,13 +120,7 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
   	request.pitch	= static_cast<int16_t> (velocityRequest.twist.angular.z);
 
   	request.march	= static_cast<int16_t> (velocityRequest.twist.linear.x);
-  	//request.depth	= static_cast<int16_t> (velocityRequest.twist.linear.y);
   	request.lag	    = static_cast<int16_t> (velocityRequest.twist.linear.z);
-
-  	set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
-  	set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
-
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, false);
 
     isReady = true;
 
@@ -137,42 +132,13 @@ bool movement_callback(auv_common::VelocityCmd::Request& velocityRequest,
 bool depth_callback(auv_common::DepthCmd::Request& depthRequest,
                        auv_common::DepthCmd::Response& depthResponse)
 {
+    ROS_INFO("Setting depth to %d", depthRequest.depth);
     request.depth	= -(static_cast<int16_t> (depthRequest.depth * 10)); // For low-level stabilization purposes
-
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
-
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, false);
-
-    ROS_INFO("Received: %d", depthRequest.depth);
+    ROS_INFO("Sending to STM32 depth value: %d", request.depth);
 
     isReady = true;
 
     depthResponse.success.data = true;
-
-    return true;
-}
-
-bool reset_callback(auv_common::ResetCmd::Request& resetRequest,
-                    auv_common::ResetCmd::Response& resetResponse)
-{
-    request.roll	= 0;
-    request.yaw		= 0;
-    request.pitch	= 0;
-    request.march	= 0;
-    request.depth	= 0;
-    request.lag	    = 0;
-
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, true);
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, true);
-
-    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, true);
-
-    ROS_INFO("IMU Reset");
-
-    isReady = true;
-
-    resetResponse.success.data = true;
 
     return true;
 }
@@ -195,6 +161,35 @@ bool lifter_callback(auv_common::LifterCmd::Request& lifterRequest,
     return true;
 }
 
+bool imu_init_callback(auv_common::EnablingCmd::Request& enablingRequest,
+                        auv_common::EnablingCmd::Response& enablingResponse) {
+
+    ROS_INFO("Setting SHORE_STABILIZE_IMU_BIT to %d", enablingRequest.enabled);
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, enablingRequest.enabled);
+
+    isReady = true;
+
+    enablingResponse.success = true;
+
+    return true;
+}
+
+bool stabilization_callback(auv_common::EnablingCmd::Request& enablingRequest,
+                       auv_common::EnablingCmd::Response& enablingResponse) {
+
+    ROS_INFO("Setting stabilization bits to %d", enablingRequest.enabled);
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, enablingRequest.enabled);
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, enablingRequest.enabled);
+
+    isReady = true;
+
+    enablingResponse.success = true;
+
+    return true;
+}
+
+//bool imu_init_callback()
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "hardware_bridge");
@@ -214,7 +209,18 @@ int main(int argc, char **argv)
     msg_out.layout.dim[0].stride = RequestMessage::length;
     msg_out.layout.dim[0].label = "msg_out";
 
+    request.roll = 0;
+    request.yaw	= 0;
+    request.pitch = 0;
+    request.depth = 0;
+    request.march = 0;
+    request.lag	= 0;
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_DEPTH_BIT, false);
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_YAW_BIT, false);
+    set_bit(request.stabilize_flags, SHORE_STABILIZE_IMU_BIT, false);
+
     std_msgs::UInt32 depth_message;
+    current_depth = 0;
     
     // ROS publishers
     ros::Publisher outputMessage_pub 	= n.advertise<std_msgs::UInt8MultiArray>("/hard_bridge/parcel", 1000);
@@ -229,9 +235,10 @@ int main(int argc, char **argv)
     // ROS services
     ros::ServiceServer velocity_srv = n.advertiseService("velocity_service", movement_callback);
     ros::ServiceServer depth_srv = n.advertiseService("depth_service", depth_callback);
-    ros::ServiceServer reset_srv = n.advertiseService("reset_service", reset_callback);
     ros::ServiceServer dropper_srv = n.advertiseService("dropper_service", dropper_callback);
     ros::ServiceServer lifter_srv = n.advertiseService("lifter_service", lifter_callback);
+    ros::ServiceServer imu_init_srv = n.advertiseService("imu_init_service", imu_init_callback);
+    ros::ServiceServer stabilization_srv = n.advertiseService("stabilization_service", stabilization_callback);
     // **************
 
     while (ros::ok())

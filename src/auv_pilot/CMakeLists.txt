@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  std_srvs
   geometry_msgs
   sensor_msgs
   actionlib
@@ -107,7 +108,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auv_pilot
-  CATKIN_DEPENDS roscpp rospy actionlib std_msgs geometry_msgs actionlib_msgs auv_common
+  CATKIN_DEPENDS roscpp rospy actionlib std_msgs std_srvs geometry_msgs actionlib_msgs auv_common
 #  DEPENDS system_lib
 )
 
@@ -184,13 +185,12 @@ add_dependencies(pilot ${auv_common_EXPORTED_TARGETS})
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
    scripts/top_level_fsm.py
-   scripts/demo.py
-   init/init_states.py
-   missions/gate_mission.py
-   missions/drums_mission/drums_mission_fsm.py
-   missions/drums_mission/drums_navigation.py
-   missions/drums_mission/mat_bottom_cam_navigation.py
-   missions/drums_mission/mat_front_cam_navigation.py
+   scripts/qualification/qualification_fsm.py
+   scripts/demo/demo_fsm.py
+   scripts/common/common_states.py
+   scripts/missions/drums_mission.py
+   scripts/missions/gate_mission.py
+   scripts/missions/missions_fsm.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
