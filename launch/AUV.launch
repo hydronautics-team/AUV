@@ -3,7 +3,13 @@
     <!-- TODO: Decompose -->
 
     <!-- Sets mode: qualification, missions, demo or none -->
-    <arg name="mode" default="none" />
+    <arg name="mode" default="missions" />
+
+    <!-- Sets mode for drums mission: left, right, middle or none -->
+    <arg name="drum_mission_direction_mode" default="right" />
+
+    <!-- Sets distance to horizontal mat edge for drums mission -->
+    <arg name="drum_mission_horizontal_edge_distance" default="-200" />
 
     <!-- Disables connection with STM32 -->
     <arg name="connectionDisabled" default="false" />
@@ -17,7 +23,7 @@
     <!-- Enables simulation mode (for simple simulator) -->
     <arg name="simulation" default="false" />
 
-    <!-- Enables GUI windows for debugging visison nodes -->
+    <!-- Enables GUI windows for debugging vision nodes -->
     <arg name="debugVision" default="false" />
 
     <!-- Enables video recording. Use 'storage' parameter to specify recorded video location. -->
@@ -54,6 +60,10 @@
     <group if="$(arg simulation)">
         <node pkg="auv_connection" name="gazebo_bridge" type="gazebo_bridge" output="screen" />
     </group>
+
+
+    <node pkg="auv_pilot" name="TimerServer" type="TimerServer" output="screen" />
+
 
     <group unless="$(arg simulation)">
 
@@ -132,16 +142,30 @@
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
         
         <param name="mode" value="$(arg mode)" />
+<<<<<<< HEAD
         
         <param name="diveDelay" value="10" />
         <param name="initialDepth" value="20" />
+=======
+        <param name="diveDelay" value="5" />
+        <param name="initialDepth" value="40" />
+>>>>>>> 3d175aaf79b4c275238d798336aee40e74625a44
         <param name="imuReset" value="$(arg imuReset)" />
         
         <param name="qualificationDuration" value="20" /> <!-- March move duration in seconds -->
         
         <param name="gateFsmMode" value="simple" />
+<<<<<<< HEAD
         <param name="lagDirection" value="LEFT" />
         <param name="secondMarchTime" value="5000" />
+=======
+        <param name="drumsEnabled" value="true" />
+        <param name="lagDirection" value="LEFT" />
+
+        <param name="drum_mission_direction_mode" value="$(arg drum_mission_direction_mode)" />
+
+>>>>>>> 3d175aaf79b4c275238d798336aee40e74625a44
     </node>
+
 
 </launch>

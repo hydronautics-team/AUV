@@ -50,6 +50,7 @@ public:
     cv::Mat getimageAfterContourDetection();
     cv::Mat getLinesImage();
 
+
     void detectContours(const cv::Mat& src, cv::Mat& dst, std::vector<std::vector<cv::Point>>& contours, bool withPreprocess);
 
     MatDetector() = default;
@@ -73,6 +74,29 @@ public:
     MatDetectorFrontCamera& operator=(const MatDetectorFrontCamera& other) = default;
 
     MatDescriptorFrontCamera detect(const cv::Mat& src, cv::Mat& image, std::vector<std::vector<cv::Point>>& contours);
+
+};
+
+/**************************************************************************/
+
+class FrontCameraDrumDetector {
+
+private:
+
+    cv::Mat1b getMask(const cv::Mat& src);
+    std::vector<std::vector<cv::Point>> getDrumContour(const cv::Mat1b& image);
+    float getDrumCoordinates(const std::vector<std::vector<cv::Point>>& contours);
+
+public:
+
+    FrontCameraDrumDetector() = default;
+    ~FrontCameraDrumDetector() = default;
+    FrontCameraDrumDetector& operator=(const FrontCameraDrumDetector& other) = default;
+
+    FrontCameraDrumDescriptor detect(const cv::Mat& src, cv::Mat& image);
+
+    cv::Mat getimageAfterContourDetectionDrum();
+    cv::Mat getimageAfterMaskDrum();
 
 };
 
@@ -108,6 +132,8 @@ public:
 
     float setMaxAngleCriteria() const;
     void setMaxAngleCriteria(float max_angle_criteria);
+
+    cv::Mat getimageWithAllLines();
 
     MatDetectorBottomCamera() = default;
     ~MatDetectorBottomCamera() = default;

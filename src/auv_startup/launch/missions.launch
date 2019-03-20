@@ -16,7 +16,7 @@
         <param name="mode" value="missions" />
 
         <param name="diveDelay" value="10" />
-        <param name="initialDepth" value="20" />
+        <param name="initialDepth" value="70" />
         <param name="imuReset" value="true" />
 
         <param name="gateFsmMode" value="simple" />

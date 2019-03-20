@@ -5,8 +5,8 @@ import smach
 import smach_ros
 from common import common_states
 import gate_mission
-import drums_mission
-
+from drums_mission import drums_mission_fsm
+from auv_common.msg import DropperAction, DropperGoal
 
 def create_missions_fsm():
 
@@ -25,20 +25,30 @@ def create_missions_fsm():
         drums_enabled = rospy.get_param('~drumsEnabled', False)
     rospy.loginfo('Drums enabled: ' + str(drums_enabled))
 
+
     sm = smach.StateMachine(outcomes=['MISSIONS_OK', 'MISSIONS_FAILED'])
 
     with sm:
-
-        if gate_fsm_mode == 'timings':
+        if gate_fsm_mode == 'timings' and not drums_enabled:
             smach.StateMachine.add('GATE_MISSION', gate_mission.create_gate_fsm_by_timings(), transitions={'GATE_OK': 'MISSIONS_OK', 'GATE_FAILED': 'MISSIONS_FAILED'})
-        elif gate_fsm_mode == 'simple':
+        elif gate_fsm_mode == 'simple' and not drums_enabled:
             smach.StateMachine.add('GATE_MISSION', gate_mission.create_gate_fsm_centering_simple(), transitions={'GATE_OK': 'MISSIONS_OK', 'GATE_FAILED': 'MISSIONS_FAILED'})
-        elif gate_fsm_mode == 'vision':
+        elif gate_fsm_mode == 'vision' and not drums_enabled:
             smach.StateMachine.add('GATE_MISSION', gate_mission.create_gate_fsm_centering_vision(), transitions={'GATE_OK': 'MISSIONS_OK', 'GATE_FAILED': 'MISSIONS_FAILED'})
 
         # TODO THIS IS ONLY FOR DEBUGGING
-        #if drums_enabled:
-            #smach.StateMachine.add('DRUMS_MISSION', drums_mission.create_drums_fsm(), transitions={'DRUMS_OK': 'MISSIONS_OK', 'DRUMS_FAILED': 'MISSIONS_FAILED'})
+        if drums_enabled:
+            if gate_fsm_mode == 'timings':
+                smach.StateMachine.add('GATE_MISSION', gate_mission.create_gate_fsm_by_timings(), transitions={'GATE_OK': 'DRUMS_MISSION', 'GATE_FAILED': 'MISSIONS_FAILED'})
+            elif gate_fsm_mode == 'simple':
+                smach.StateMachine.add('GATE_MISSION', gate_mission.create_gate_fsm_centering_simple(), transitions={'GATE_OK': 'DRUMS_MISSION', 'GATE_FAILED': 'MISSIONS_FAILED'})
+            elif gate_fsm_mode == 'vision':
+                smach.StateMachine.add('GATE_MISSION', gate_mission.create_gate_fsm_centering_vision(), transitions={'GATE_OK': 'DRUMS_MISSION', 'GATE_FAILED': 'MISSIONS_FAILED'})
+
+            smach.StateMachine.add('DRUMS_MISSION', drums_mission_fsm.create_drums_fsm(), transitions={'DRUMS_OK': 'BALL_DROP', 'DRUMS_FAILED': 'MISSIONS_FAILED'})
+
+            smach.StateMachine.add('BALL_DROP', smach_ros.SimpleActionState('dropper', DropperAction, goal=DropperGoal()),
+                                    {'succeeded':'MISSIONS_OK', 'preempted':'MISSIONS_FAILED', 'aborted':'MISSIONS_FAILED'})
 
     return sm
 

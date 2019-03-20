@@ -15,7 +15,7 @@ uint8 ROTATE_YAW_CCW=12
 
 uint8 STOP=13
 
-# Speed levels (frow slowest to fastest)
+# Speed levels (from slowest to fastest)
 uint8 VELOCITY_LEVEL_1=14
 uint8 VELOCITY_LEVEL_2=15
 uint8 VELOCITY_LEVEL_3=16
