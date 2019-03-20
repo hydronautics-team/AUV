@@ -142,29 +142,15 @@
     <node pkg="auv_pilot" name="top_level_fsm" type="top_level_fsm.py" output="screen">
         
         <param name="mode" value="$(arg mode)" />
-<<<<<<< HEAD
-        
         <param name="diveDelay" value="10" />
         <param name="initialDepth" value="20" />
-=======
-        <param name="diveDelay" value="5" />
-        <param name="initialDepth" value="40" />
->>>>>>> 3d175aaf79b4c275238d798336aee40e74625a44
         <param name="imuReset" value="$(arg imuReset)" />
         
         <param name="qualificationDuration" value="20" /> <!-- March move duration in seconds -->
         
         <param name="gateFsmMode" value="simple" />
-<<<<<<< HEAD
         <param name="lagDirection" value="LEFT" />
         <param name="secondMarchTime" value="5000" />
-=======
-        <param name="drumsEnabled" value="true" />
-        <param name="lagDirection" value="LEFT" />
-
-        <param name="drum_mission_direction_mode" value="$(arg drum_mission_direction_mode)" />
-
->>>>>>> 3d175aaf79b4c275238d798336aee40e74625a44
     </node>
 
 
