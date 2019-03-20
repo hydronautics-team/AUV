@@ -63,7 +63,6 @@ add_message_files(
 add_service_files(
   FILES
   VelocityCmd.srv
-  TimerFsm.srv
   DepthCmd.srv
   DropperCmd.srv
   LifterCmd.srv
