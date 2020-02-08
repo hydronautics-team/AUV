@@ -21,10 +21,10 @@
     <arg name="stream" default="false" />
 
     <!-- Enables simulation mode (for simple simulator) -->
-    <arg name="simulation" default="false" />
+    <arg name="simulation" default="true" />
 
     <!-- Enables GUI windows for debugging vision nodes -->
-    <arg name="debugVision" default="false" />
+    <arg name="debugVision" default="true" />
 
     <!-- Enables video recording. Use 'storage' parameter to specify recorded video location. -->
     <arg name="record" default="false" />
@@ -43,9 +43,9 @@
     </node>
 
     <node pkg="auv_vision" name="drums_locator" type="drums_locator" output="screen">
-        <remap from="/cam_front_1/image_raw" to="/stereo/camera/right/image_raw" if="$(arg simulation)" />
-        <remap from="/cam_bottom/image_raw" to="/ROV_model_URDF/camera_bottom/image_raw" if="$(arg simulation)" />
-        <param name="debugVision" value="$(arg debugVision)" />
+            <remap from="/cam_front_1/image_raw" to="/stereo/camera/right/image_raw" if="$(arg simulation)" />
+            <remap from="/cam_bottom/image_raw" to="/ROV_model_URDF/camera_bottom/image_raw" if="$(arg simulation)" />
+            <param name="debugVision" value="$(arg debugVision)" />
     </node>
 
     <node pkg="auv_pilot" name="pilot" type="pilot" output="screen">
@@ -145,6 +145,9 @@
         <param name="diveDelay" value="10" />
         <param name="initialDepth" value="20" />
         <param name="imuReset" value="$(arg imuReset)" />
+        
+        <param name="drumsEnabled" value="true" />
+        <param name="drum_mission_direction_mode" value="RIGHT" />
         
         <param name="qualificationDuration" value="20" /> <!-- March move duration in seconds -->
         
