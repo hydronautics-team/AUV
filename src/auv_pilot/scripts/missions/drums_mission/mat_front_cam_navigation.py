@@ -50,7 +50,7 @@ def create_mat_front_cam_navigation_fsm():
             else:
                 return 'MatPositionLost'
 
-    '''
+
     class edge_check(smach.State):
         def __init__(self):
             smach.State.__init__(self, outcomes=['NO_EDGE_DETECTED', 'EDGE_DETECTED', 'FAILED'],
@@ -107,7 +107,6 @@ def create_mat_front_cam_navigation_fsm():
             else:
                 return 'NO_EDGE_DETECTED'
 
-    '''
 
     class mat_detection(smach.State):
         def __init__(self):
@@ -207,7 +206,7 @@ def create_mat_front_cam_navigation_fsm():
                 'X_PositionIsOK'
 
 
-    '''
+
     def mat_check(userData, matMessage):
         return not matMessage.hasPoint
 
@@ -239,6 +238,9 @@ def create_mat_front_cam_navigation_fsm():
                                           child_termination_cb = child_term_cb,
                                           outcome_cb = out_cb)
 
+    def drum_check(userData, matMessage):
+        return not matMessage.hasPoint
+
     with concurrence_state:
         smach.Concurrence.add('TIMER', time_calculation(),
                               remapping={'TIME':'MISSION_START_TIME'})
@@ -250,15 +252,12 @@ def create_mat_front_cam_navigation_fsm():
                                   '/drums/drum_front',
                                   OptionalPoint2D,
                                   drum_check))
-    '''
+
 
     def mat_check(userData, matMessage):
         return not matMessage.hasPoint
 
-    def drum_check(userData, matMessage):
-        return not matMessage.hasPoint
-
-    sm = smach.StateMachine(outcomes=['DRUM_DETECTED', 'MAT_FRONT_CAM_NAVIGATION_FAILED'])
+    sm = smach.StateMachine(outcomes=['HORIZONTAL_EDGE_DETECTED', 'MAT_FRONT_CAM_NAVIGATION_FAILED'])
 
     with sm:
 
@@ -299,13 +298,13 @@ def create_mat_front_cam_navigation_fsm():
         forwardMoveGoalDrum.value = 1000
         forwardMoveGoalDrum.holdIfInfinityValue = False
 
-        '''
+
         smach.StateMachine.add('MAT_HORIZONTAL_EDGE_CHECK', edge_check(),
                                transitions={'NO_EDGE_DETECTED':'MAT_CENTERING',
                                             'EDGE_DETECTED':'HORIZONTAL_EDGE_DETECTED',
                                             'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'},
                                remapping={'MISSION_START_TIME':'sm_time'})
-        '''
+
 
         # Create the sub SMACH state machine
         sm_sub_mat = smach.StateMachine(outcomes=['CENTERED', 'FAILED'])
@@ -345,19 +344,18 @@ def create_mat_front_cam_navigation_fsm():
                                              'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
 
 
-
         smach.StateMachine.add('FORWARD_MOVE',
                                smach_ros.SimpleActionState(
                                    'move_by_time',
                                    MoveAction,
                                    goal=forwardMoveGoal),
-                               {'succeeded':'DRUM_DETECTION_FRONT_CAM', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED', 'aborted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
+                               {'succeeded':'MAT_HORIZONTAL_EDGE_CHECK', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED', 'aborted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
 
 
         #smach.StateMachine.add('MAT_DETECTION', mat_detection(),
                                #transitions={'SUCCESS':'MAT_CENTERING'})
 
-
+        '''
         smach.StateMachine.add('DRUM_DETECTION_FRONT_CAM', detecting_drum_front_cam(),
                                transitions={'DRUM_DETECTED':'DRUM_CENTERING', 'NO_DRUM_DETECTED':'LAG_MOVE_ADJUSTMENT', 'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
 
@@ -367,7 +365,8 @@ def create_mat_front_cam_navigation_fsm():
                                     MoveAction,
                                     goal=rightMoveGoalDrum),
                                {'succeeded':'DRUM_DETECTION_FRONT_CAM', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED', 'aborted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-
+        '''
+        '''
         # Create the sub SMACH state machine
         sm_sub_drum = smach.StateMachine(outcomes=['CENTERED', 'FAILED'])
 
@@ -404,7 +403,8 @@ def create_mat_front_cam_navigation_fsm():
         smach.StateMachine.add('DRUM_CENTERING', sm_sub_drum,
                                transitions={'CENTERED':'FORWARD_MOVE_UNTIL_DRUM_DETECTED',
                                             'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-
+        '''
+        '''
         # Create the sub SMACH state machine
         sm_sub_drum_navigation = smach.StateMachine(outcomes=['DRUM_DETECTED', 'FAILED'])
 
@@ -422,8 +422,8 @@ def create_mat_front_cam_navigation_fsm():
         smach.StateMachine.add('FORWARD_MOVE_UNTIL_DRUM_DETECTED', sm_sub_drum_navigation,
                                transitions={'DRUM_DETECTED':'DRUM_DETECTED',
                                             'FAILED':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-
         '''
+
         # MonitorState outcome switches from valid to invalid
         smach.StateMachine.add('WAITING_MAT_DETECTION_MSG',
                                smach_ros.MonitorState(
@@ -431,6 +431,5 @@ def create_mat_front_cam_navigation_fsm():
                                     OptionalPoint2D,
                                    mat_check),
                                {'invalid':'MAT_CENTERING', 'valid':'WAITING_MAT_DETECTION_MSG', 'preempted':'MAT_FRONT_CAM_NAVIGATION_FAILED'})
-        '''
 
     return sm

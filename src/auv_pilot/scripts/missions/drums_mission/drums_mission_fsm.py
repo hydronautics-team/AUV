@@ -20,6 +20,7 @@ def create_drums_fsm():
     rospy.loginfo(mode)
     if mode not in ['LEFT', 'RIGHT', 'MIDDLE']:
         rospy.loginfo('No executable mode specified. Allowed executable modes: left, right, middle.')
+        mode = 'MIDDLE' #Default
         return
     rospy.loginfo("FSM drums_mission mode: " + mode)
 
@@ -121,12 +122,10 @@ def create_drums_fsm():
                                             'DRUMS_FAILED':'DRUMS_FAILED'})
 
         smach.StateMachine.add('MAT_FRONT_CAM_NAVIGATION', mat_front_cam_navigation.create_mat_front_cam_navigation_fsm(),
-                              transitions={'DRUM_DETECTED': 'DRUMS_NAVIGATION', 'MAT_FRONT_CAM_NAVIGATION_FAILED': 'DRUMS_FAILED'})
+                              transitions={'HORIZONTAL_EDGE_DETECTED': 'MAT_BOTTOM_CAM_NAVIGATION', 'MAT_FRONT_CAM_NAVIGATION_FAILED': 'DRUMS_FAILED'})
 
-        '''
         smach.StateMachine.add('MAT_BOTTOM_CAM_NAVIGATION', mat_bottom_cam_navigation.create_mat_bottom_cam_navigation_fsm(),
                               transitions={'BLUE_DRUM_DETECTED': 'DRUMS_NAVIGATION', 'RED_DRUM_DETECTED': 'DRUMS_NAVIGATION', 'MAT_BOTTOM_CAM_NAVIGATION_FAILED': 'DRUMS_FAILED'})
-        '''
 
         smach.StateMachine.add('DRUMS_NAVIGATION', drums_navigation.create_drums_navigation_fsm(),
                                transitions={'DRUMS_NAVIGATION_OK': 'DRUMS_OK', 'DRUMS_NAVIGATION_FAILED': 'DRUMS_FAILED'})
